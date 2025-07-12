@@ -509,18 +509,33 @@
             play: function(url, onended, onerror) {
                 var self = this;
                 self.load(url).then(function(buffer) {
-                    if (self.currentSource) {
-                        try { self.currentSource.stop(); } catch(e){}
+                    // Resume context if suspended (required on iOS/Android after user gesture)
+                    if (self.ctx.state === 'suspended') {
+                        self.ctx.resume().then(function() {
+                            self._playBuffer(buffer, onended, onerror);
+                        });
+                    } else {
+                        self._playBuffer(buffer, onended, onerror);
                     }
-                    var source = self.ctx.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(self.ctx.destination);
-                    source.onended = onended || null;
-                    source.start(0);
-                    self.currentSource = source;
                 }).catch(function(e){
                     if (onerror) onerror(e);
                 });
+            },
+            _playBuffer: function(buffer, onended, onerror) {
+                if (this.currentSource) {
+                    try { this.currentSource.onended = null; this.currentSource.stop(); } catch(e){}
+                    this.currentSource = null;
+                }
+                var source = this.ctx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(this.ctx.destination);
+                source.onended = onended || null;
+                try {
+                    source.start(0);
+                } catch(e) {
+                    if (onerror) onerror(e);
+                }
+                this.currentSource = source;
             }
         };
 
