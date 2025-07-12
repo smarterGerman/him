@@ -611,6 +611,8 @@
                         self.ctx.resume().then(function() {
                             DebugLog.log('[WebAudioHelper] AudioContext resumed. State: ' + self.ctx.state);
                             self._playBuffer(buffer, onended, onerror, url);
+                        }).catch(function(e) {
+                            DebugLog.log('[WebAudioHelper] AudioContext resume() failed: ' + (e && e.message));
                         });
                     } else {
                         self._playBuffer(buffer, onended, onerror, url);
