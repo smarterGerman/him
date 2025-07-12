@@ -482,57 +482,6 @@
             }
         };
 
-            stopHolding: function() {
-                var button = UI.element('holdSpeakButton');
-                button.classList.remove('holding');
-                button.textContent = 'Hold to speak';
-                UI.setVisualizerState('active');
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                setTimeout(function() {
-                    if (State.step === 4) {
-                        Conversation.moveToNextQuestion();
-                    } else {
-                        Conversation.playThankYou();
-                    }
-                }, 500);
-            }
-                var preInitButton = document.querySelector('.pre-init-button');
-                if (preInitButton) {
-                    preInitButton.style.transform = 'scale(0.95)';
-                    preInitButton.style.opacity = '0.7';
-                    preInitButton.textContent = 'Starting...';
-                }
-                
-                // Add debug info for mobile
-                console.log('Mobile audio unlock attempt starting...');
-                
-                setTimeout(function() {
-                    if (document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen();
-                    } else if (document.documentElement.webkitRequestFullscreen) {
-                        document.documentElement.webkitRequestFullscreen();
-                    } else if (document.documentElement.mozRequestFullScreen) {
-                        document.documentElement.mozRequestFullScreen();
-                    }
-                    
-                    UI.hideElement('preInitOverlay');
-                    UI.showElement('initOverlay');
-                    
-                    console.log('Fullscreen activated, waiting 1.5s before starting audio...');
-                    
-                    setTimeout(function() {
-                        console.log('Starting background music...');
-                        AudioManager.startBackgroundMusic();
-                        
-                        console.log('Starting initialization sequence...');
-                        SG1.startInitialization();
-                    }, 1500);
-                }, 300);
-            },
-
             // ...existing code for Conversation ends here...
 
         if (document.readyState === 'loading') {
