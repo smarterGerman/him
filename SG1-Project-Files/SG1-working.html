@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <title>SG1 - AI-Setup</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SG1 - AI German Learning System</title>
@@ -293,7 +294,7 @@
     <!-- Debug log -->
     <div class="debug-log" id="debugLog"></div>
 
-    <script>
+<script>
         // ===== DEBUG SYSTEM =====
         var DebugLog = {
             messages: [],
@@ -480,11 +481,53 @@
             }
         };
 
+        // --- Web Audio API helper for mobile ---
+        var WebAudioHelper = {
+            isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+            ctx: null,
+            buffers: {},
+            currentSource: null,
+            ensureContext: function() {
+                if (!this.ctx && window.AudioContext) {
+                    this.ctx = new AudioContext();
+                }
+                return this.ctx;
+            },
+            load: function(url) {
+                var self = this;
+                if (!self.ensureContext()) return Promise.reject();
+                if (self.buffers[url]) return Promise.resolve(self.buffers[url]);
+                return fetch(url)
+                    .then(r => r.arrayBuffer())
+                    .then(data => new Promise((resolve, reject) => {
+                        self.ctx.decodeAudioData(data, function(buffer) {
+                            self.buffers[url] = buffer;
+                            resolve(buffer);
+                        }, reject);
+                    }));
+            },
+            play: function(url, onended, onerror) {
+                var self = this;
+                self.load(url).then(function(buffer) {
+                    if (self.currentSource) {
+                        try { self.currentSource.stop(); } catch(e){}
+                    }
+                    var source = self.ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(self.ctx.destination);
+                    source.onended = onended || null;
+                    source.start(0);
+                    self.currentSource = source;
+                }).catch(function(e){
+                    if (onerror) onerror(e);
+                });
+            }
+        };
+
         var Speech = {
             loadVoices: function() {
                 var voices = State.synthesis.getVoices();
                 DebugLog.log('Available voices: ' + voices.length);
-                
                 var englishVoice = null;
                 for (var i = 0; i < voices.length; i++) {
                     if (voices[i].lang.indexOf('en') === 0) {
@@ -495,81 +538,61 @@
                 State.selectedVoice = englishVoice || voices[0];
                 DebugLog.log('Selected voice: ' + (State.selectedVoice ? State.selectedVoice.name : 'none'));
             },
-            
             speak: function(text, forceStep) {
                 AudioManager.stopAllSpeech();
                 State.isSpeaking = true;
                 UI.setVisualizerState('speaking');
-
                 var stepToUse = forceStep !== null && forceStep !== undefined ? forceStep : State.step;
-                
                 DebugLog.log('Playing audio for step ' + stepToUse);
                 DebugLog.log('Audio URL: ' + State.audioFiles[stepToUse]);
-                
                 if (State.audioFiles[stepToUse]) {
-                    // Check if audio context was unlocked
+                    // Mobile: Use Web Audio API if unlocked
+                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                        WebAudioHelper.play(
+                            State.audioFiles[stepToUse],
+                            function() { DebugLog.log('Audio ended for step ' + stepToUse); Speech.onSpeechEnd(); },
+                            function(e) { DebugLog.log('Audio error for step ' + stepToUse + ': ' + (e && e.message)); Speech.speakWithSynthesis(text); }
+                        );
+                        return;
+                    }
+                    // Desktop or fallback
                     if (!State.audioUnlocked) {
                         DebugLog.log('⚠️ Audio context not unlocked, trying synthesis instead');
                         this.speakWithSynthesis(text);
                         return;
                     }
-                    
                     var audio = new Audio();
-                    
                     audio.preload = 'auto';
                     audio.volume = 1.0;
-                    
                     audio.onended = function() {
-                        DebugLog.log('Audio ended for step ' + stepToUse);
-                        Speech.onSpeechEnd();
-                    };
-                    
+                        DebugLog.log('Audio ended for step ' + stepToUse); Speech.onSpeechEnd(); };
                     audio.onerror = function(e) {
-                        DebugLog.log('Audio error for step ' + stepToUse + ': ' + e.message);
-                        Speech.speakWithSynthesis(text);
-                    };
-                    
-                    audio.onloadstart = function() {
-                        DebugLog.log('Audio load started for step ' + stepToUse);
-                    };
-                    
-                    audio.oncanplaythrough = function() {
-                        DebugLog.log('Audio ready for step ' + stepToUse);
-                    };
-                    
+                        DebugLog.log('Audio error for step ' + stepToUse + ': ' + e.message); Speech.speakWithSynthesis(text); };
+                    audio.onloadstart = function() { DebugLog.log('Audio load started for step ' + stepToUse); };
+                    audio.oncanplaythrough = function() { DebugLog.log('Audio ready for step ' + stepToUse); };
                     audio.src = State.audioFiles[stepToUse];
-                    
                     var playPromise = audio.play();
                     if (playPromise) {
-                        playPromise.then(function() {
-                            DebugLog.log('✅ Audio playing successfully for step ' + stepToUse);
-                        }).catch(function(e) {
-                            DebugLog.log('❌ Audio play failed for step ' + stepToUse + ': ' + e.message);
-                            Speech.speakWithSynthesis(text);
-                        });
+                        playPromise.then(function() { DebugLog.log('✅ Audio playing successfully for step ' + stepToUse); })
+                        .catch(function(e) { DebugLog.log('❌ Audio play failed for step ' + stepToUse + ': ' + e.message); Speech.speakWithSynthesis(text); });
                     }
                 } else {
                     DebugLog.log('No audio file for step ' + stepToUse + ', using synthesis');
                     this.speakWithSynthesis(text);
                 }
             },
-            
             speakWithSynthesis: function(text) {
                 DebugLog.log('Using speech synthesis: ' + text.substring(0, 50) + '...');
                 var utterance = new SpeechSynthesisUtterance(text);
                 utterance.voice = State.selectedVoice;
                 utterance.rate = 0.9;
                 utterance.pitch = 1.1;
-                utterance.onend = function() {
-                    Speech.onSpeechEnd();
-                };
+                utterance.onend = function() { Speech.onSpeechEnd(); };
                 State.synthesis.speak(utterance);
             },
-            
             onSpeechEnd: function() {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
-                
                 setTimeout(function() {
                     if (State.step === 0) {
                         UI.showBereitButton();
@@ -579,15 +602,11 @@
                         UI.showJaButton();
                     } else if (State.step === 3) {
                         UI.showHoldSpeakButton();
-                        State.motherInterruptTimer = setTimeout(function() {
-                            Conversation.simulateInterruption();
-                        }, 7000);
+                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
                     } else if (State.step === 5) {
                         if (!State.inFinalSequence) {
                             State.inFinalSequence = true;
-                            setTimeout(function() {
-                                Conversation.playFinalSequence();
-                            }, 2000);
+                            setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
                         }
                     } else if (State.step === 6) {
                         UI.showNaGutButton();
@@ -683,33 +702,40 @@
                 DebugLog.log('Playing thank you audio');
                 State.isSpeaking = true;
                 UI.setVisualizerState('speaking');
-                
-                var audio = new Audio(State.thankYouAudio);
-                
-                audio.onended = function() {
-                    DebugLog.log('Thank you audio ended');
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                };
-                
-                audio.onerror = function(e) {
-                    DebugLog.log('Thank you audio error: ' + e.message);
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                };
-                
-                audio.play().catch(function(e) {
-                    DebugLog.log('Thank you audio play failed: ' + e.message);
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                });
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    WebAudioHelper.play(
+                        State.thankYouAudio,
+                        function() {
+                            DebugLog.log('Thank you audio ended');
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                        },
+                        function(e) {
+                            DebugLog.log('Thank you audio error: ' + (e && e.message));
+                            State.isSpeaking = false;
+                            setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                        }
+                    );
+                } else {
+                    var audio = new Audio(State.thankYouAudio);
+                    audio.onended = function() {
+                        DebugLog.log('Thank you audio ended');
+                        State.isSpeaking = false;
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                    };
+                    audio.onerror = function(e) {
+                        DebugLog.log('Thank you audio error: ' + e.message);
+                        State.isSpeaking = false;
+                        setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                    };
+                    audio.play().catch(function(e) {
+                        DebugLog.log('Thank you audio play failed: ' + e.message);
+                        State.isSpeaking = false;
+                        setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                    });
+                }
             },
 
             moveToNextQuestion: function() {
@@ -733,34 +759,56 @@
                 State.isSpeaking = true;
                 UI.setVisualizerState('speaking');
                 UI.updateProgress(90);
-                
-                var finalAudio = new Audio(State.finalThankYouAudio);
-                finalAudio.onended = function() {
-                    DebugLog.log('Final audio ended, waiting 7 seconds...');
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    
-                    setTimeout(function() {
-                        State.step = 6;
-                        UI.updateProgress(100);
-                        Speech.speak(State.questions[6], 6);
-                    }, 7000);
-                };
-                finalAudio.onerror = function() {
-                    DebugLog.log('Final audio error');
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        State.step = 6;
-                        Speech.speak(State.questions[6], 6);
-                    }, 7000);
-                };
-                finalAudio.play().catch(function(e) {
-                    DebugLog.log('Final audio play failed: ' + e.message);
-                    setTimeout(function() {
-                        State.step = 6;
-                        Speech.speak(State.questions[6], 6);
-                    }, 7000);
-                });
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    WebAudioHelper.play(
+                        State.finalThankYouAudio,
+                        function() {
+                            DebugLog.log('Final audio ended, waiting 7 seconds...');
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                State.step = 6;
+                                UI.updateProgress(100);
+                                Speech.speak(State.questions[6], 6);
+                            }, 7000);
+                        },
+                        function(e) {
+                            DebugLog.log('Final audio error: ' + (e && e.message));
+                            State.isSpeaking = false;
+                            setTimeout(function() {
+                                State.step = 6;
+                                Speech.speak(State.questions[6], 6);
+                            }, 7000);
+                        }
+                    );
+                } else {
+                    var finalAudio = new Audio(State.finalThankYouAudio);
+                    finalAudio.onended = function() {
+                        DebugLog.log('Final audio ended, waiting 7 seconds...');
+                        State.isSpeaking = false;
+                        UI.setVisualizerState('active');
+                        setTimeout(function() {
+                            State.step = 6;
+                            UI.updateProgress(100);
+                            Speech.speak(State.questions[6], 6);
+                        }, 7000);
+                    };
+                    finalAudio.onerror = function() {
+                        DebugLog.log('Final audio error');
+                        State.isSpeaking = false;
+                        setTimeout(function() {
+                            State.step = 6;
+                            Speech.speak(State.questions[6], 6);
+                        }, 7000);
+                    };
+                    finalAudio.play().catch(function(e) {
+                        DebugLog.log('Final audio play failed: ' + e.message);
+                        setTimeout(function() {
+                            State.step = 6;
+                            Speech.speak(State.questions[6], 6);
+                        }, 7000);
+                    });
+                }
             },
 
             completeCourse: function() {
@@ -1063,6 +1111,7 @@
             DebugLog.log('ERROR: ' + message + ' at line ' + lineno);
             return false;
         };
-    </script>
+//# sourceURL=SG1-working.html
+</script>
 </body>
 </html>
