@@ -316,11 +316,16 @@
             
             log: function(message) {
                 var timestamp = new Date().toLocaleTimeString();
-                var logMessage = '[' + timestamp + '] ' + message;
-                
+                // Escape HTML special characters to prevent browser interpreting as markup or media
+                var safeMessage = String(message)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+                var logMessage = '[' + timestamp + '] ' + safeMessage;
                 console.log(logMessage);
                 this.messages.push(logMessage);
-                
                 if (this.element) {
                     this.element.innerHTML = this.messages.slice(-20).join('<br>');
                     this.element.scrollTop = this.element.scrollHeight;
@@ -489,50 +494,76 @@
             currentSource: null,
             ensureContext: function() {
                 if (!this.ctx && window.AudioContext) {
+                    DebugLog.log('[WebAudioHelper] Creating new AudioContext');
                     this.ctx = new AudioContext();
                 }
+                if (this.ctx) DebugLog.log('[WebAudioHelper] AudioContext state: ' + this.ctx.state);
                 return this.ctx;
             },
             load: function(url) {
                 var self = this;
-                if (!self.ensureContext()) return Promise.reject();
-                if (self.buffers[url]) return Promise.resolve(self.buffers[url]);
+                DebugLog.log('[WebAudioHelper] load() called for: ' + url);
+                if (!self.ensureContext()) {
+                    DebugLog.log('[WebAudioHelper] No AudioContext available');
+                    return Promise.reject();
+                }
+                if (self.buffers[url]) {
+                    DebugLog.log('[WebAudioHelper] Buffer cache hit for: ' + url);
+                    return Promise.resolve(self.buffers[url]);
+                }
+                DebugLog.log('[WebAudioHelper] Fetching and decoding: ' + url);
                 return fetch(url)
                     .then(r => r.arrayBuffer())
                     .then(data => new Promise((resolve, reject) => {
                         self.ctx.decodeAudioData(data, function(buffer) {
+                            DebugLog.log('[WebAudioHelper] Decoded buffer for: ' + url);
                             self.buffers[url] = buffer;
                             resolve(buffer);
-                        }, reject);
+                        }, function(e) {
+                            DebugLog.log('[WebAudioHelper] decodeAudioData error: ' + (e && e.message));
+                            reject(e);
+                        });
                     }));
             },
             play: function(url, onended, onerror) {
                 var self = this;
+                DebugLog.log('[WebAudioHelper] play() called for: ' + url);
                 self.load(url).then(function(buffer) {
-                    // Resume context if suspended (required on iOS/Android after user gesture)
+                    DebugLog.log('[WebAudioHelper] Buffer ready for: ' + url);
+                    DebugLog.log('[WebAudioHelper] AudioContext state before play: ' + self.ctx.state);
                     if (self.ctx.state === 'suspended') {
+                        DebugLog.log('[WebAudioHelper] Resuming AudioContext...');
                         self.ctx.resume().then(function() {
-                            self._playBuffer(buffer, onended, onerror);
+                            DebugLog.log('[WebAudioHelper] AudioContext resumed. State: ' + self.ctx.state);
+                            self._playBuffer(buffer, onended, onerror, url);
                         });
                     } else {
-                        self._playBuffer(buffer, onended, onerror);
+                        self._playBuffer(buffer, onended, onerror, url);
                     }
                 }).catch(function(e){
+                    DebugLog.log('[WebAudioHelper] play() error: ' + (e && e.message));
                     if (onerror) onerror(e);
                 });
             },
-            _playBuffer: function(buffer, onended, onerror) {
+            _playBuffer: function(buffer, onended, onerror, url) {
+                DebugLog.log('[WebAudioHelper] _playBuffer() for: ' + url);
                 if (this.currentSource) {
-                    try { this.currentSource.onended = null; this.currentSource.stop(); } catch(e){}
+                    DebugLog.log('[WebAudioHelper] Stopping previous source');
+                    try { this.currentSource.onended = null; this.currentSource.stop(); } catch(e){ DebugLog.log('[WebAudioHelper] Error stopping previous source: ' + (e && e.message)); }
                     this.currentSource = null;
                 }
                 var source = this.ctx.createBufferSource();
                 source.buffer = buffer;
                 source.connect(this.ctx.destination);
-                source.onended = onended || null;
+                source.onended = function() {
+                    DebugLog.log('[WebAudioHelper] onended fired for: ' + url);
+                    if (onended) onended();
+                };
                 try {
+                    DebugLog.log('[WebAudioHelper] Starting source for: ' + url);
                     source.start(0);
                 } catch(e) {
+                    DebugLog.log('[WebAudioHelper] Error starting source: ' + (e && e.message));
                     if (onerror) onerror(e);
                 }
                 this.currentSource = source;
