@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG1 - AI German Learning System</title>
+    <style>
+        /* Minimal styles for demo purposes */
+        body { margin: 0; background: linear-gradient(120deg, #1a237e, #00bcd4, #43e97b); min-height: 100vh; color: #fff; font-family: sans-serif; }
+        #logo { opacity: 0; transition: opacity 2s; position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 3em; }
+        #dna { display: none; position: absolute; top: 40%; left: 50%; transform: translateX(-50%); }
+        #controls { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); }
+        #debug { position: fixed; bottom: 0; left: 0; background: rgba(0,0,0,0.8); color: #fff; font-size: 0.9em; z-index: 99999; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div id="logo">SG1</div>
+    <div id="dna">🧬 DNA Visualizer</div>
+    <div id="controls">
+        <button id="initBtn">Initiate AI</button>
+        <button id="speechBtn" style="display:none">Play Speech</button>
+    </div>
+    <div id="debug"></div>
+    <script>
+    // --- WebAudioManager Implementation ---
+    const audioFiles = {
+        0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
+        1: 'https://uploads.teachablecdn.com/attachments/92551ade5a0a468d9669a7bc79ae4b13.mp3',
+        2: 'https://uploads.teachablecdn.com/attachments/56f253bb9c8c46749eb7cdbb4cfa1c10.mp3',
+        3: 'https://uploads.teachablecdn.com/attachments/e85d721b671746169040af93a4aa37b1.mp3',
+        4: 'https://uploads.teachablecdn.com/attachments/ac76bcc7a7dd4544b0364e277ceb0970.mp3',
+        5: 'https://uploads.teachablecdn.com/attachments/0cdfc0ce7a3245618d7fed8ce25d7d3b.mp3',
+        6: 'https://uploads.teachablecdn.com/attachments/28a3453828b247529b17c6cfc0cc745c.mp3',
+        thankYou: 'https://uploads.teachablecdn.com/attachments/4e2906fba5dc40e6bd0d294332e94123.mp3',
+        finalThankYou: 'https://uploads.teachablecdn.com/attachments/8f1a13b6a0e14abb885ef5f979d3d6c7.mp3',
+        backgroundMusic: 'https://uploads.teachablecdn.com/attachments/2e3c2b54489041f0bc81ac3898704e43.m4a'
+    };
+
+    const WebAudioManager = {
+        context: null,
+        buffers: {},
+        currentSources: {},
+        async init() {
+            this.context = new (window.AudioContext || window.webkitAudioContext)();
+            for (const [key, url] of Object.entries(audioFiles)) {
+                this.buffers[key] = await this.loadBuffer(url);
+                logDebug(`Loaded: ${key}`);
+            }
+        },
+        async loadBuffer(url) {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            return await this.context.decodeAudioData(arrayBuffer);
+        },
+        playBackground() {
+            if (this.currentSources.background) this.currentSources.background.stop();
+            const source = this.context.createBufferSource();
+            source.buffer = this.buffers.backgroundMusic;
+            source.loop = true;
+            const gain = this.context.createGain();
+            gain.gain.value = 0.3;
+            source.connect(gain).connect(this.context.destination);
+            source.start(0);
+            this.currentSources.background = source;
+            logDebug('Background music started');
+        },
+        playSpeech(step, delay = 0) {
+            if (this.currentSources.speech) this.currentSources.speech.stop();
+            const source = this.context.createBufferSource();
+            source.buffer = this.buffers[step];
+            const gain = this.context.createGain();
+            gain.gain.value = 1.0;
+            source.connect(gain).connect(this.context.destination);
+            source.start(this.context.currentTime + delay);
+            this.currentSources.speech = source;
+            logDebug(`Speech audio started: ${step}`);
+            return new Promise(resolve => { source.onended = resolve; });
+        }
+    };
+
+    // --- UI and Flow Logic ---
+    const logo = document.getElementById('logo');
+    const dna = document.getElementById('dna');
+    const initBtn = document.getElementById('initBtn');
+    const speechBtn = document.getElementById('speechBtn');
+    const debugDiv = document.getElementById('debug');
+    let initialized = false;
+
+    function logDebug(msg) {
+        debugDiv.innerText += msg + '\n';
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+
+    function fadeInLogo() {
+        logo.style.opacity = 1;
+        setTimeout(() => {
+            logo.style.opacity = 0;
+            setTimeout(() => {
+                logo.style.display = 'none';
+                dna.style.display = 'block';
+            }, 13500 - 13000); // DNA appears at 13.5s
+        }, 13000); // Logo fades out after 13s
+    }
+
+    initBtn.onclick = async () => {
+        if (initialized) return;
+        initialized = true;
+        logDebug('Initializing WebAudioManager...');
+        await WebAudioManager.init();
+        fadeInLogo();
+        WebAudioManager.playBackground();
+        setTimeout(() => {
+            speechBtn.style.display = 'inline-block';
+            logDebug('Speech button enabled');
+        }, 14000); // Enable speech after 14s
+    };
+
+    speechBtn.onclick = async () => {
+        speechBtn.disabled = true;
+        await WebAudioManager.playSpeech(0); // Play step 0 as example
+        speechBtn.disabled = false;
+    };
+
+    // Mobile debug always visible
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        debugDiv.style.display = 'block';
+    }
+    </script>
+</body>
+</html>
