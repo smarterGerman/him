@@ -1196,8 +1196,49 @@
                             visualizer.style.opacity = '1';
                         }, 100);
                     }
+                    // --- Move mobile audio playback here, after DNA fade-in starts ---
+                    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    if (isMobile && !State.mobileAudioStarted) {
+                        DebugLog.log('🚨 MOBILE: Delaying audio playback until DNA visualizer is visible...');
+                        setTimeout(function() {
+                            DebugLog.log('🎵 NOW ATTEMPTING MOBILE AUDIO PLAYBACK (after DNA fade-in)...');
+                            var mobileVoiceAudio = new Audio(State.audioFiles[0]);
+                            DebugLog.log('🎵 Audio object created, URL: ' + State.audioFiles[0]);
+                            mobileVoiceAudio.volume = 1.0;
+                            mobileVoiceAudio.addEventListener('loadstart', function() { DebugLog.log('📡 Audio: Loading started'); });
+                            mobileVoiceAudio.addEventListener('loadeddata', function() { DebugLog.log('📡 Audio: Data loaded'); });
+                            mobileVoiceAudio.addEventListener('canplay', function() { DebugLog.log('📡 Audio: Can play'); });
+                            mobileVoiceAudio.addEventListener('error', function(e) { DebugLog.log('🚨 Audio Error Event: ' + e.message); });
+                            var playPromise = mobileVoiceAudio.play();
+                            DebugLog.log('🎵 Play promise created: ' + (playPromise ? 'YES' : 'NO'));
+                            if (playPromise) {
+                                playPromise.then(function() {
+                                    DebugLog.log('✅ SUCCESS: Mobile audio started!');
+                                    State.isSpeaking = true;
+                                    State.step = 0;
+                                    State.mobileAudioStarted = true;
+                                    UI.setVisualizerState('speaking');
+                                    mobileVoiceAudio.onended = function() {
+                                        DebugLog.log('🏁 Mobile audio ended');
+                                        State.isSpeaking = false;
+                                        UI.setVisualizerState('active');
+                                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                                    };
+                                }).catch(function(e) {
+                                    DebugLog.log('🚨 MOBILE AUDIO FAILED:');
+                                    DebugLog.log('Error name: ' + e.name);
+                                    DebugLog.log('Error message: ' + e.message);
+                                    DebugLog.log('Error code: ' + (e.code || 'none'));
+                                    DebugLog.log('🔄 Trying synthesis fallback...');
+                                    Speech.speakWithSynthesis(State.questions[0]);
+                                });
+                            } else {
+                                DebugLog.log('🚨 No play promise returned!');
+                            }
+                        }, 4100); // Wait for DNA fade-in (4s) before playing audio
+                    }
                 }, 14000); // DNA appears at 14s (6s after logo ends at 8s - no overlap)
-                
+
                 setTimeout(function() {
                     if (status) status.textContent = 'Ready to begin...';
                     UI.hideElement('initOverlay');
