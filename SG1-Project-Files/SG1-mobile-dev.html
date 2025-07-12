@@ -209,9 +209,7 @@
         <div class="ja-button" id="jaButton" onclick="Conversation.handleJa()">Ja</div>
         <div class="na-gut-button" id="naGutButton" onclick="Conversation.handleNaGut()">Na gut.</div>
 
-        <audio id="backgroundMusic" loop>
-            <source src="https://uploads.teachablecdn.com/attachments/2e3c2b54489041f0bc81ac3898704e43.m4a" type="audio/mpeg">
-        </audio>
+        <!-- Web Audio API will handle all audio playback -->
     </div>
 
     <script>
@@ -245,7 +243,7 @@
                 "Your voice preference has been noted. Unfortunately, all female AIs are currently occupied—trying to save this planet from a rapidly spreading idiocy fueled by billionaires and Crypto bros. You'll be assigned a male voice in the meantime.",
                 "Hi there. My name is Michael. I'll be your instructor for the coming 23.5 years. But don't despair. Even the longest journey will come to an end eventually. Sooner or later. In your case rather later. Shall we begin?"
             ]
-        };
+        }
 
         var UI = {
             element: function(id) { 
@@ -315,36 +313,103 @@
             }
         };
 
-        var AudioManager = {
-            startBackgroundMusic: function() {
-                if (!SG1.musicEnabled) return;
-                
-                var music = UI.element('backgroundMusic');
-                if (music) {
-                    music.volume = 0.3;
-                    // More aggressive mobile audio unlock
-                    music.muted = false;
-                    music.load(); // Reload the audio element
-                    
-                    var playPromise = music.play();
-                    if (playPromise) {
-                        playPromise.then(function() {
-                            console.log('Background music started successfully');
-                        }).catch(function(e) {
-                            console.log('Background music prevented:', e);
-                            // Try again after a short delay
-                            setTimeout(function() {
-                                music.play().catch(function() {
-                                    console.log('Second attempt failed');
-                                });
-                            }, 1000);
-                        });
-                    }
+
+        // ===== Web Audio API Manager =====
+        var WebAudioManager = {
+            context: null,
+            buffers: {},
+            sources: {
+                background: null,
+                speech: null
+            },
+            gains: {
+                background: null,
+                speech: null
+            },
+            initialized: false,
+
+            async init() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                this.gains.background = this.context.createGain();
+                this.gains.speech = this.context.createGain();
+                this.gains.background.gain.value = 0.3;
+                this.gains.speech.gain.value = 1.0;
+                this.gains.background.connect(this.context.destination);
+                this.gains.speech.connect(this.context.destination);
+
+                // Preload all audio files
+                var audioUrls = {
+                    backgroundMusic: 'https://uploads.teachablecdn.com/attachments/2e3c2b54489041f0bc81ac3898704e43.m4a',
+                    step0: State.audioFiles[0],
+                    step1: State.audioFiles[1],
+                    step2: State.audioFiles[2],
+                    step3: State.audioFiles[3],
+                    step4: State.audioFiles[4],
+                    step5: State.audioFiles[5],
+                    step6: State.audioFiles[6],
+                    thankYou: State.thankYouAudio,
+                    finalThankYou: State.finalThankYouAudio
+                };
+                for (const [key, url] of Object.entries(audioUrls)) {
+                    this.buffers[key] = await this.loadAudioBuffer(url);
+                }
+                this.initialized = true;
+            },
+
+            async loadAudioBuffer(url) {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                return await this.context.decodeAudioData(arrayBuffer);
+            },
+
+            playBackgroundMusic() {
+                if (!this.initialized || !SG1.musicEnabled) return;
+                this.stopBackgroundMusic();
+                var source = this.context.createBufferSource();
+                source.buffer = this.buffers.backgroundMusic;
+                source.loop = true;
+                source.connect(this.gains.background);
+                source.start(0);
+                this.sources.background = source;
+            },
+
+            stopBackgroundMusic() {
+                if (this.sources.background) {
+                    try { this.sources.background.stop(); this.sources.background.disconnect(); } catch (e) {}
+                    this.sources.background = null;
                 }
             },
-            
-            stopAllSpeech: function() {
-                if (State.synthesis) State.synthesis.cancel();
+
+            playSpeech(key, onEnded) {
+                if (!this.initialized) return;
+                this.stopSpeech();
+                var source = this.context.createBufferSource();
+                source.buffer = this.buffers[key];
+                source.connect(this.gains.speech);
+                source.onended = function() {
+                    if (onEnded) onEnded();
+                };
+                source.start(0);
+                this.sources.speech = source;
+            },
+
+            stopSpeech() {
+                if (this.sources.speech) {
+                    try { this.sources.speech.stop(); this.sources.speech.disconnect(); } catch (e) {}
+                    this.sources.speech = null;
+                }
+            },
+
+            setBackgroundVolume(value) {
+                if (this.gains.background) this.gains.background.gain.value = value;
+            },
+            setSpeechVolume(value) {
+                if (this.gains.speech) this.gains.speech.gain.value = value;
+            },
+            async resumeContext() {
+                if (this.context && this.context.state === 'suspended') {
+                    await this.context.resume();
+                }
             }
         };
 
@@ -362,50 +427,17 @@
             },
             
             speak: function(text, forceStep) {
-                AudioManager.stopAllSpeech();
+                WebAudioManager.stopSpeech();
                 State.isSpeaking = true;
                 UI.setVisualizerState('speaking');
 
                 var stepToUse = forceStep !== null && forceStep !== undefined ? forceStep : State.step;
-                
-                console.log('Playing audio for step', stepToUse);
-                console.log('Audio URL:', State.audioFiles[stepToUse]);
-                
-                if (State.audioFiles[stepToUse]) {
-                    var audio = new Audio();
-                    
-                    // Mobile-friendly audio setup
-                    audio.preload = 'auto';
-                    audio.volume = 1.0;
-                    
-                    audio.onended = function() {
-                        console.log('Audio ended for step', stepToUse);
+                var audioKey = 'step' + stepToUse;
+                if (WebAudioManager.buffers[audioKey]) {
+                    WebAudioManager.playSpeech(audioKey, function() {
                         Speech.onSpeechEnd();
-                    };
-                    
-                    audio.onerror = function(e) {
-                        console.log('Audio error for step', stepToUse, e);
-                        Speech.speakWithSynthesis(text);
-                    };
-                    
-                    audio.oncanplaythrough = function() {
-                        console.log('Audio ready to play for step', stepToUse);
-                    };
-                    
-                    // Set source after setting up events
-                    audio.src = State.audioFiles[stepToUse];
-                    
-                    var playPromise = audio.play();
-                    if (playPromise) {
-                        playPromise.then(function() {
-                            console.log('Audio playing successfully for step', stepToUse);
-                        }).catch(function(e) {
-                            console.log('Audio play failed for step', stepToUse, e);
-                            Speech.speakWithSynthesis(text);
-                        });
-                    }
+                    });
                 } else {
-                    console.log('No audio file for step', stepToUse);
                     this.speakWithSynthesis(text);
                 }
             },
@@ -424,7 +456,6 @@
             onSpeechEnd: function() {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
-                
                 setTimeout(function() {
                     if (State.step === 0) {
                         UI.showBereitButton();
@@ -451,34 +482,15 @@
             }
         };
 
-        var Conversation = {
-            handleBereit: function() {
-                UI.hideAllButtons();
-                this.moveToNextQuestion();
-            },
-
-            startHolding: function() {
-                if (State.isSpeaking) return;
-                
-                var button = UI.element('holdSpeakButton');
-                button.classList.add('holding');
-                button.textContent = 'Recording...';
-                
-                UI.setVisualizerState('listening');
-            },
-
             stopHolding: function() {
                 var button = UI.element('holdSpeakButton');
                 button.classList.remove('holding');
                 button.textContent = 'Hold to speak';
-                
                 UI.setVisualizerState('active');
-                
                 if (State.motherInterruptTimer) {
                     clearTimeout(State.motherInterruptTimer);
                     State.motherInterruptTimer = null;
                 }
-                
                 setTimeout(function() {
                     if (State.step === 4) {
                         Conversation.moveToNextQuestion();
@@ -486,155 +498,7 @@
                         Conversation.playThankYou();
                     }
                 }, 500);
-            },
-
-            simulateInterruption: function() {
-                var button = UI.element('holdSpeakButton');
-                button.classList.remove('holding');
-                button.textContent = 'Hold to speak';
-                
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                
-                UI.setVisualizerState('active');
-                UI.hideAllButtons();
-                
-                setTimeout(function() {
-                    if (State.step === 4) {
-                        Conversation.moveToNextQuestion();
-                    } else {
-                        Conversation.playThankYou();
-                    }
-                }, 1000);
-            },
-
-            handleJa: function() {
-                UI.hideAllButtons();
-                if (State.step === 2) {
-                    this.moveToNextQuestion();
-                }
-            },
-
-            handleNaGut: function() {
-                UI.hideAllButtons();
-                this.completeCourse();
-            },
-
-            playThankYou: function() {
-                State.isSpeaking = true;
-                UI.setVisualizerState('speaking');
-                
-                var audio = new Audio(State.thankYouAudio);
-                
-                audio.onended = function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                };
-                
-                audio.onerror = function(e) {
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                };
-                
-                audio.play().catch(function(e) {
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                });
-            },
-
-            moveToNextQuestion: function() {
-                if (State.inFinalSequence && State.step >= 5) {
-                    return;
-                }
-                
-                State.step++;
-                
-                if (State.step >= State.questions.length) {
-                    this.completeCourse();
-                } else {
-                    UI.updateProgress((State.step + 1) * 12);
-                    Speech.speak(State.questions[State.step], State.step);
-                }
-            },
-
-            playFinalSequence: function() {
-                State.isSpeaking = true;
-                UI.setVisualizerState('speaking');
-                UI.updateProgress(90);
-                
-                var finalAudio = new Audio(State.finalThankYouAudio);
-                finalAudio.onended = function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    
-                    setTimeout(function() {
-                        State.step = 6;
-                        UI.updateProgress(100);
-                        Speech.speak(State.questions[6], 6);
-                    }, 7000);
-                };
-                finalAudio.onerror = function() {
-                    State.isSpeaking = false;
-                    setTimeout(function() {
-                        State.step = 6;
-                        Speech.speak(State.questions[6], 6);
-                    }, 7000);
-                };
-                finalAudio.play().catch(function(e) {
-                    console.log('Final audio failed:', e);
-                });
-            },
-
-            completeCourse: function() {
-                setTimeout(function() {
-                    var buttons = document.querySelectorAll('button, .btn, [role="button"]');
-                    for (var i = 0; i < buttons.length; i++) {
-                        var btn = buttons[i];
-                        var text = btn.textContent.toLowerCase();
-                        if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
-                            btn.click();
-                            return;
-                        }
-                    }
-                }, 2000);
-            },
-
-            startQ1: function() {
-                UI.setVisualizerState('active');
-                UI.updateProgress(5);
-                Speech.speak(State.questions[0], 0);
-                State.step = 0;
             }
-        };
-
-        var SG1 = {
-            musicEnabled: true,
-            
-            toggleMusic: function() {
-                var music = UI.element('backgroundMusic');
-                var toggle = document.getElementById('musicToggle');
-                
-                if (this.musicEnabled) {
-                    if (music) music.pause();
-                    if (toggle) toggle.textContent = 'Music Off';
-                    this.musicEnabled = false;
-                } else {
-                    if (music) music.play().catch(function() {});
-                    if (toggle) toggle.textContent = 'Music On';
-                    this.musicEnabled = true;
-                }
-            },
-            
-            beginInitialization: function() {
                 var preInitButton = document.querySelector('.pre-init-button');
                 if (preInitButton) {
                     preInitButton.style.transform = 'scale(0.95)';
@@ -669,75 +533,10 @@
                 }, 300);
             },
 
-            startInitialization: function() {
-                var logo = document.querySelector('.init-logo');
-                var status = document.getElementById('statusText');
-                
-                if (status) status.textContent = 'Audio system ready. Loading voice...';
-                
-                if (logo) {
-                    logo.style.opacity = '0';
-                    logo.style.animation = 'none';
-                    logo.style.transform = 'translate(-50%, -50%) scale(0.8)';
-                    
-                    setTimeout(function() {
-                        if (status) status.textContent = 'Voice system online. Starting sequence...';
-                        
-                        logo.style.animation = 'sg1LogoFade 13s ease-in-out forwards';
-                        
-                        setTimeout(function() {
-                            if (logo.style.opacity === '0') {
-                                logo.style.opacity = '1';
-                                logo.style.transform = 'translate(-50%, -50%) scale(1)';
-                                
-                                setTimeout(function() {
-                                    logo.style.opacity = '0';
-                                }, 8000);
-                            }
-                        }, 3000);
-                        
-                        setTimeout(function() {
-                            logo.style.opacity = '0';
-                            logo.style.display = 'none';
-                        }, 12000);
-                        
-                    }, 1000);
-                }
-                
-                setTimeout(function() {
-                    if (status) status.textContent = 'Loading neural interface...';
-                    UI.showElement('visualizer');
-                }, 17000);
-                
-                setTimeout(function() {
-                    if (status) status.textContent = 'Ready to begin...';
-                    UI.hideElement('initOverlay');
-                    setTimeout(function() {
-                        Conversation.startQ1();
-                    }, 500);
-                }, 17000);
-            },
-
-            init: function() {
-                Speech.loadVoices();
-                setTimeout(function() {
-                    Speech.loadVoices();
-                }, 1000);
-                if (State.synthesis.onvoiceschanged !== undefined) {
-                    State.synthesis.onvoiceschanged = function() {
-                        Speech.loadVoices();
-                    };
-                }
-            }
-        };
+            // ...existing code for Conversation ends here...
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 SG1.init();
             });
-        } else {
-            SG1.init();
         }
-    </script>
-</body>
-</html>
