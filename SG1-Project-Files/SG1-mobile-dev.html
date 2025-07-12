@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG1 - AI German Learning System</title>
+    <style>
+        /* ===== BASE STYLES ===== */
+        body, html { margin: 0; padding: 0; height: 100%; background: none; }
+        .sg1-container * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .sg1-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999999;
+            background: linear-gradient(-45deg, #4ecdc4, #45b7d1, #96ceb4, #ffecd2);
+            background-size: 400% 400%; animation: sg1GradientShift 15s ease infinite;
+            overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        @keyframes sg1GradientShift { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+
+        /* ===== OVERLAYS ===== */
+        .overlay-base { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: opacity 1s ease-out; }
+
+        .pre-init-overlay { 
+            z-index: 2000; opacity: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .init-overlay { 
+            z-index: 1000; opacity: 0; pointer-events: none;
+            background: none !important;
+            transition: opacity 0.5s ease;
+        }
+        .init-overlay.visible { 
+            opacity: 1; pointer-events: all;
+            background: none !important;
+        }
+        .init-overlay.hidden { 
+            opacity: 0; pointer-events: none; display: none !important;
+            background: none !important;
+        }
+
+        /* ===== BUTTONS ===== */
+        .pre-init-button { background: #4ecdc4; color: white; border: none; padding: 20px 40px;
+            border-radius: 15px; font-size: 1.2em; font-weight: 500; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.4s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); display: inline-block; }
+        .pre-init-button:hover { background: #45b7d1; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+
+        .bereit-button, .hold-speak-button, .ja-button, .na-gut-button {
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+            color: white; border: none; padding: 18px 40px; border-radius: 25px;
+            font-size: clamp(16px, 4vw, 18px); 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-weight: 500; letter-spacing: 1px; cursor: pointer;
+            min-width: 140px; min-height: 50px; 
+            opacity: 0; transition: all 0.6s ease; pointer-events: none;
+            backdrop-filter: blur(10px); z-index: 100;
+            box-shadow: 0 8px 25px rgba(76, 205, 196, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .bereit-button { background: linear-gradient(135deg, #4ecdc4, #45b7d1); }
+        .bereit-button:hover { background: linear-gradient(135deg, #45b7d1, #4ecdc4); transform: translateX(-50%) translateY(-3px); }
+
+        .hold-speak-button { background: linear-gradient(135deg, #ff8a65, #ff7043); user-select: none; }
+        .hold-speak-button:hover { background: linear-gradient(135deg, #ff7043, #ff5722); transform: translateX(-50%) translateY(-3px); }
+        .hold-speak-button.holding { background: linear-gradient(135deg, #ffca28, #ffd54f); transform: translateX(-50%) translateY(-1px) scale(0.98); }
+
+        .ja-button { 
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            min-width: 80px; min-height: 50px; 
+            padding: 12px 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ja-button:hover { 
+            background: linear-gradient(135deg, #66bb6a, #4caf50); 
+            transform: translateX(-50%) translateY(-3px); 
+        }
+
+        .na-gut-button { background: linear-gradient(135deg, #e91e63, #f06292); }
+        .na-gut-button:hover { background: linear-gradient(135deg, #f06292, #e91e63); transform: translateX(-50%) translateY(-3px); }
+
+        .bereit-button.visible, .hold-speak-button.visible, .ja-button.visible, .na-gut-button.visible {
+            opacity: 1; pointer-events: all;
+        }
+
+        /* ===== LOGO ANIMATION ===== */
+        .init-logo { 
+            font-size: clamp(5em, 20vw, 7.5em); font-weight: 100; color: white; letter-spacing: 3px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            opacity: 0;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        @keyframes sg1LogoFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* ===== DNA VISUALIZER ===== */
+        .voice-visualizer { 
+            height: 120px; width: min(450px, 85vw); position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: flex; align-items: center; justify-content: center; opacity: 0;
+        }
+
+        .dna-container { 
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1; position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); width: min(400px, 80vw); height: 80px;
+            transform-style: preserve-3d; perspective: 1000px;
+        }
+
+        .dna-strand { 
+            fill: none; stroke: white; stroke-width: 5; stroke-linecap: round;
+            animation: sg1DNAFlow 5s linear infinite;
+            transform-origin: 50% 50%;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+            opacity: 1;
+        }
+        .dna-strand:nth-child(2) { 
+            animation-delay: 0.5s;
+            filter: drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.35));
+        }
+        .dna-strand:nth-child(3) { 
+            animation-delay: 1s;
+            filter: drop-shadow(1px 1px 4px rgba(0, 0, 0, 0.4));
+        }
+
+        @keyframes sg1DNAFlow {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(360deg); }
+        }
+
+        .speaking .dna-strand { stroke-width: 6; }
+        .listening .dna-strand { 
+            animation: sg1DNAFlow 2s linear infinite;
+            stroke: #ffd54f;
+            filter: drop-shadow(1px 1px 3px rgba(255, 213, 79, 0.4));
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-container { 
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: min(400px, 80vw); height: 4px; background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px; overflow: hidden; z-index: 50;
+        }
+        .progress-bar { 
+            height: 100%; background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+            width: 0%; transition: width 1s ease; border-radius: 2px;
+        }
+
+        /* ===== UTILITY ===== */
+        .hidden { opacity: 0 !important; pointer-events: none !important; }
+        .visible { opacity: 1 !important; pointer-events: all !important; }
+        .active { display: flex !important; }
+    </style>
+</head>
+<body>
+    <div class="sg1-container">
+        <div class="pre-init-overlay overlay-base" id="preInitOverlay">
+            <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
+            <div style="position: absolute; bottom: 20px; right: 20px; color: #666; font-size: 14px; cursor: pointer; user-select: none;" onclick="SG1.toggleMusic()" id="musicToggle">Music On</div>
+        </div>
+
+        <div class="init-overlay overlay-base" id="initOverlay">
+            <div class="init-logo">SG1</div>
+            <div style="position: absolute; bottom: 100px; color: white; font-size: 16px; opacity: 0.8;" id="statusText">Initializing audio system...</div>
+        </div>
+
+        <div class="voice-visualizer" id="visualizer">
+            <div class="dna-container">
+                <svg width="100%" height="80" viewBox="0 0 400 80">
+                    <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
+                    <path class="dna-strand" d="M0,40 Q50,65 100,40 Q150,15 200,40 Q250,65 300,40 Q350,15 400,40" />
+                    <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="bereit-button" id="bereitButton" onclick="Conversation.handleBereit()">Bereit</div>
+        <div class="hold-speak-button" id="holdSpeakButton" 
+             onmousedown="Conversation.startHolding()" 
+             onmouseup="Conversation.stopHolding()"
+             ontouchstart="Conversation.startHolding()" 
+             ontouchend="Conversation.stopHolding()">Hold to speak</div>
+        <div class="ja-button" id="jaButton" onclick="Conversation.handleJa()">Ja</div>
+        <div class="na-gut-button" id="naGutButton" onclick="Conversation.handleNaGut()">Na gut.</div>
+
+        <audio id="backgroundMusic" loop>
+            <source src="https://uploads.teachablecdn.com/attachments/2e3c2b54489041f0bc81ac3898704e43.m4a" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        var State = {
+            step: 0,
+            isSpeaking: false,
+            motherInterruptTimer: null,
+            synthesis: window.speechSynthesis,
+            selectedVoice: null,
+            inFinalSequence: false,
+            
+            audioFiles: {
+                0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
+                1: 'https://uploads.teachablecdn.com/attachments/92551ade5a0a468d9669a7bc79ae4b13.mp3',
+                2: 'https://uploads.teachablecdn.com/attachments/56f253bb9c8c46749eb7cdbb4cfa1c10.mp3',
+                3: 'https://uploads.teachablecdn.com/attachments/e85d721b671746169040af93a4aa37b1.mp3',
+                4: 'https://uploads.teachablecdn.com/attachments/ac76bcc7a7dd4544b0364e277ceb0970.mp3',
+                5: 'https://uploads.teachablecdn.com/attachments/0cdfc0ce7a3245618d7fed8ce25d7d3b.mp3',
+                6: 'https://uploads.teachablecdn.com/attachments/28a3453828b247529b17c6cfc0cc745c.mp3'
+            },
+            
+            thankYouAudio: 'https://uploads.teachablecdn.com/attachments/4e2906fba5dc40e6bd0d294332e94123.mp3',
+            finalThankYouAudio: 'https://uploads.teachablecdn.com/attachments/8f1a13b6a0e14abb885ef5f979d3d6c7.mp3',
+            
+            questions: [
+                "Welcome to the world's first artificially intelligent German Course system, SG1.",
+                "Are you social or anti-social?",
+                "I sense hesitance in your voice. Would you like to continue?",
+                "How would you describe your relationship with your mother?",
+                "Would you prefer a male or female voice for your German instructor?",
+                "Your voice preference has been noted. Unfortunately, all female AIs are currently occupied—trying to save this planet from a rapidly spreading idiocy fueled by billionaires and Crypto bros. You'll be assigned a male voice in the meantime.",
+                "Hi there. My name is Michael. I'll be your instructor for the coming 23.5 years. But don't despair. Even the longest journey will come to an end eventually. Sooner or later. In your case rather later. Shall we begin?"
+            ]
+        };
+
+        var UI = {
+            element: function(id) { 
+                return document.getElementById(id); 
+            },
+            
+            showElement: function(id) { 
+                var element = this.element(id);
+                if (element) {
+                    element.classList.remove('hidden');
+                    element.classList.add('active', 'visible');
+                    element.style.display = 'flex';
+                    if (id === 'visualizer') {
+                        element.style.opacity = '1';
+                    }
+                }
+            },
+            
+            hideElement: function(id) { 
+                var element = this.element(id);
+                if (element) {
+                    element.classList.remove('active', 'visible');
+                    element.classList.add('hidden');
+                }
+            },
+            
+            setVisualizerState: function(state) { 
+                var visualizer = this.element('visualizer');
+                visualizer.className = 'voice-visualizer active ' + state;
+            },
+            
+            updateProgress: function(percentage) {
+                var bar = this.element('progressBar');
+                if (bar) bar.style.width = percentage + '%';
+            },
+            
+            showBereitButton: function() {
+                this.hideAllButtons();
+                var button = this.element('bereitButton');
+                if (button) button.classList.add('visible');
+            },
+            
+            showHoldSpeakButton: function() {
+                this.hideAllButtons();
+                var button = this.element('holdSpeakButton');
+                if (button) button.classList.add('visible');
+            },
+            
+            showJaButton: function() {
+                this.hideAllButtons();
+                var button = this.element('jaButton');
+                if (button) button.classList.add('visible');
+            },
+            
+            showNaGutButton: function() {
+                this.hideAllButtons();
+                var button = this.element('naGutButton');
+                if (button) button.classList.add('visible');
+            },
+            
+            hideAllButtons: function() {
+                var buttons = ['bereitButton', 'holdSpeakButton', 'jaButton', 'naGutButton'];
+                for (var i = 0; i < buttons.length; i++) {
+                    var button = this.element(buttons[i]);
+                    if (button) button.classList.remove('visible');
+                }
+            }
+        };
+
+        var AudioManager = {
+            startBackgroundMusic: function() {
+                if (!SG1.musicEnabled) return;
+                
+                var music = UI.element('backgroundMusic');
+                if (music) {
+                    music.volume = 0.3;
+                    // More aggressive mobile audio unlock
+                    music.muted = false;
+                    music.load(); // Reload the audio element
+                    
+                    var playPromise = music.play();
+                    if (playPromise) {
+                        playPromise.then(function() {
+                            console.log('Background music started successfully');
+                        }).catch(function(e) {
+                            console.log('Background music prevented:', e);
+                            // Try again after a short delay
+                            setTimeout(function() {
+                                music.play().catch(function() {
+                                    console.log('Second attempt failed');
+                                });
+                            }, 1000);
+                        });
+                    }
+                }
+            },
+            
+            stopAllSpeech: function() {
+                if (State.synthesis) State.synthesis.cancel();
+            }
+        };
+
+        var Speech = {
+            loadVoices: function() {
+                var voices = State.synthesis.getVoices();
+                var englishVoice = null;
+                for (var i = 0; i < voices.length; i++) {
+                    if (voices[i].lang.indexOf('en') === 0) {
+                        englishVoice = voices[i];
+                        break;
+                    }
+                }
+                State.selectedVoice = englishVoice || voices[0];
+            },
+            
+            speak: function(text, forceStep) {
+                AudioManager.stopAllSpeech();
+                State.isSpeaking = true;
+                UI.setVisualizerState('speaking');
+
+                var stepToUse = forceStep !== null && forceStep !== undefined ? forceStep : State.step;
+                
+                console.log('Playing audio for step', stepToUse);
+                console.log('Audio URL:', State.audioFiles[stepToUse]);
+                
+                if (State.audioFiles[stepToUse]) {
+                    var audio = new Audio();
+                    
+                    // Mobile-friendly audio setup
+                    audio.preload = 'auto';
+                    audio.volume = 1.0;
+                    
+                    audio.onended = function() {
+                        console.log('Audio ended for step', stepToUse);
+                        Speech.onSpeechEnd();
+                    };
+                    
+                    audio.onerror = function(e) {
+                        console.log('Audio error for step', stepToUse, e);
+                        Speech.speakWithSynthesis(text);
+                    };
+                    
+                    audio.oncanplaythrough = function() {
+                        console.log('Audio ready to play for step', stepToUse);
+                    };
+                    
+                    // Set source after setting up events
+                    audio.src = State.audioFiles[stepToUse];
+                    
+                    var playPromise = audio.play();
+                    if (playPromise) {
+                        playPromise.then(function() {
+                            console.log('Audio playing successfully for step', stepToUse);
+                        }).catch(function(e) {
+                            console.log('Audio play failed for step', stepToUse, e);
+                            Speech.speakWithSynthesis(text);
+                        });
+                    }
+                } else {
+                    console.log('No audio file for step', stepToUse);
+                    this.speakWithSynthesis(text);
+                }
+            },
+            
+            speakWithSynthesis: function(text) {
+                var utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = State.selectedVoice;
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.onend = function() {
+                    Speech.onSpeechEnd();
+                };
+                State.synthesis.speak(utterance);
+            },
+            
+            onSpeechEnd: function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                
+                setTimeout(function() {
+                    if (State.step === 0) {
+                        UI.showBereitButton();
+                    } else if (State.step === 1 || State.step === 4) {
+                        UI.showHoldSpeakButton();
+                    } else if (State.step === 2) {
+                        UI.showJaButton();
+                    } else if (State.step === 3) {
+                        UI.showHoldSpeakButton();
+                        State.motherInterruptTimer = setTimeout(function() {
+                            Conversation.simulateInterruption();
+                        }, 7000);
+                    } else if (State.step === 5) {
+                        if (!State.inFinalSequence) {
+                            State.inFinalSequence = true;
+                            setTimeout(function() {
+                                Conversation.playFinalSequence();
+                            }, 2000);
+                        }
+                    } else if (State.step === 6) {
+                        UI.showNaGutButton();
+                    }
+                }, 1000);
+            }
+        };
+
+        var Conversation = {
+            handleBereit: function() {
+                UI.hideAllButtons();
+                this.moveToNextQuestion();
+            },
+
+            startHolding: function() {
+                if (State.isSpeaking) return;
+                
+                var button = UI.element('holdSpeakButton');
+                button.classList.add('holding');
+                button.textContent = 'Recording...';
+                
+                UI.setVisualizerState('listening');
+            },
+
+            stopHolding: function() {
+                var button = UI.element('holdSpeakButton');
+                button.classList.remove('holding');
+                button.textContent = 'Hold to speak';
+                
+                UI.setVisualizerState('active');
+                
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                
+                setTimeout(function() {
+                    if (State.step === 4) {
+                        Conversation.moveToNextQuestion();
+                    } else {
+                        Conversation.playThankYou();
+                    }
+                }, 500);
+            },
+
+            simulateInterruption: function() {
+                var button = UI.element('holdSpeakButton');
+                button.classList.remove('holding');
+                button.textContent = 'Hold to speak';
+                
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                
+                UI.setVisualizerState('active');
+                UI.hideAllButtons();
+                
+                setTimeout(function() {
+                    if (State.step === 4) {
+                        Conversation.moveToNextQuestion();
+                    } else {
+                        Conversation.playThankYou();
+                    }
+                }, 1000);
+            },
+
+            handleJa: function() {
+                UI.hideAllButtons();
+                if (State.step === 2) {
+                    this.moveToNextQuestion();
+                }
+            },
+
+            handleNaGut: function() {
+                UI.hideAllButtons();
+                this.completeCourse();
+            },
+
+            playThankYou: function() {
+                State.isSpeaking = true;
+                UI.setVisualizerState('speaking');
+                
+                var audio = new Audio(State.thankYouAudio);
+                
+                audio.onended = function() {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 1000);
+                };
+                
+                audio.onerror = function(e) {
+                    State.isSpeaking = false;
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 1000);
+                };
+                
+                audio.play().catch(function(e) {
+                    State.isSpeaking = false;
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 1000);
+                });
+            },
+
+            moveToNextQuestion: function() {
+                if (State.inFinalSequence && State.step >= 5) {
+                    return;
+                }
+                
+                State.step++;
+                
+                if (State.step >= State.questions.length) {
+                    this.completeCourse();
+                } else {
+                    UI.updateProgress((State.step + 1) * 12);
+                    Speech.speak(State.questions[State.step], State.step);
+                }
+            },
+
+            playFinalSequence: function() {
+                State.isSpeaking = true;
+                UI.setVisualizerState('speaking');
+                UI.updateProgress(90);
+                
+                var finalAudio = new Audio(State.finalThankYouAudio);
+                finalAudio.onended = function() {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    
+                    setTimeout(function() {
+                        State.step = 6;
+                        UI.updateProgress(100);
+                        Speech.speak(State.questions[6], 6);
+                    }, 7000);
+                };
+                finalAudio.onerror = function() {
+                    State.isSpeaking = false;
+                    setTimeout(function() {
+                        State.step = 6;
+                        Speech.speak(State.questions[6], 6);
+                    }, 7000);
+                };
+                finalAudio.play().catch(function(e) {
+                    console.log('Final audio failed:', e);
+                });
+            },
+
+            completeCourse: function() {
+                setTimeout(function() {
+                    var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+                    for (var i = 0; i < buttons.length; i++) {
+                        var btn = buttons[i];
+                        var text = btn.textContent.toLowerCase();
+                        if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                            btn.click();
+                            return;
+                        }
+                    }
+                }, 2000);
+            },
+
+            startQ1: function() {
+                UI.setVisualizerState('active');
+                UI.updateProgress(5);
+                Speech.speak(State.questions[0], 0);
+                State.step = 0;
+            }
+        };
+
+        var SG1 = {
+            musicEnabled: true,
+            
+            toggleMusic: function() {
+                var music = UI.element('backgroundMusic');
+                var toggle = document.getElementById('musicToggle');
+                
+                if (this.musicEnabled) {
+                    if (music) music.pause();
+                    if (toggle) toggle.textContent = 'Music Off';
+                    this.musicEnabled = false;
+                } else {
+                    if (music) music.play().catch(function() {});
+                    if (toggle) toggle.textContent = 'Music On';
+                    this.musicEnabled = true;
+                }
+            },
+            
+            beginInitialization: function() {
+                var preInitButton = document.querySelector('.pre-init-button');
+                if (preInitButton) {
+                    preInitButton.style.transform = 'scale(0.95)';
+                    preInitButton.style.opacity = '0.7';
+                    preInitButton.textContent = 'Starting...';
+                }
+                
+                // Add debug info for mobile
+                console.log('Mobile audio unlock attempt starting...');
+                
+                setTimeout(function() {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.mozRequestFullScreen) {
+                        document.documentElement.mozRequestFullScreen();
+                    }
+                    
+                    UI.hideElement('preInitOverlay');
+                    UI.showElement('initOverlay');
+                    
+                    console.log('Fullscreen activated, waiting 1.5s before starting audio...');
+                    
+                    setTimeout(function() {
+                        console.log('Starting background music...');
+                        AudioManager.startBackgroundMusic();
+                        
+                        console.log('Starting initialization sequence...');
+                        SG1.startInitialization();
+                    }, 1500);
+                }, 300);
+            },
+
+            startInitialization: function() {
+                var logo = document.querySelector('.init-logo');
+                var status = document.getElementById('statusText');
+                
+                if (status) status.textContent = 'Audio system ready. Loading voice...';
+                
+                if (logo) {
+                    logo.style.opacity = '0';
+                    logo.style.animation = 'none';
+                    logo.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                    
+                    setTimeout(function() {
+                        if (status) status.textContent = 'Voice system online. Starting sequence...';
+                        
+                        logo.style.animation = 'sg1LogoFade 13s ease-in-out forwards';
+                        
+                        setTimeout(function() {
+                            if (logo.style.opacity === '0') {
+                                logo.style.opacity = '1';
+                                logo.style.transform = 'translate(-50%, -50%) scale(1)';
+                                
+                                setTimeout(function() {
+                                    logo.style.opacity = '0';
+                                }, 8000);
+                            }
+                        }, 3000);
+                        
+                        setTimeout(function() {
+                            logo.style.opacity = '0';
+                            logo.style.display = 'none';
+                        }, 12000);
+                        
+                    }, 1000);
+                }
+                
+                setTimeout(function() {
+                    if (status) status.textContent = 'Loading neural interface...';
+                    UI.showElement('visualizer');
+                }, 17000);
+                
+                setTimeout(function() {
+                    if (status) status.textContent = 'Ready to begin...';
+                    UI.hideElement('initOverlay');
+                    setTimeout(function() {
+                        Conversation.startQ1();
+                    }, 500);
+                }, 17000);
+            },
+
+            init: function() {
+                Speech.loadVoices();
+                setTimeout(function() {
+                    Speech.loadVoices();
+                }, 1000);
+                if (State.synthesis.onvoiceschanged !== undefined) {
+                    State.synthesis.onvoiceschanged = function() {
+                        Speech.loadVoices();
+                    };
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                SG1.init();
+            });
+        } else {
+            SG1.init();
+        }
+    </script>
+</body>
+</html>
