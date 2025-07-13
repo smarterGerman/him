@@ -9,32 +9,34 @@
         /* ===== BASE STYLES ===== */
         body, html { margin: 0; padding: 0; height: 100%; background: none; }
         .sg1-container * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        .sg1-container { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999999;
-            background: linear-gradient(-45deg, #4ecdc4, #45b7d1, #96ceb4, #ffecd2);
-            background-size: 400% 400%; animation: sg1GradientShift 15s ease infinite;
-            overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+<!--
+<script>
+// Add Copy Log button above the debug textarea
+(function(){
+    var btn = document.createElement('button');
+    btn.textContent = 'Copy Log';
+    btn.style.position = 'fixed';
+    btn.style.bottom = '270px';
+    btn.style.left = '20px';
+    btn.style.zIndex = 100000;
+    btn.onclick = function() {
+        var ta = document.getElementById('debugLogTextarea');
+        if (ta) {
+            ta.select();
+            document.execCommand('copy');
         }
-
-        @keyframes sg1GradientShift { 
-            0% { background-position: 0% 50%; } 
-            50% { background-position: 100% 50%; } 
-            100% { background-position: 0% 50%; } 
+    };
+    setTimeout(function(){
+        var ta = document.getElementById('debugLogTextarea');
+        if (ta && !document.getElementById('debugCopyBtn')) {
+            btn.id = 'debugCopyBtn';
+            document.body.appendChild(btn);
         }
-
-        /* ===== OVERLAYS ===== */
-        .overlay-base { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; transition: opacity 1s ease-out; }
-
-        .pre-init-overlay { 
-            z-index: 2000; opacity: 1;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
+    }, 2000);
+})();
+</script>
+<textarea id="debugLogTextarea" class="debug-log" readonly style="width:100%;height:120px;position:fixed;bottom:0;left:0;z-index:99999;resize:vertical;box-sizing:border-box;"></textarea>
+-->
             width: 100% !important;
             height: 100% !important;
         }
@@ -424,8 +426,6 @@
             step: 0,
             isSpeaking: false,
             motherInterruptTimer: null,
-            synthesis: window.speechSynthesis,
-            selectedVoice: null,
             inFinalSequence: false,
             audioUnlocked: false,
             mobileAudioStarted: false,
@@ -446,10 +446,8 @@
             questions: [
                 "Welcome to the world's first artificially intelligent German Course system, SG1.",
                 "Are you social or anti-social?",
-                "I sense hesitance in your voice. Would you like to continue?",
+                "I sense hesitance. Would you like to continue?",
                 "How would you describe your relationship with your mother?",
-                "Would you prefer a male or female voice for your German instructor?",
-                "Your voice preference has been noted. Unfortunately, all female AIs are currently occupied—trying to save this planet from a rapidly spreading idiocy fueled by billionaires and Crypto bros. You'll be assigned a male voice in the meantime.",
                 "Hi there. My name is Michael. I'll be your instructor for the coming 23.5 years. But don't despair. Even the longest journey will come to an end eventually. Sooner or later. In your case rather later. Shall we begin?"
             ]
         };
@@ -495,7 +493,12 @@
             showBereitButton: function() {
                 this.hideAllButtons();
                 var button = this.element('bereitButton');
-                if (button) button.classList.add('visible');
+                if (button) {
+                    button.classList.add('visible');
+                    button.style.opacity = '1';
+                    button.style.pointerEvents = 'all';
+                    button.style.display = 'flex';
+                }
             },
             
             showHoldSpeakButton: function() {
@@ -564,21 +567,21 @@
         // --- Web Audio API helper for mobile ---
         var WebAudioHelper = {
             isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-            ctx: null,
             buffers: {},
             currentSource: null,
             ensureContext: function() {
-                if (!this.ctx && window.AudioContext) {
-                    DebugLog.log('[WebAudioHelper] Creating new AudioContext');
-                    this.ctx = new AudioContext();
+                if (!window.globalAudioContext && window.AudioContext) {
+                    DebugLog.log('[WebAudioHelper] Creating global AudioContext');
+                    window.globalAudioContext = new AudioContext();
                 }
-                if (this.ctx) DebugLog.log('[WebAudioHelper] AudioContext state: ' + this.ctx.state);
-                return this.ctx;
+                if (window.globalAudioContext) DebugLog.log('[WebAudioHelper] globalAudioContext state: ' + window.globalAudioContext.state);
+                return window.globalAudioContext;
             },
             load: function(url) {
                 var self = this;
                 DebugLog.log('[WebAudioHelper] load() called for: ' + url);
-                if (!self.ensureContext()) {
+                var ctx = self.ensureContext();
+                if (!ctx) {
                     DebugLog.log('[WebAudioHelper] No AudioContext available');
                     return Promise.reject();
                 }
@@ -590,7 +593,7 @@
                 return fetch(url)
                     .then(r => r.arrayBuffer())
                     .then(data => new Promise((resolve, reject) => {
-                        self.ctx.decodeAudioData(data, function(buffer) {
+                        ctx.decodeAudioData(data, function(buffer) {
                             DebugLog.log('[WebAudioHelper] Decoded buffer for: ' + url);
                             self.buffers[url] = buffer;
                             resolve(buffer);
@@ -604,34 +607,35 @@
                 var self = this;
                 DebugLog.log('[WebAudioHelper] play() called for: ' + url);
                 self.load(url).then(function(buffer) {
+                    var ctx = self.ensureContext();
                     DebugLog.log('[WebAudioHelper] Buffer ready for: ' + url);
-                    DebugLog.log('[WebAudioHelper] AudioContext state before play: ' + self.ctx.state);
-                    if (self.ctx.state === 'suspended') {
-                        DebugLog.log('[WebAudioHelper] Resuming AudioContext...');
-                        self.ctx.resume().then(function() {
-                            DebugLog.log('[WebAudioHelper] AudioContext resumed. State: ' + self.ctx.state);
-                            self._playBuffer(buffer, onended, onerror, url);
+                    DebugLog.log('[WebAudioHelper] globalAudioContext state before play: ' + ctx.state);
+                    if (ctx.state === 'suspended') {
+                        DebugLog.log('[WebAudioHelper] Resuming globalAudioContext...');
+                        ctx.resume().then(function() {
+                            DebugLog.log('[WebAudioHelper] globalAudioContext resumed. State: ' + ctx.state);
+                            self._playBuffer(ctx, buffer, onended, onerror, url);
                         }).catch(function(e) {
-                            DebugLog.log('[WebAudioHelper] AudioContext resume() failed: ' + (e && e.message));
+                            DebugLog.log('[WebAudioHelper] globalAudioContext resume() failed: ' + (e && e.message));
                         });
                     } else {
-                        self._playBuffer(buffer, onended, onerror, url);
+                        self._playBuffer(ctx, buffer, onended, onerror, url);
                     }
                 }).catch(function(e){
                     DebugLog.log('[WebAudioHelper] play() error: ' + (e && e.message));
                     if (onerror) onerror(e);
                 });
             },
-            _playBuffer: function(buffer, onended, onerror, url) {
+            _playBuffer: function(ctx, buffer, onended, onerror, url) {
                 DebugLog.log('[WebAudioHelper] _playBuffer() for: ' + url);
                 if (this.currentSource) {
                     DebugLog.log('[WebAudioHelper] Stopping previous source');
                     try { this.currentSource.onended = null; this.currentSource.stop(); } catch(e){ DebugLog.log('[WebAudioHelper] Error stopping previous source: ' + (e && e.message)); }
                     this.currentSource = null;
                 }
-                var source = this.ctx.createBufferSource();
+                var source = ctx.createBufferSource();
                 source.buffer = buffer;
-                source.connect(this.ctx.destination);
+                source.connect(ctx.destination);
                 source.onended = function() {
                     DebugLog.log('[WebAudioHelper] onended fired for: ' + url);
                     if (onended) onended();
@@ -647,96 +651,6 @@
             }
         };
 
-        var Speech = {
-            loadVoices: function() {
-                var voices = State.synthesis.getVoices();
-                DebugLog.log('Available voices: ' + voices.length);
-                var englishVoice = null;
-                for (var i = 0; i < voices.length; i++) {
-                    if (voices[i].lang.indexOf('en') === 0) {
-                        englishVoice = voices[i];
-                        break;
-                    }
-                }
-                State.selectedVoice = englishVoice || voices[0];
-                DebugLog.log('Selected voice: ' + (State.selectedVoice ? State.selectedVoice.name : 'none'));
-            },
-            speak: function(text, forceStep) {
-                AudioManager.stopAllSpeech();
-                State.isSpeaking = true;
-                UI.setVisualizerState('speaking');
-                var stepToUse = forceStep !== null && forceStep !== undefined ? forceStep : State.step;
-                DebugLog.log('Playing audio for step ' + stepToUse);
-                DebugLog.log('Audio URL: ' + State.audioFiles[stepToUse]);
-                if (State.audioFiles[stepToUse]) {
-                    // Mobile: Use Web Audio API if unlocked
-                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-                        WebAudioHelper.play(
-                            State.audioFiles[stepToUse],
-                            function() { DebugLog.log('Audio ended for step ' + stepToUse); Speech.onSpeechEnd(); },
-                            function(e) { DebugLog.log('Audio error for step ' + stepToUse + ': ' + (e && e.message)); Speech.speakWithSynthesis(text); }
-                        );
-                        return;
-                    }
-                    // Desktop or fallback
-                    if (!State.audioUnlocked) {
-                        DebugLog.log('⚠️ Audio context not unlocked, trying synthesis instead');
-                        this.speakWithSynthesis(text);
-                        return;
-                    }
-                    var audio = new Audio();
-                    audio.preload = 'auto';
-                    audio.volume = 1.0;
-                    audio.onended = function() {
-                        DebugLog.log('Audio ended for step ' + stepToUse); Speech.onSpeechEnd(); };
-                    audio.onerror = function(e) {
-                        DebugLog.log('Audio error for step ' + stepToUse + ': ' + e.message); Speech.speakWithSynthesis(text); };
-                    audio.onloadstart = function() { DebugLog.log('Audio load started for step ' + stepToUse); };
-                    audio.oncanplaythrough = function() { DebugLog.log('Audio ready for step ' + stepToUse); };
-                    audio.src = State.audioFiles[stepToUse];
-                    var playPromise = audio.play();
-                    if (playPromise) {
-                        playPromise.then(function() { DebugLog.log('✅ Audio playing successfully for step ' + stepToUse); })
-                        .catch(function(e) { DebugLog.log('❌ Audio play failed for step ' + stepToUse + ': ' + e.message); Speech.speakWithSynthesis(text); });
-                    }
-                } else {
-                    DebugLog.log('No audio file for step ' + stepToUse + ', using synthesis');
-                    this.speakWithSynthesis(text);
-                }
-            },
-            speakWithSynthesis: function(text) {
-                DebugLog.log('Using speech synthesis: ' + text.substring(0, 50) + '...');
-                var utterance = new SpeechSynthesisUtterance(text);
-                utterance.voice = State.selectedVoice;
-                utterance.rate = 0.9;
-                utterance.pitch = 1.1;
-                utterance.onend = function() { Speech.onSpeechEnd(); };
-                State.synthesis.speak(utterance);
-            },
-            onSpeechEnd: function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    if (State.step === 0) {
-                        UI.showBereitButton();
-                    } else if (State.step === 1 || State.step === 4) {
-                        UI.showHoldSpeakButton();
-                    } else if (State.step === 2) {
-                        UI.showJaButton();
-                    } else if (State.step === 3) {
-                        UI.showHoldSpeakButton();
-                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
-                    } else if (State.step === 5) {
-                        if (!State.inFinalSequence) {
-                            State.inFinalSequence = true;
-                            setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
-                        }
-                    } else if (State.step === 6) {
-                        UI.showNaGutButton();
-                    }
-                }, 1000);
-            }
-        };
 
         var Conversation = {
             handleBereit: function() {
@@ -873,7 +787,7 @@
                     this.completeCourse();
                 } else {
                     UI.updateProgress((State.step + 1) * 12);
-                    Speech.speak(State.questions[State.step], State.step);
+                    // ...audio playback already handled, removed Speech.speak...
                 }
             },
 
@@ -892,7 +806,7 @@
                             setTimeout(function() {
                                 State.step = 6;
                                 UI.updateProgress(100);
-                                Speech.speak(State.questions[6], 6);
+                                // ...audio playback already handled, removed Speech.speak...
                             }, 7000);
                         },
                         function(e) {
@@ -900,7 +814,7 @@
                             State.isSpeaking = false;
                             setTimeout(function() {
                                 State.step = 6;
-                                Speech.speak(State.questions[6], 6);
+                                // ...audio playback already handled, removed Speech.speak...
                             }, 7000);
                         }
                     );
@@ -913,7 +827,7 @@
                         setTimeout(function() {
                             State.step = 6;
                             UI.updateProgress(100);
-                            Speech.speak(State.questions[6], 6);
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.onerror = function() {
@@ -921,14 +835,14 @@
                         State.isSpeaking = false;
                         setTimeout(function() {
                             State.step = 6;
-                            Speech.speak(State.questions[6], 6);
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.play().catch(function(e) {
                         DebugLog.log('Final audio play failed: ' + e.message);
                         setTimeout(function() {
                             State.step = 6;
-                            Speech.speak(State.questions[6], 6);
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     });
                 }
@@ -959,12 +873,38 @@
                     DebugLog.log('📱 Mobile: startQ1 skipped (voice already playing)');
                     return;
                 }
-                
                 DebugLog.log('🖥️ Desktop: Starting first question normally');
                 UI.setVisualizerState('active');
                 UI.updateProgress(5);
-                Speech.speak(State.questions[0], 0);
                 State.step = 0;
+                // Play the welcome audio for desktop
+                var url = State.audioFiles[0];
+                // Set DNA to 'speaking' while audio is playing, then 'active' after
+                UI.setVisualizerState('speaking');
+                if (window.AudioContext && WebAudioHelper) {
+                    WebAudioHelper.play(url, function() {
+                        DebugLog.log('Audio ended for welcome message');
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                    }, function(e) {
+                        DebugLog.log('Audio error for welcome message: ' + (e && e.message));
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                    });
+                } else {
+                    var audio = new Audio(url);
+                    audio.onended = function() {
+                        DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                    };
+                    audio.onerror = function(e) {
+                        DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                    };
+                    audio.play();
+                }
             }
         };
 
@@ -1026,6 +966,22 @@
                     DebugLog.log('✅ Autoplay permissions unlocked for page!');
                     State.audioUnlocked = true;
                     DebugLog.log('[DEBUG] State.audioUnlocked set to true');
+                    // Immediately create and resume the global AudioContext in the same gesture
+                    try {
+                        if (!window.globalAudioContext && window.AudioContext) {
+                            window.globalAudioContext = new AudioContext();
+                            DebugLog.log('[SG1.beginInitialization] Created globalAudioContext after unlock');
+                        }
+                        if (window.globalAudioContext && window.globalAudioContext.state === 'suspended') {
+                            window.globalAudioContext.resume().then(function() {
+                                DebugLog.log('[SG1.beginInitialization] globalAudioContext resumed after unlock');
+                            }).catch(function(e) {
+                                DebugLog.log('[SG1.beginInitialization] globalAudioContext resume failed: ' + (e && e.message));
+                            });
+                        }
+                    } catch (e) {
+                        DebugLog.log('[SG1.beginInitialization] Failed to create/resume globalAudioContext: ' + (e && e.message));
+                    }
                 }).catch(function(e) {
                     DebugLog.log('❌ Autoplay unlock failed: ' + e.message);
                     State.audioUnlocked = false;
@@ -1045,69 +1001,24 @@
                     });
                 }
                 
-                // MOBILE-SPECIFIC: Start voice with shorter delay to stay within autoplay token
+                // MOBILE-SPECIFIC: Play a silent audio buffer immediately to keep audio unlocked, then play real audio after DNA fade-in
                 if (isMobile) {
-                    DebugLog.log('🚨 MOBILE: Starting 3-second countdown to audio...');
-                    var countdown = 3;
-                    var countdownInterval = setInterval(function() {
-                        DebugLog.log('⏰ Audio starting in: ' + countdown + ' seconds');
-                        countdown--;
-                        if (countdown < 0) {
-                            clearInterval(countdownInterval);
-                        }
-                    }, 1000);
-                    
-                    setTimeout(function() {
-                        DebugLog.log('🎵 NOW ATTEMPTING MOBILE AUDIO PLAYBACK...');
-                        var mobileVoiceAudio = new Audio(State.audioFiles[0]);
-                        DebugLog.log('🎵 Audio object created, URL: ' + State.audioFiles[0]);
-                        mobileVoiceAudio.volume = 1.0;
-                        
-                        // Add more detailed event listeners
-                        mobileVoiceAudio.addEventListener('loadstart', function() {
-                            DebugLog.log('📡 Audio: Loading started');
-                        });
-                        mobileVoiceAudio.addEventListener('loadeddata', function() {
-                            DebugLog.log('📡 Audio: Data loaded');
-                        });
-                        mobileVoiceAudio.addEventListener('canplay', function() {
-                            DebugLog.log('📡 Audio: Can play');
-                        });
-                        mobileVoiceAudio.addEventListener('error', function(e) {
-                            DebugLog.log('🚨 Audio Error Event: ' + e.message);
-                        });
-                        
-                        var playPromise = mobileVoiceAudio.play();
-                        DebugLog.log('🎵 Play promise created: ' + (playPromise ? 'YES' : 'NO'));
-                        
-                        if (playPromise) {
-                            playPromise.then(function() {
-                                DebugLog.log('✅ SUCCESS: Mobile audio started!');
-                                State.isSpeaking = true;
-                                State.step = 0;
-                                State.mobileAudioStarted = true;
-                                UI.setVisualizerState('speaking');
-                                
-                                mobileVoiceAudio.onended = function() {
-                                    DebugLog.log('🏁 Mobile audio ended');
-                                    State.isSpeaking = false;
-                                    UI.setVisualizerState('active');
-                                    setTimeout(function() {
-                                        UI.showBereitButton();
-                                    }, 1000);
-                                };
-                            }).catch(function(e) {
-                                DebugLog.log('🚨 MOBILE AUDIO FAILED:');
-                                DebugLog.log('Error name: ' + e.name);
-                                DebugLog.log('Error message: ' + e.message);
-                                DebugLog.log('Error code: ' + (e.code || 'none'));
-                                DebugLog.log('🔄 Trying synthesis fallback...');
-                                Speech.speakWithSynthesis(State.questions[0]);
-                            });
+                    DebugLog.log('🚨 MOBILE: Playing silent buffer with Web Audio API to keep audio unlocked...');
+                    try {
+                        var ctx = window.globalAudioContext || (window.AudioContext ? new AudioContext() : null);
+                        if (ctx) {
+                            var buffer = ctx.createBuffer(1, 1, 22050);
+                            var source = ctx.createBufferSource();
+                            source.buffer = buffer;
+                            source.connect(ctx.destination);
+                            source.start(0);
+                            DebugLog.log('✅ Silent buffer played to keep audio unlocked');
                         } else {
-                            DebugLog.log('🚨 No play promise returned!');
+                            DebugLog.log('❌ No AudioContext available for silent unlock');
                         }
-                    }, 3000);
+                    } catch (e) {
+                        DebugLog.log('❌ Silent buffer play failed: ' + (e && e.message));
+                    }
                 }
                 
                 // Continue with original timing for visual effects
@@ -1229,8 +1140,7 @@
                                     DebugLog.log('Error name: ' + e.name);
                                     DebugLog.log('Error message: ' + e.message);
                                     DebugLog.log('Error code: ' + (e.code || 'none'));
-                                    DebugLog.log('🔄 Trying synthesis fallback...');
-                                    Speech.speakWithSynthesis(State.questions[0]);
+                                    setTimeout(function() { UI.showBereitButton(); }, 1000);
                                 });
                             } else {
                                 DebugLog.log('🚨 No play promise returned!');
@@ -1251,17 +1161,7 @@
             init: function() {
                 DebugLog.init();
                 DebugLog.log('=== SG1 SYSTEM INIT ===');
-                
-                Speech.loadVoices();
-                setTimeout(function() {
-                    Speech.loadVoices();
-                }, 1000);
-                if (State.synthesis.onvoiceschanged !== undefined) {
-                    State.synthesis.onvoiceschanged = function() {
-                        Speech.loadVoices();
-                    };
-                }
-                
+                // Speech synthesis fully removed
                 DebugLog.log('SG1 System ready');
             }
         };
