@@ -9,34 +9,32 @@
         /* ===== BASE STYLES ===== */
         body, html { margin: 0; padding: 0; height: 100%; background: none; }
         .sg1-container * { margin: 0; padding: 0; box-sizing: border-box; }
-<!--
-<script>
-// Add Copy Log button above the debug textarea
-(function(){
-    var btn = document.createElement('button');
-    btn.textContent = 'Copy Log';
-    btn.style.position = 'fixed';
-    btn.style.bottom = '270px';
-    btn.style.left = '20px';
-    btn.style.zIndex = 100000;
-    btn.onclick = function() {
-        var ta = document.getElementById('debugLogTextarea');
-        if (ta) {
-            ta.select();
-            document.execCommand('copy');
+
+        .sg1-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999999;
+            background: linear-gradient(-45deg, #4ecdc4, #45b7d1, #96ceb4, #ffecd2);
+            background-size: 400% 400%; animation: sg1GradientShift 15s ease infinite;
+            overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-    };
-    setTimeout(function(){
-        var ta = document.getElementById('debugLogTextarea');
-        if (ta && !document.getElementById('debugCopyBtn')) {
-            btn.id = 'debugCopyBtn';
-            document.body.appendChild(btn);
+
+        @keyframes sg1GradientShift { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
         }
-    }, 2000);
-})();
-</script>
-<textarea id="debugLogTextarea" class="debug-log" readonly style="width:100%;height:120px;position:fixed;bottom:0;left:0;z-index:99999;resize:vertical;box-sizing:border-box;"></textarea>
--->
+
+        /* ===== OVERLAYS ===== */
+        .overlay-base { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: opacity 1s ease-out; }
+
+        .pre-init-overlay { 
+            z-index: 2000; opacity: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100% !important;
             height: 100% !important;
         }
@@ -223,7 +221,8 @@
             width: 0%; transition: width 1s ease; border-radius: 2px;
         }
 
-        /* ===== DEBUG LOG ===== */
+        /* ===== DEBUG LOG (COMMENTED OUT) ===== */
+        /*
         .debug-log { 
             position: fixed; bottom: 0; left: 0; 
             background: rgba(255, 0, 0, 0.9) !important; 
@@ -243,6 +242,7 @@
         .debug-log.visible { 
             display: block !important; 
         }
+        */
 
         /* ===== UTILITY ===== */
         .hidden { opacity: 0 !important; pointer-events: none !important; }
@@ -293,11 +293,17 @@
         </audio>
     </div>
 
-    <!-- Debug log -->
-
+    <!-- Debug log (COMMENTED OUT) -->
+    <!--
+    <div class="debug-log" id="debugLog" style="user-select: text;">
+        <button id="copyDebugLogBtn" style="position:absolute;top:8px;right:16px;z-index:100001;background:#fff;color:#c00;border:none;padding:6px 14px;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.08);">Copy All</button>
+        <div id="debugLogText" style="min-height:60px;white-space:pre-wrap;word-break:break-word;"></div>
+    </div>
+    -->
 
 <script>
-// Add Copy Log button above the debug textarea
+/*
+// Add Copy Log button above the debug textarea (COMMENTED OUT)
 (function(){
     var btn = document.createElement('button');
     btn.id = 'copyDebugLogBtn';
@@ -342,8 +348,10 @@
     document.addEventListener('mozfullscreenchange', ensureCopyBtnAfterFullscreen);
     document.addEventListener('MSFullscreenChange', ensureCopyBtnAfterFullscreen);
 })();
+*/
 
-        // ===== DEBUG SYSTEM =====
+        // ===== DEBUG SYSTEM (COMMENTED OUT) =====
+        /*
         var DebugLog = {
             messages: [],
             textArea: null,
@@ -419,6 +427,19 @@
                 if (this.element) {
                     this.element.classList.remove('visible');
                 }
+            }
+        };
+        */
+
+        // Simple console-only debug replacement
+        var DebugLog = {
+            log: function(message) {
+                var timestamp = new Date().toLocaleTimeString();
+                var logMessage = '[' + timestamp + '] ' + String(message);
+                try { console.log(logMessage); } catch(e){}
+            },
+            init: function() {
+                console.log('=== DEBUG SYSTEM INITIALIZED (CONSOLE ONLY) ===');
             }
         };
 
@@ -650,7 +671,6 @@
                 this.currentSource = source;
             }
         };
-
 
         var Conversation = {
             handleBereit: function() {
@@ -1026,16 +1046,22 @@
                     try {
                         if (document.documentElement.requestFullscreen) {
                             DebugLog.log('Requesting fullscreen...');
-                            document.documentElement.requestFullscreen();
+                            document.documentElement.requestFullscreen().then(function() {
+                                DebugLog.log('✅ Fullscreen activated successfully');
+                            }).catch(function(e) {
+                                DebugLog.log('❌ Fullscreen request rejected: ' + e.message);
+                            });
                         } else if (document.documentElement.webkitRequestFullscreen) {
                             DebugLog.log('Requesting webkit fullscreen...');
                             document.documentElement.webkitRequestFullscreen();
                         } else if (document.documentElement.mozRequestFullScreen) {
                             DebugLog.log('Requesting moz fullscreen...');
                             document.documentElement.mozRequestFullScreen();
+                        } else {
+                            DebugLog.log('❌ No fullscreen API available');
                         }
                     } catch (e) {
-                        DebugLog.log('Fullscreen request failed: ' + e.message);
+                        DebugLog.log('❌ Fullscreen request failed: ' + e.message);
                     }
                     
                     UI.hideElement('preInitOverlay');
@@ -1167,22 +1193,25 @@
         };
 
         // Initialize when DOM is ready
+        /*
         function __forceDebugLogInit() {
             if (!window.__DEBUGLOG_INIT && window.DebugLog && typeof DebugLog.init === 'function') {
                 DebugLog.init();
             }
         }
+        */
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 SG1.init();
-                setTimeout(__forceDebugLogInit, 1000);
+                // setTimeout(__forceDebugLogInit, 1000);
             });
         } else {
             SG1.init();
-            setTimeout(__forceDebugLogInit, 1000);
+            // setTimeout(__forceDebugLogInit, 1000);
         }
 
-        // Re-append debug textarea after fullscreen is requested to ensure visibility
+        /*
+        // Re-append debug textarea after fullscreen is requested to ensure visibility (COMMENTED OUT)
         function ensureDebugLogAfterFullscreen() {
             if (window.DebugLog && typeof DebugLog.ensureTextArea === 'function') {
                 DebugLog.ensureTextArea();
@@ -1197,6 +1226,7 @@
         document.addEventListener('webkitfullscreenchange', ensureDebugLogAfterFullscreen);
         document.addEventListener('mozfullscreenchange', ensureDebugLogAfterFullscreen);
         document.addEventListener('MSFullscreenChange', ensureDebugLogAfterFullscreen);
+        */
 
         // Global error handler
         window.onerror = function(message, source, lineno, colno, error) {
