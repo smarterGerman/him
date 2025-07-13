@@ -807,8 +807,72 @@
                     this.completeCourse();
                 } else {
                     UI.updateProgress((State.step + 1) * 12);
-                    // ...audio playback already handled, removed Speech.speak...
+                    
+                    // Play the audio for the current step
+                    State.isSpeaking = true;
+                    UI.setVisualizerState('speaking');
+                    
+                    var audioUrl = State.audioFiles[State.step];
+                    DebugLog.log('Playing audio for step ' + State.step + ': ' + audioUrl);
+                    
+                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                        WebAudioHelper.play(
+                            audioUrl,
+                            function() {
+                                DebugLog.log('Audio ended for step ' + State.step);
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                Conversation.showNextButton();
+                            },
+                            function(e) {
+                                DebugLog.log('Audio error for step ' + State.step + ': ' + (e && e.message));
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                Conversation.showNextButton();
+                            }
+                        );
+                    } else {
+                        var audio = new Audio(audioUrl);
+                        audio.onended = function() {
+                            DebugLog.log('Audio ended for step ' + State.step);
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            Conversation.showNextButton();
+                        };
+                        audio.onerror = function(e) {
+                            DebugLog.log('Audio error for step ' + State.step + ': ' + e.message);
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            Conversation.showNextButton();
+                        };
+                        audio.play().catch(function(e) {
+                            DebugLog.log('Audio play failed for step ' + State.step + ': ' + e.message);
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            Conversation.showNextButton();
+                        });
+                    }
                 }
+            },
+
+            showNextButton: function() {
+                setTimeout(function() {
+                    if (State.step === 1 || State.step === 4) {
+                        UI.showHoldSpeakButton();
+                    } else if (State.step === 2) {
+                        UI.showJaButton();
+                    } else if (State.step === 3) {
+                        UI.showHoldSpeakButton();
+                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
+                    } else if (State.step === 5) {
+                        if (!State.inFinalSequence) {
+                            State.inFinalSequence = true;
+                            setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
+                        }
+                    } else if (State.step === 6) {
+                        UI.showNaGutButton();
+                    }
+                }, 1000);
             },
 
             playFinalSequence: function() {
@@ -905,23 +969,23 @@
                     WebAudioHelper.play(url, function() {
                         DebugLog.log('Audio ended for welcome message');
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
                     }, function(e) {
                         DebugLog.log('Audio error for welcome message: ' + (e && e.message));
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
                     });
                 } else {
                     var audio = new Audio(url);
                     audio.onended = function() {
                         DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
                     };
                     audio.onerror = function(e) {
                         DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
                     };
                     audio.play();
                 }
