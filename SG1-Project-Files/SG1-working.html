@@ -432,8 +432,6 @@
             inFinalSequence: false,
             audioUnlocked: false,
             mobileAudioStarted: false,
-            welcomeAudioPlaying: false,
-            welcomeAudioEnded: false,
             
             audioFiles: {
                 0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
@@ -500,21 +498,13 @@
             },
             
             showBereitButton: function() {
-                // Only show if welcome audio has actually ended
-                if (!State.welcomeAudioEnded) {
-                    DebugLog.log('Bereit button blocked - welcome audio not ended yet');
-                    return;
-                }
-                
                 this.hideAllButtons();
                 var button = this.element('bereitButton');
                 if (button) {
-                    DebugLog.log('Showing Bereit button with fade-in animation');
                     button.classList.add('visible');
                     button.style.opacity = '1';
                     button.style.pointerEvents = 'all';
                     button.style.display = 'flex';
-                    button.style.transform = 'translateX(-50%) translateY(0)';
                 }
             },
             
@@ -695,18 +685,17 @@
         var Conversation = {
             handleBereit: function() {
                 DebugLog.log('Bereit button clicked');
-                // Immediately start fading out the button with smooth animation
+                // Immediately start fading out the button
                 var button = UI.element('bereitButton');
                 if (button) {
-                    button.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
                     button.style.opacity = '0';
-                    button.style.transform = 'translateX(-50%) translateY(20px) scale(0.95)';
+                    button.style.transform = 'translateX(-50%) translateY(10px)';
                     button.style.pointerEvents = 'none';
                 }
                 setTimeout(function() {
                     UI.hideAllButtons();
                     Conversation.moveToNextQuestion();
-                }, 800);
+                }, 1000);
             },
 
             startHolding: function() {
@@ -995,6 +984,7 @@
                             setTimeout(function() {
                                 State.step = 9;
                                 UI.updateProgress(100);
+                                // ...audio playbook already handled, removed Speech.speak...
                             }, 7000);
                         },
                         function(e) {
@@ -1002,6 +992,7 @@
                             State.isSpeaking = false;
                             setTimeout(function() {
                                 State.step = 6;
+                                // ...audio playback already handled, removed Speech.speak...
                             }, 7000);
                         }
                     );
@@ -1014,6 +1005,7 @@
                         setTimeout(function() {
                             State.step = 6;
                             UI.updateProgress(100);
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.onerror = function() {
@@ -1021,12 +1013,14 @@
                         State.isSpeaking = false;
                         setTimeout(function() {
                             State.step = 9;
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.play().catch(function(e) {
                         DebugLog.log('Final audio play failed: ' + e.message);
                         setTimeout(function() {
                             State.step = 6;
+                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     });
                 }
@@ -1050,66 +1044,45 @@
                 }, 2000);
             },
 
-            // Unified function to handle welcome audio properly for both mobile and desktop
-            playWelcomeAudio: function() {
-                var url = State.audioFiles[0];
-                DebugLog.log('Starting welcome audio playback: ' + url);
-                
-                State.welcomeAudioPlaying = true;
-                State.welcomeAudioEnded = false;
-                State.isSpeaking = true;
-                UI.setVisualizerState('speaking');
-                
-                var onAudioEnd = function() {
-                    DebugLog.log('Welcome audio ended - setting flags and showing button');
-                    State.welcomeAudioPlaying = false;
-                    State.welcomeAudioEnded = true;
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    
-                    // Wait a moment, then show the Bereit button
-                    setTimeout(function() {
-                        UI.showBereitButton();
-                    }, 1500);
-                };
-                
-                var onAudioError = function(e) {
-                    DebugLog.log('Welcome audio error: ' + (e && e.message));
-                    State.welcomeAudioPlaying = false;
-                    State.welcomeAudioEnded = true;
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        UI.showBereitButton();
-                    }, 1500);
-                };
-                
-                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-                    WebAudioHelper.play(url, onAudioEnd, onAudioError);
-                } else {
-                    var audio = new Audio(url);
-                    audio.onended = onAudioEnd;
-                    audio.onerror = onAudioError;
-                    audio.play().catch(onAudioError);
-                }
-            },
-
             startQ1: function() {
-                DebugLog.log('Starting Q1 sequence');
+                // Desktop-only flow (mobile already started voice)
+                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile && State.mobileAudioStarted) {
+                    DebugLog.log('📱 Mobile: startQ1 skipped (voice already playing)');
+                    return;
+                }
+                DebugLog.log('🖥️ Desktop: Starting first question normally');
                 UI.setVisualizerState('active');
                 UI.updateProgress(5);
                 State.step = 0;
-                
-                // Check if mobile already started playing
-                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile && State.mobileAudioStarted) {
-                    DebugLog.log('📱 Mobile: Audio already playing, not starting again');
-                    return;
+                // Play the welcome audio for desktop
+                var url = State.audioFiles[0];
+                // Set DNA to 'speaking' while audio is playing, then 'active' after
+                UI.setVisualizerState('speaking');
+                if (window.AudioContext && WebAudioHelper) {
+                    WebAudioHelper.play(url, function() {
+                        DebugLog.log('Audio ended for welcome message');
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                    }, function(e) {
+                        DebugLog.log('Audio error for welcome message: ' + (e && e.message));
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                    });
+                } else {
+                    var audio = new Audio(url);
+                    audio.onended = function() {
+                        DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                    };
+                    audio.onerror = function(e) {
+                        DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
+                        UI.setVisualizerState('active');
+                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                    };
+                    audio.play();
                 }
-                
-                // For desktop or mobile fallback, start the welcome audio
-                DebugLog.log('🖥️ Starting welcome audio for desktop');
-                this.playWelcomeAudio();
             }
         };
 
@@ -1160,7 +1133,6 @@
                 var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 DebugLog.log('Device type: ' + (isMobile ? 'Mobile' : 'Desktop'));
                 DebugLog.log('[DEBUG] About to attempt audio unlock.');
-                
                 // CRITICAL: Use button click to unlock autoplay permissions
                 var unlockAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBjiI2OvKcyMFl2+z9N2aPAIbWr9yxmAXGFnj8MJzJQUYYbf2xGIYG1nq6MJzJQUYlGt19Mhvaz5gXFztw2kdA0qP2uzGeTYFG3a36Pn0YlFmdXTs8bHnzLqLh6uYfJBaRoZ1puLsxXEvCSdtytNdKAkzWLz6qHNxMEOw6MtbKhJLkM/d3QBVL9JKR5X2QQAwfOYTM8cVkPB29ppqOZN17+o1GAbSrAXvOK9qVsO2P2bfyXU5aOPYqE+TKYeKc1PEJd+7L2XKHOd6d1qTKZ2pXPHZq36DWdF4VJOhJr6l9YNkFJdFaLyJRjF7X1lGf61O2FO8gY0n');
                 unlockAudio.volume = 0.01;
@@ -1172,7 +1144,6 @@
                     DebugLog.log('✅ Autoplay permissions unlocked for page!');
                     State.audioUnlocked = true;
                     DebugLog.log('[DEBUG] State.audioUnlocked set to true');
-                    
                     // Immediately create and resume the global AudioContext in the same gesture
                     try {
                         if (!window.globalAudioContext && window.AudioContext) {
@@ -1320,16 +1291,44 @@
                             visualizer.style.opacity = '1';
                         }, 100);
                     }
-                    
                     // --- Move mobile audio playback here, after DNA fade-in starts ---
                     var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     if (isMobile && !State.mobileAudioStarted) {
                         DebugLog.log('🚨 MOBILE: Delaying audio playback until DNA visualizer is visible...');
                         setTimeout(function() {
                             DebugLog.log('🎵 NOW ATTEMPTING MOBILE AUDIO PLAYBACK (after DNA fade-in)...');
-                            State.mobileAudioStarted = true;
-                            State.step = 0;
-                            Conversation.playWelcomeAudio();
+                            var mobileVoiceAudio = new Audio(State.audioFiles[0]);
+                            DebugLog.log('🎵 Audio object created, URL: ' + State.audioFiles[0]);
+                            mobileVoiceAudio.volume = 1.0;
+                            mobileVoiceAudio.addEventListener('loadstart', function() { DebugLog.log('📡 Audio: Loading started'); });
+                            mobileVoiceAudio.addEventListener('loadeddata', function() { DebugLog.log('📡 Audio: Data loaded'); });
+                            mobileVoiceAudio.addEventListener('canplay', function() { DebugLog.log('📡 Audio: Can play'); });
+                            mobileVoiceAudio.addEventListener('error', function(e) { DebugLog.log('🚨 Audio Error Event: ' + e.message); });
+                            var playPromise = mobileVoiceAudio.play();
+                            DebugLog.log('🎵 Play promise created: ' + (playPromise ? 'YES' : 'NO'));
+                            if (playPromise) {
+                                playPromise.then(function() {
+                                    DebugLog.log('✅ SUCCESS: Mobile audio started!');
+                                    State.isSpeaking = true;
+                                    State.step = 0;
+                                    State.mobileAudioStarted = true;
+                                    UI.setVisualizerState('speaking');
+                                    mobileVoiceAudio.onended = function() {
+                                        DebugLog.log('🏁 Mobile audio ended');
+                                        State.isSpeaking = false;
+                                        UI.setVisualizerState('active');
+                                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                                    };
+                                }).catch(function(e) {
+                                    DebugLog.log('🚨 MOBILE AUDIO FAILED:');
+                                    DebugLog.log('Error name: ' + e.name);
+                                    DebugLog.log('Error message: ' + e.message);
+                                    DebugLog.log('Error code: ' + (e.code || 'none'));
+                                    setTimeout(function() { UI.showBereitButton(); }, 1000);
+                                });
+                            } else {
+                                DebugLog.log('🚨 No play promise returned!');
+                            }
                         }, 4100); // Wait for DNA fade-in (4s) before playing audio
                     }
                 }, 14000); // DNA appears at 14s (6s after logo ends at 8s - no overlap)
@@ -1346,6 +1345,7 @@
             init: function() {
                 DebugLog.init();
                 DebugLog.log('=== SG1 SYSTEM INIT ===');
+                // Speech synthesis fully removed
                 DebugLog.log('SG1 System ready');
             }
         };
