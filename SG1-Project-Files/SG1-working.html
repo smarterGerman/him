@@ -394,7 +394,51 @@
             width: 0%; transition: width 1s ease; border-radius: 2px;
         }
 
-        /* ===== UTILITY ===== */
+        /* ===== DEVELOPMENT CONTROLS (REMOVE IN PRODUCTION) ===== */
+        .dev-controls {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10001;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .dev-button {
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .dev-button:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.05);
+        }
+
+        .dev-button:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .dev-info {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        /* ===== END DEVELOPMENT CONTROLS ===== */
         .hidden { opacity: 0 !important; pointer-events: none !important; }
         .visible { opacity: 1 !important; pointer-events: all !important; }
         .active { display: flex !important; }
@@ -433,6 +477,15 @@
     <div class="sg1-container">
         <!-- Music indicator on all screens -->
         <div class="music-indicator" id="musicIndicator" onclick="SG1.toggleMusic()">music</div>
+
+        <!-- DEVELOPMENT CONTROLS (REMOVE IN PRODUCTION) -->
+        <div class="dev-controls" id="devControls">
+            <div class="dev-info" id="devInfo">Step: 0</div>
+            <button class="dev-button" onclick="DevControls.skip()" id="devSkip">Skip</button>
+            <button class="dev-button" onclick="DevControls.back()" id="devBack" disabled>Back</button>
+            <button class="dev-button" onclick="DevControls.testForm()">Test Form</button>
+        </div>
+        <!-- END DEVELOPMENT CONTROLS -->
 
         <div class="pre-init-overlay overlay-base" id="preInitOverlay">
             <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
@@ -1399,11 +1452,17 @@
                     WebAudioHelper.play(url, function() {
                         DebugLog.log('Audio ended for welcome message');
                         UI.setVisualizerState('active');
-                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
+                        setTimeout(function() { 
+                            DNAButton.showText('Bereit'); 
+                            if (DevControls) DevControls.updateInfo();
+                        }, 2000);
                     }, function(e) {
                         DebugLog.log('Audio error for welcome message: ' + (e && e.message));
                         UI.setVisualizerState('active');
-                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
+                        setTimeout(function() { 
+                            DNAButton.showText('Bereit'); 
+                            if (DevControls) DevControls.updateInfo();
+                        }, 2000);
                     });
                 } else {
                     var audio = new Audio(url);
@@ -1421,6 +1480,125 @@
                 }
             }
         };
+
+        // === DEVELOPMENT CONTROLS (REMOVE IN PRODUCTION) ===
+        var DevControls = {
+            updateInfo: function() {
+                var devInfo = UI.element('devInfo');
+                var devBack = UI.element('devBack');
+                if (devInfo) {
+                    devInfo.textContent = 'Step: ' + State.step + ' (' + (State.isSpeaking ? 'Speaking' : 'Ready') + ')';
+                }
+                if (devBack) {
+                    devBack.disabled = (State.step <= 0);
+                }
+            },
+
+            skip: function() {
+                DebugLog.log('[DEV] Skip button clicked - current step: ' + State.step);
+                
+                // Stop any current audio
+                if (State.currentAudio) {
+                    State.currentAudio.pause();
+                    State.currentAudio = null;
+                }
+                
+                // Stop any speaking state
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                
+                // Clear any timers
+                if (State.holdingTimer) {
+                    clearTimeout(State.holdingTimer);
+                    State.holdingTimer = null;
+                }
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                
+                // Hide all current UI
+                DNAButton.showDNA();
+                
+                // Skip to next step or show appropriate button
+                if (State.step === 0) {
+                    DNAButton.showText('Bereit');
+                } else if (State.step < State.questions.length - 1) {
+                    // Move to next question
+                    Conversation.moveToNextQuestion();
+                } else {
+                    // At the end
+                    DNAButton.showText('Na gut.');
+                }
+                
+                this.updateInfo();
+            },
+
+            back: function() {
+                if (State.step <= 0) return;
+                
+                DebugLog.log('[DEV] Back button clicked - current step: ' + State.step);
+                
+                // Stop any current audio
+                if (State.currentAudio) {
+                    State.currentAudio.pause();
+                    State.currentAudio = null;
+                }
+                
+                // Stop any speaking state
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                
+                // Clear any timers
+                if (State.holdingTimer) {
+                    clearTimeout(State.holdingTimer);
+                    State.holdingTimer = null;
+                }
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                
+                // Go back one step
+                State.step--;
+                if (State.step < 0) State.step = 0;
+                
+                // Reset flags
+                State.inFinalSequence = false;
+                State.mobileAudioStarted = false;
+                
+                // Hide all current UI
+                DNAButton.showDNA();
+                
+                // Update progress
+                UI.updateProgress((State.step + 1) * 9);
+                
+                // Show appropriate button for current step
+                setTimeout(function() {
+                    Conversation.showNextButton();
+                }, 200);
+                
+                this.updateInfo();
+            },
+
+            testForm: function() {
+                DebugLog.log('[DEV] Testing Google Form submission');
+                
+                // Test both form fields
+                DNAButton.submitToGoogleForm('DEV TEST GOAL - ' + new Date().toLocaleTimeString(), 'goal');
+                DNAButton.submitToGoogleForm('DEV TEST MOTHER - ' + new Date().toLocaleTimeString(), 'mother');
+                
+                alert('Form test sent! Check your Google Form responses.');
+            }
+        };
+
+        // Update dev info when state changes
+        var originalMoveToNext = Conversation.moveToNextQuestion;
+        Conversation.moveToNextQuestion = function() {
+            originalMoveToNext.call(this);
+            if (DevControls) DevControls.updateInfo();
+        };
+        // === END DEVELOPMENT CONTROLS ===
 
         var SG1 = {
             musicEnabled: true,
@@ -1653,7 +1831,10 @@
                                         DebugLog.log('🏁 Mobile audio ended');
                                         State.isSpeaking = false;
                                         UI.setVisualizerState('active');
-                                        setTimeout(function() { DNAButton.showText('Bereit'); }, 1000);
+                                        setTimeout(function() { 
+                                            DNAButton.showText('Bereit'); 
+                                            if (DevControls) DevControls.updateInfo();
+                                        }, 1000);
                                     };
                                 }).catch(function(e) {
                                     DebugLog.log('🚨 MOBILE AUDIO FAILED:');
@@ -1684,6 +1865,11 @@
                 DebugLog.log('=== SG1 SYSTEM INIT ===');
                 // Speech synthesis fully removed
                 DebugLog.log('SG1 System ready');
+                
+                // Initialize development controls
+                if (DevControls) {
+                    DevControls.updateInfo();
+                }
             }
         };
 
