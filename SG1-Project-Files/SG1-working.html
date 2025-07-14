@@ -1015,7 +1015,7 @@
             submitToGoogleForm: function(value, type) {
                 try {
                     var formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
-                    var fieldName = type === 'goal' ? 'entry.1234567890' : 'entry.0987654321'; // Replace with actual field names
+                    var fieldName = type === 'goal' ? 'entry.1685277614' : 'entry.745882257'; // Goal field vs Mother field
                     
                     var formData = new FormData();
                     formData.append(fieldName, value);
@@ -1025,7 +1025,7 @@
                         body: formData,
                         mode: 'no-cors'
                     }).then(function() {
-                        DebugLog.log('Form submitted successfully: ' + type);
+                        DebugLog.log('Form submitted successfully: ' + type + ' = ' + value);
                     }).catch(function(e) {
                         DebugLog.log('Form submission error: ' + e.message);
                     });
