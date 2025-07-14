@@ -333,29 +333,6 @@
             width: 0%; transition: width 1s ease; border-radius: 2px;
         }
 
-        /* ===== DEBUG LOG (COMMENTED OUT) ===== */
-        /*
-        .debug-log { 
-            position: fixed; bottom: 0; left: 0; 
-            background: rgba(255, 0, 0, 0.9) !important; 
-            color: #ffffff !important; 
-            font-family: monospace; 
-            font-size: 14px !important; 
-            font-weight: bold !important;
-            padding: 15px !important; 
-            max-height: 250px; 
-            overflow-y: auto; 
-            z-index: 99999 !important; 
-            width: 100% !important;
-            display: block !important;
-            border-top: 3px solid #ffffff !important;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5) !important;
-        }
-        .debug-log.visible { 
-            display: block !important; 
-        }
-        */
-
         /* ===== UTILITY ===== */
         .hidden { opacity: 0 !important; pointer-events: none !important; }
         .visible { opacity: 1 !important; pointer-events: all !important; }
@@ -435,144 +412,7 @@
         </audio>
     </div>
 
-    <!-- Debug log (COMMENTED OUT) -->
-    <!--
-    <div class="debug-log" id="debugLog" style="user-select: text;">
-        <button id="copyDebugLogBtn" style="position:absolute;top:8px;right:16px;z-index:100001;background:#fff;color:#c00;border:none;padding:6px 14px;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.08);">Copy All</button>
-        <div id="debugLogText" style="min-height:60px;white-space:pre-wrap;word-break:break-word;"></div>
-    </div>
-    -->
-
 <script>
-/*
-// Add Copy Log button above the debug textarea (COMMENTED OUT)
-(function(){
-    var btn = document.createElement('button');
-    btn.id = 'copyDebugLogBtn';
-    btn.textContent = 'Copy Log';
-    btn.style.position = 'fixed';
-    btn.style.bottom = '130px';
-    btn.style.right = '20px';
-    btn.style.zIndex = '2147483647';
-    btn.style.background = '#fff';
-    btn.style.color = '#c00';
-    btn.style.border = '1px solid #c00';
-    btn.style.padding = '8px 18px';
-    btn.style.borderRadius = '8px';
-    btn.style.fontSize = '15px';
-    btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-    btn.style.cursor = 'pointer';
-    btn.onclick = function() {
-        var ta = document.getElementById('debugLogTextArea');
-        if (ta) {
-            ta.select();
-            ta.setSelectionRange(0, ta.value.length);
-            try {
-                var ok = document.execCommand('copy');
-                if (ok) {
-                    btn.textContent = 'Copied!';
-                    setTimeout(function(){btn.textContent='Copy Log';}, 1200);
-                }
-            } catch(e) {
-                btn.textContent = 'Failed';
-                setTimeout(function(){btn.textContent='Copy Log';}, 1200);
-            }
-        }
-    };
-    document.body.appendChild(btn);
-    // Ensure button stays on top after fullscreen
-    function ensureCopyBtnAfterFullscreen() {
-        btn.style.zIndex = '2147483647';
-        btn.style.display = 'block';
-    }
-    document.addEventListener('fullscreenchange', ensureCopyBtnAfterFullscreen);
-    document.addEventListener('webkitfullscreenchange', ensureCopyBtnAfterFullscreen);
-    document.addEventListener('mozfullscreenchange', ensureCopyBtnAfterFullscreen);
-    document.addEventListener('MSFullscreenChange', ensureCopyBtnAfterFullscreen);
-})();
-*/
-
-        // ===== DEBUG SYSTEM (COMMENTED OUT) =====
-        /*
-        var DebugLog = {
-            messages: [],
-            textArea: null,
-            ensureTextArea: function() {
-                if (!this.textArea) {
-                    var ta = document.getElementById('debugLogTextArea');
-                    if (!ta) {
-                        ta = document.createElement('textarea');
-                        ta.id = 'debugLogTextArea';
-                        ta.value = 'Debug log will appear here...';
-                        ta.readOnly = false;
-                        ta.style.position = 'fixed';
-                        ta.style.bottom = '0';
-                        ta.style.left = '0';
-                        ta.style.width = '100vw';
-                        ta.style.height = '120px';
-                        ta.style.zIndex = '2147483647';
-                        ta.style.background = '#fff0f0';
-                        ta.style.color = '#c00';
-                        ta.style.fontFamily = 'monospace';
-                        ta.style.fontSize = '14px';
-                        ta.style.padding = '10px';
-                        ta.style.boxSizing = 'border-box';
-                        ta.style.resize = 'vertical';
-                        ta.style.opacity = '0.98';
-                        ta.style.pointerEvents = 'auto';
-                        document.body.appendChild(ta);
-                    }
-                    this.textArea = ta;
-                }
-            },
-            
-            init: function() {
-                this.ensureTextArea();
-                if (this.textArea) {
-                    this.textArea.style.display = 'block';
-                    this.textArea.readOnly = false;
-                }
-                window.__DEBUGLOG_INIT = true;
-                DebugLog.log('🚨 DEBUG PANEL ACTIVE - YOU SHOULD SEE THIS');
-                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                    DebugLog.log('📱 MOBILE DEVICE DETECTED');
-                } else {
-                    DebugLog.log('🖥️ DESKTOP DEVICE DETECTED');
-                }
-                setTimeout(function(){
-                    if (DebugLog.messages.length < 2) {
-                        DebugLog.log('⚠️ DebugLog is initialized but no logs have been written. If you see this, JS may not be running as expected.');
-                    }
-                }, 2000);
-            },
-            
-            log: function(message) {
-                this.ensureTextArea();
-                var timestamp = new Date().toLocaleTimeString();
-                var logMessage = '[' + timestamp + '] ' + String(message);
-                try { console.log(logMessage); } catch(e){}
-                this.messages.push(logMessage);
-                if (this.textArea) {
-                    this.textArea.value = this.messages.slice(-50).join('\n');
-                    this.textArea.scrollTop = this.textArea.scrollHeight;
-                }
-            },
-            
-            show: function() {
-                if (this.element) {
-                    this.element.classList.add('visible');
-                }
-            },
-            
-            hide: function() {
-                if (this.element) {
-                    this.element.classList.remove('visible');
-                }
-            }
-        };
-        */
-
         // Simple console-only debug replacement
         var DebugLog = {
             log: function(message) {
@@ -592,6 +432,8 @@
             inFinalSequence: false,
             audioUnlocked: false,
             mobileAudioStarted: false,
+            welcomeAudioPlaying: false,
+            welcomeAudioEnded: false,
             
             audioFiles: {
                 0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
@@ -658,13 +500,21 @@
             },
             
             showBereitButton: function() {
+                // Only show if welcome audio has actually ended
+                if (!State.welcomeAudioEnded) {
+                    DebugLog.log('Bereit button blocked - welcome audio not ended yet');
+                    return;
+                }
+                
                 this.hideAllButtons();
                 var button = this.element('bereitButton');
                 if (button) {
+                    DebugLog.log('Showing Bereit button with fade-in animation');
                     button.classList.add('visible');
                     button.style.opacity = '1';
                     button.style.pointerEvents = 'all';
                     button.style.display = 'flex';
+                    button.style.transform = 'translateX(-50%) translateY(0)';
                 }
             },
             
@@ -845,17 +695,18 @@
         var Conversation = {
             handleBereit: function() {
                 DebugLog.log('Bereit button clicked');
-                // Immediately start fading out the button
+                // Immediately start fading out the button with smooth animation
                 var button = UI.element('bereitButton');
                 if (button) {
+                    button.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
                     button.style.opacity = '0';
-                    button.style.transform = 'translateX(-50%) translateY(10px)';
+                    button.style.transform = 'translateX(-50%) translateY(20px) scale(0.95)';
                     button.style.pointerEvents = 'none';
                 }
                 setTimeout(function() {
                     UI.hideAllButtons();
                     Conversation.moveToNextQuestion();
-                }, 1000);
+                }, 800);
             },
 
             startHolding: function() {
@@ -1144,7 +995,6 @@
                             setTimeout(function() {
                                 State.step = 9;
                                 UI.updateProgress(100);
-                                // ...audio playbook already handled, removed Speech.speak...
                             }, 7000);
                         },
                         function(e) {
@@ -1152,7 +1002,6 @@
                             State.isSpeaking = false;
                             setTimeout(function() {
                                 State.step = 6;
-                                // ...audio playback already handled, removed Speech.speak...
                             }, 7000);
                         }
                     );
@@ -1165,7 +1014,6 @@
                         setTimeout(function() {
                             State.step = 6;
                             UI.updateProgress(100);
-                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.onerror = function() {
@@ -1173,14 +1021,12 @@
                         State.isSpeaking = false;
                         setTimeout(function() {
                             State.step = 9;
-                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
                     finalAudio.play().catch(function(e) {
                         DebugLog.log('Final audio play failed: ' + e.message);
                         setTimeout(function() {
                             State.step = 6;
-                            // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     });
                 }
@@ -1204,45 +1050,66 @@
                 }, 2000);
             },
 
-            startQ1: function() {
-                // Desktop-only flow (mobile already started voice)
-                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile && State.mobileAudioStarted) {
-                    DebugLog.log('📱 Mobile: startQ1 skipped (voice already playing)');
-                    return;
+            // Unified function to handle welcome audio properly for both mobile and desktop
+            playWelcomeAudio: function() {
+                var url = State.audioFiles[0];
+                DebugLog.log('Starting welcome audio playback: ' + url);
+                
+                State.welcomeAudioPlaying = true;
+                State.welcomeAudioEnded = false;
+                State.isSpeaking = true;
+                UI.setVisualizerState('speaking');
+                
+                var onAudioEnd = function() {
+                    DebugLog.log('Welcome audio ended - setting flags and showing button');
+                    State.welcomeAudioPlaying = false;
+                    State.welcomeAudioEnded = true;
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    
+                    // Wait a moment, then show the Bereit button
+                    setTimeout(function() {
+                        UI.showBereitButton();
+                    }, 1500);
+                };
+                
+                var onAudioError = function(e) {
+                    DebugLog.log('Welcome audio error: ' + (e && e.message));
+                    State.welcomeAudioPlaying = false;
+                    State.welcomeAudioEnded = true;
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    setTimeout(function() {
+                        UI.showBereitButton();
+                    }, 1500);
+                };
+                
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    WebAudioHelper.play(url, onAudioEnd, onAudioError);
+                } else {
+                    var audio = new Audio(url);
+                    audio.onended = onAudioEnd;
+                    audio.onerror = onAudioError;
+                    audio.play().catch(onAudioError);
                 }
-                DebugLog.log('🖥️ Desktop: Starting first question normally');
+            },
+
+            startQ1: function() {
+                DebugLog.log('Starting Q1 sequence');
                 UI.setVisualizerState('active');
                 UI.updateProgress(5);
                 State.step = 0;
-                // Play the welcome audio for desktop
-                var url = State.audioFiles[0];
-                // Set DNA to 'speaking' while audio is playing, then 'active' after
-                UI.setVisualizerState('speaking');
-                if (window.AudioContext && WebAudioHelper) {
-                    WebAudioHelper.play(url, function() {
-                        DebugLog.log('Audio ended for welcome message');
-                        UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
-                    }, function(e) {
-                        DebugLog.log('Audio error for welcome message: ' + (e && e.message));
-                        UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
-                    });
-                } else {
-                    var audio = new Audio(url);
-                    audio.onended = function() {
-                        DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
-                        UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
-                    };
-                    audio.onerror = function(e) {
-                        DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
-                        UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
-                    };
-                    audio.play();
+                
+                // Check if mobile already started playing
+                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile && State.mobileAudioStarted) {
+                    DebugLog.log('📱 Mobile: Audio already playing, not starting again');
+                    return;
                 }
+                
+                // For desktop or mobile fallback, start the welcome audio
+                DebugLog.log('🖥️ Starting welcome audio for desktop');
+                this.playWelcomeAudio();
             }
         };
 
@@ -1293,6 +1160,7 @@
                 var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 DebugLog.log('Device type: ' + (isMobile ? 'Mobile' : 'Desktop'));
                 DebugLog.log('[DEBUG] About to attempt audio unlock.');
+                
                 // CRITICAL: Use button click to unlock autoplay permissions
                 var unlockAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBjiI2OvKcyMFl2+z9N2aPAIbWr9yxmAXGFnj8MJzJQUYYbf2xGIYG1nq6MJzJQUYlGt19Mhvaz5gXFztw2kdA0qP2uzGeTYFG3a36Pn0YlFmdXTs8bHnzLqLh6uYfJBaRoZ1puLsxXEvCSdtytNdKAkzWLz6qHNxMEOw6MtbKhJLkM/d3QBVL9JKR5X2QQAwfOYTM8cVkPB29ppqOZN17+o1GAbSrAXvOK9qVsO2P2bfyXU5aOPYqE+TKYeKc1PEJd+7L2XKHOd6d1qTKZ2pXPHZq36DWdF4VJOhJr6l9YNkFJdFaLyJRjF7X1lGf61O2FO8gY0n');
                 unlockAudio.volume = 0.01;
@@ -1304,6 +1172,7 @@
                     DebugLog.log('✅ Autoplay permissions unlocked for page!');
                     State.audioUnlocked = true;
                     DebugLog.log('[DEBUG] State.audioUnlocked set to true');
+                    
                     // Immediately create and resume the global AudioContext in the same gesture
                     try {
                         if (!window.globalAudioContext && window.AudioContext) {
@@ -1451,44 +1320,16 @@
                             visualizer.style.opacity = '1';
                         }, 100);
                     }
+                    
                     // --- Move mobile audio playback here, after DNA fade-in starts ---
                     var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     if (isMobile && !State.mobileAudioStarted) {
                         DebugLog.log('🚨 MOBILE: Delaying audio playback until DNA visualizer is visible...');
                         setTimeout(function() {
                             DebugLog.log('🎵 NOW ATTEMPTING MOBILE AUDIO PLAYBACK (after DNA fade-in)...');
-                            var mobileVoiceAudio = new Audio(State.audioFiles[0]);
-                            DebugLog.log('🎵 Audio object created, URL: ' + State.audioFiles[0]);
-                            mobileVoiceAudio.volume = 1.0;
-                            mobileVoiceAudio.addEventListener('loadstart', function() { DebugLog.log('📡 Audio: Loading started'); });
-                            mobileVoiceAudio.addEventListener('loadeddata', function() { DebugLog.log('📡 Audio: Data loaded'); });
-                            mobileVoiceAudio.addEventListener('canplay', function() { DebugLog.log('📡 Audio: Can play'); });
-                            mobileVoiceAudio.addEventListener('error', function(e) { DebugLog.log('🚨 Audio Error Event: ' + e.message); });
-                            var playPromise = mobileVoiceAudio.play();
-                            DebugLog.log('🎵 Play promise created: ' + (playPromise ? 'YES' : 'NO'));
-                            if (playPromise) {
-                                playPromise.then(function() {
-                                    DebugLog.log('✅ SUCCESS: Mobile audio started!');
-                                    State.isSpeaking = true;
-                                    State.step = 0;
-                                    State.mobileAudioStarted = true;
-                                    UI.setVisualizerState('speaking');
-                                    mobileVoiceAudio.onended = function() {
-                                        DebugLog.log('🏁 Mobile audio ended');
-                                        State.isSpeaking = false;
-                                        UI.setVisualizerState('active');
-                                        setTimeout(function() { UI.showBereitButton(); }, 1000);
-                                    };
-                                }).catch(function(e) {
-                                    DebugLog.log('🚨 MOBILE AUDIO FAILED:');
-                                    DebugLog.log('Error name: ' + e.name);
-                                    DebugLog.log('Error message: ' + e.message);
-                                    DebugLog.log('Error code: ' + (e.code || 'none'));
-                                    setTimeout(function() { UI.showBereitButton(); }, 1000);
-                                });
-                            } else {
-                                DebugLog.log('🚨 No play promise returned!');
-                            }
+                            State.mobileAudioStarted = true;
+                            State.step = 0;
+                            Conversation.playWelcomeAudio();
                         }, 4100); // Wait for DNA fade-in (4s) before playing audio
                     }
                 }, 14000); // DNA appears at 14s (6s after logo ends at 8s - no overlap)
@@ -1505,46 +1346,18 @@
             init: function() {
                 DebugLog.init();
                 DebugLog.log('=== SG1 SYSTEM INIT ===');
-                // Speech synthesis fully removed
                 DebugLog.log('SG1 System ready');
             }
         };
 
         // Initialize when DOM is ready
-        /*
-        function __forceDebugLogInit() {
-            if (!window.__DEBUGLOG_INIT && window.DebugLog && typeof DebugLog.init === 'function') {
-                DebugLog.init();
-            }
-        }
-        */
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 SG1.init();
-                // setTimeout(__forceDebugLogInit, 1000);
             });
         } else {
             SG1.init();
-            // setTimeout(__forceDebugLogInit, 1000);
         }
-
-        /*
-        // Re-append debug textarea after fullscreen is requested to ensure visibility (COMMENTED OUT)
-        function ensureDebugLogAfterFullscreen() {
-            if (window.DebugLog && typeof DebugLog.ensureTextArea === 'function') {
-                DebugLog.ensureTextArea();
-                if (DebugLog.textArea && DebugLog.textArea.parentNode !== document.body) {
-                    document.body.appendChild(DebugLog.textArea);
-                }
-                DebugLog.textArea.style.zIndex = '2147483647';
-                DebugLog.textArea.style.display = 'block';
-            }
-        }
-        document.addEventListener('fullscreenchange', ensureDebugLogAfterFullscreen);
-        document.addEventListener('webkitfullscreenchange', ensureDebugLogAfterFullscreen);
-        document.addEventListener('mozfullscreenchange', ensureDebugLogAfterFullscreen);
-        document.addEventListener('MSFullscreenChange', ensureDebugLogAfterFullscreen);
-        */
 
         // Global error handler
         window.onerror = function(message, source, lineno, colno, error) {
@@ -1554,7 +1367,6 @@
             }
             return false;
         };
-//# sourceURL=SG1-working.html
 </script>
 </body>
 </html>
