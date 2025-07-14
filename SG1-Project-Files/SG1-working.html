@@ -99,10 +99,8 @@
         }
 
         /* ===== CONTROL BUTTONS ===== */
-        .skip-button {
+        .skip-button, .music-button {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 20px;
@@ -117,10 +115,25 @@
             z-index: 10000;
         }
 
-        .skip-button:hover {
+        .skip-button {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .music-button {
+            top: 20px;
+            right: 20px;
+        }
+
+        .skip-button:hover, .music-button:hover {
             background: rgba(255, 255, 255, 0.2);
             color: rgba(255, 255, 255, 1);
             transform: translateY(-1px);
+        }
+
+        .music-button.off {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .quit-button {
@@ -329,6 +342,20 @@
             color: rgba(255, 255, 255, 1);
             transform: translate(-50%, -50%) translateY(-3px);
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Translation for text buttons */
+        .dna-text-button[data-translation]:hover::after {
+            content: attr(data-translation);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            font-size: 14px;
+            font-style: italic;
+            opacity: 0.8;
+            white-space: nowrap;
         }
 
         /* ===== STATUS DISPLAY ===== */
@@ -658,18 +685,18 @@
             }
 
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                display: flex;
+                flex-direction: row;
                 flex-wrap: wrap;
-                gap: 10px;
-                max-width: 350px;
+                gap: 8px;
+                max-width: 90vw;
                 justify-content: center;
             }
 
             #scaleChoicesContainer .probability-choice,
             #motherScaleChoicesContainer .probability-choice {
-                min-width: 45px;
-                padding: 12px 8px;
-                font-size: 16px;
+                min-width: 35px;
+                padding: 10px 8px;
+                font-size: 14px;
                 white-space: nowrap;
                 flex: 0 0 auto;
                 text-align: center;
@@ -684,18 +711,18 @@
             }
 
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                display: flex;
+                flex-direction: row;
                 flex-wrap: wrap;
-                gap: 8px;
-                max-width: 300px;
+                gap: 6px;
+                max-width: 90vw;
                 justify-content: center;
             }
 
             #scaleChoicesContainer .probability-choice,
             #motherScaleChoicesContainer .probability-choice {
-                min-width: 45px;
-                padding: 10px 6px;
-                font-size: 14px;
+                min-width: 30px;
+                padding: 8px 6px;
+                font-size: 12px;
                 white-space: nowrap;
                 flex: 0 0 auto;
             }
@@ -703,17 +730,17 @@
 
         @media (min-width: 769px) {
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                max-width: 600px;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                gap: 12px;
+                max-width: 700px;
                 justify-content: center;
             }
 
             #scaleChoicesContainer .probability-choice,
             #motherScaleChoicesContainer .probability-choice {
                 min-width: 45px;
-                padding: 15px 20px;
+                padding: 15px 18px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -730,8 +757,8 @@
         <div class="quit-button" id="quitButton" onclick="Controls.quit()" title="Quit Assessment">×</div>
         <div class="skip-button" id="skipButton" onclick="Controls.skip()" title="Skip Question">SKIP</div>
         
-        <!-- Music indicator -->
-        <div class="music-indicator" id="musicIndicator" onclick="SG1.toggleMusic()">music</div>
+        <!-- Music button -->
+        <div class="music-button" id="musicButton" onclick="SG1.toggleMusic()">MUSIC</div>
 
         <div class="pre-init-overlay overlay-base" id="preInitOverlay">
             <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
@@ -919,6 +946,13 @@
             skip: function() {
                 // Stop any current audio
                 if (State.isSpeaking) {
+                    try {
+                        if (WebAudioHelper.currentSource) {
+                            WebAudioHelper.currentSource.stop();
+                            WebAudioHelper.currentSource = null;
+                        }
+                    } catch (e) {}
+                    
                     var audio = document.querySelector('audio:not(#backgroundMusic)');
                     if (audio) audio.pause();
                     State.isSpeaking = false;
@@ -930,11 +964,60 @@
                     State.motherInterruptTimer = null;
                 }
                 
-                // Skip to next question
-                DNAButton.showDNA();
-                setTimeout(function() {
-                    Conversation.moveToNextQuestion();
-                }, 300);
+                // Handle different modes
+                if (DNAButton.currentMode === 'text') {
+                    // For text buttons, simulate click
+                    DNAButton.handleClick();
+                } else if (DNAButton.currentMode === 'choices' || 
+                          DNAButton.currentMode === 'time' || 
+                          DNAButton.currentMode === 'probability' ||
+                          DNAButton.currentMode === 'scale' ||
+                          DNAButton.currentMode === 'food' ||
+                          DNAButton.currentMode === 'german' ||
+                          DNAButton.currentMode === 'call' ||
+                          DNAButton.currentMode === 'mother-scale' ||
+                          DNAButton.currentMode === 'ai') {
+                    // For choice modes, select first option
+                    switch(DNAButton.currentMode) {
+                        case 'choices':
+                            DNAButton.handleAnswerChoice(0);
+                            break;
+                        case 'time':
+                            DNAButton.handleTimeChoice(0);
+                            break;
+                        case 'probability':
+                            DNAButton.handleProbabilityChoice('medium');
+                            break;
+                        case 'scale':
+                            DNAButton.handleScaleChoice(5);
+                            break;
+                        case 'food':
+                            DNAButton.handleFoodChoice(0);
+                            break;
+                        case 'german':
+                            DNAButton.handleGermanChoice(0);
+                            break;
+                        case 'call':
+                            DNAButton.handleCallChoice(1);
+                            break;
+                        case 'mother-scale':
+                            DNAButton.handleMotherScaleChoice(5);
+                            break;
+                        case 'ai':
+                            DNAButton.handleAIChoice('diverse');
+                            break;
+                    }
+                } else if (DNAButton.currentMode === 'goal-input') {
+                    DNAButton.handleGoalSubmit();
+                } else if (DNAButton.currentMode === 'mother-input') {
+                    DNAButton.handleMotherSubmit();
+                } else {
+                    // For DNA mode or speaking, skip to next question
+                    DNAButton.showDNA();
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 300);
+                }
             },
             
             quit: function() {
@@ -1002,7 +1085,7 @@
                 }
             },
             
-            showText: function(text) {
+            showText: function(text, translation) {
                 var visualizer = UI.element('visualizer');
                 var textButton = UI.element('dnaTextButton');
                 
@@ -1012,6 +1095,12 @@
                     textButton.style.transform = 'translate(-50%, -50%)';
                     
                     textButton.textContent = text;
+                    if (translation) {
+                        textButton.setAttribute('data-translation', translation);
+                    } else {
+                        textButton.removeAttribute('data-translation');
+                    }
+                    
                     visualizer.classList.add('text-mode');
                     
                     setTimeout(function() {
@@ -1781,11 +1870,11 @@
                     }, 300);
                 }, 2500);
                 
-                // Step 3: Charging ego-booster
+                // Step 3: Charging ego
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
-                        self.showEgoBoosterCharging();
+                        self.showEgoCharging();
                     }, 300);
                 }, 4000);
                 
@@ -1821,18 +1910,65 @@
                     }, 300);
                 }, 15500);
                 
-                // Step 8: Continue to next step
+                // Step 8: Play Q16 audio and continue
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     DNAButton.showDNA();
                     State.step = 16; // Skip to step 16
-                    setTimeout(function() {
-                        self.moveToNextQuestion();
-                    }, 1000);
+                    
+                    // Play the Q16 audio
+                    State.isSpeaking = true;
+                    UI.setVisualizerState('speaking');
+                    
+                    var audioUrl = State.audioFiles[16];
+                    
+                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                        WebAudioHelper.play(
+                            audioUrl,
+                            function() {
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                // Continue to next step (step 17)
+                                setTimeout(function() {
+                                    self.moveToNextQuestion();
+                                }, 1000);
+                            },
+                            function(e) {
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                setTimeout(function() {
+                                    self.moveToNextQuestion();
+                                }, 1000);
+                            }
+                        );
+                    } else {
+                        var audio = new Audio(audioUrl);
+                        audio.onended = function() {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 1000);
+                        };
+                        audio.onerror = function(e) {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 1000);
+                        };
+                        audio.play().catch(function(e) {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 1000);
+                        });
+                    }
                 }, 17500);
             },
 
-            showEgoBoosterCharging: function() {
+            showEgoCharging: function() {
                 var statusDisplay = UI.element('statusDisplay');
                 var visualizer = UI.element('visualizer');
                 
@@ -1846,9 +1982,9 @@
                         count += Math.floor(Math.random() * 15) + 10; // Random increments
                         if (count >= 200) {
                             clearInterval(interval);
-                            statusDisplay.textContent = 'Charging ego-booster: 200%';
+                            statusDisplay.textContent = 'Charging ego: 200%';
                         } else {
-                            statusDisplay.textContent = 'Charging ego-booster: ' + count + '%';
+                            statusDisplay.textContent = 'Charging ego: ' + count + '%';
                         }
                     }, 150);
                 }
@@ -1880,7 +2016,7 @@
                 setTimeout(function() {
                     switch(State.step) {
                         case 0:
-                            DNAButton.showText('Bereit');
+                            DNAButton.showText('Bereit', 'Ready');
                             break;
                         case 1:
                             DNAButton.showAnswerChoices();
@@ -1931,7 +2067,7 @@
                             }, 2000);
                             break;
                         case 17:
-                            DNAButton.showText('Na gut');
+                            DNAButton.showText('Na gut', 'Oh well');
                             break;
                         default:
                             break;
@@ -2053,23 +2189,23 @@
                     WebAudioHelper.play(url, function() {
                         UI.setVisualizerState('active');
                         setTimeout(function() { 
-                            DNAButton.showText('Bereit'); 
+                            DNAButton.showText('Bereit', 'Ready'); 
                         }, 2000);
                     }, function(e) {
                         UI.setVisualizerState('active');
                         setTimeout(function() { 
-                            DNAButton.showText('Bereit'); 
+                            DNAButton.showText('Bereit', 'Ready'); 
                         }, 2000);
                     });
                 } else {
                     var audio = new Audio(url);
                     audio.onended = function() {
                         UI.setVisualizerState('active');
-                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit', 'Ready'); }, 2000);
                     };
                     audio.onerror = function(e) {
                         UI.setVisualizerState('active');
-                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit', 'Ready'); }, 2000);
                     };
                     audio.play();
                 }
@@ -2081,11 +2217,11 @@
             
             toggleMusic: function() {
                 var music = UI.element('backgroundMusic');
-                var indicator = UI.element('musicIndicator');
+                var musicButton = UI.element('musicButton');
                 
                 if (this.musicEnabled) {
                     if (music) music.pause();
-                    if (indicator) indicator.classList.add('off');
+                    if (musicButton) musicButton.classList.add('off');
                     this.musicEnabled = false;
                 } else {
                     if (music) {
@@ -2098,7 +2234,7 @@
                             });
                         }
                     }
-                    if (indicator) indicator.classList.remove('off');
+                    if (musicButton) musicButton.classList.remove('off');
                     this.musicEnabled = true;
                 }
             },
@@ -2114,8 +2250,10 @@
                 // Hide control buttons during initialization
                 var skipButton = UI.element('skipButton');
                 var quitButton = UI.element('quitButton');
+                var musicButton = UI.element('musicButton');
                 if (skipButton) skipButton.style.display = 'none';
                 if (quitButton) quitButton.style.display = 'none';
+                if (musicButton) musicButton.style.display = 'none';
                 
                 var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 
@@ -2219,42 +2357,46 @@
                 
                 setTimeout(function() {
                     if (status) status.textContent = 'Loading neural interface...';
-                    UI.showElement('visualizer');
                     
-                    var visualizer = UI.element('visualizer');
-                    if (visualizer) {
-                        visualizer.style.opacity = '0';
-                        visualizer.style.transition = 'opacity 4s ease-in';
-                        setTimeout(function() {
-                            visualizer.style.opacity = '1';
-                        }, 100);
-                    }
-                    
-                    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    if (isMobile && !State.mobileAudioStarted) {
-                        setTimeout(function() {
-                            var mobileVoiceAudio = new Audio(State.audioFiles[0]);
-                            mobileVoiceAudio.volume = 1.0;
-                            
-                            var playPromise = mobileVoiceAudio.play();
-                            if (playPromise) {
-                                playPromise.then(function() {
-                                    State.isSpeaking = true;
-                                    State.step = 0;
-                                    State.mobileAudioStarted = true;
-                                    UI.setVisualizerState('speaking');
-                                    
-                                    mobileVoiceAudio.onended = function() {
-                                        State.isSpeaking = false;
-                                        UI.setVisualizerState('active');
-                                        setTimeout(function() { 
-                                            DNAButton.showText('Bereit'); 
-                                        }, 1000);
-                                    };
-                                }).catch(function(e) {});
-                            }
-                        }, 4100);
-                    }
+                    // Add 1 second delay before showing DNA
+                    setTimeout(function() {
+                        UI.showElement('visualizer');
+                        
+                        var visualizer = UI.element('visualizer');
+                        if (visualizer) {
+                            visualizer.style.opacity = '0';
+                            visualizer.style.transition = 'opacity 4s ease-in';
+                            setTimeout(function() {
+                                visualizer.style.opacity = '1';
+                            }, 100);
+                        }
+                        
+                        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        if (isMobile && !State.mobileAudioStarted) {
+                            setTimeout(function() {
+                                var mobileVoiceAudio = new Audio(State.audioFiles[0]);
+                                mobileVoiceAudio.volume = 1.0;
+                                
+                                var playPromise = mobileVoiceAudio.play();
+                                if (playPromise) {
+                                    playPromise.then(function() {
+                                        State.isSpeaking = true;
+                                        State.step = 0;
+                                        State.mobileAudioStarted = true;
+                                        UI.setVisualizerState('speaking');
+                                        
+                                        mobileVoiceAudio.onended = function() {
+                                            State.isSpeaking = false;
+                                            UI.setVisualizerState('active');
+                                            setTimeout(function() { 
+                                                DNAButton.showText('Bereit', 'Ready'); 
+                                            }, 1000);
+                                        };
+                                    }).catch(function(e) {});
+                                }
+                            }, 4100);
+                        }
+                    }, 1000); // 1 second delay
                 }, 15000);
 
                 setTimeout(function() {
@@ -2264,8 +2406,10 @@
                     // Show control buttons
                     var skipButton = UI.element('skipButton');
                     var quitButton = UI.element('quitButton');
+                    var musicButton = UI.element('musicButton');
                     if (skipButton) skipButton.style.display = 'block';
                     if (quitButton) quitButton.style.display = 'flex';
+                    if (musicButton) musicButton.style.display = 'block';
                     
                     setTimeout(function() {
                         Conversation.startQ1();
