@@ -625,10 +625,10 @@
                     case 0: // Bereit
                         this.handleBereit();
                         break;
-                    case 2: // Hold to speak
-                    case 5: // Mother question hold to speak
-                    case 7: // Final hold to speak
-                        this.handleHoldToSpeak();
+                    case 2: // Dummy button
+                    case 5: // Mother question dummy button
+                    case 7: // Final dummy button
+                        this.handleDummy();
                         break;
                     case 6: // Ja
                         this.handleJa();
@@ -730,6 +730,30 @@
                     DNAButton.showDNA();
                     setTimeout(function() {
                         Conversation.moveToNextQuestion();
+                    }, 200);
+                }, 800);
+            },
+            
+            handleDummy: function() {
+                DebugLog.log('Dummy button clicked - starting fade out');
+                
+                // Animate the text button fade out
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    textButton.style.opacity = '0';
+                    textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                }
+                
+                // Wait for animation to complete, then show DNA and continue
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    setTimeout(function() {
+                        if (State.step === 5) {
+                            Conversation.moveToNextQuestion();
+                        } else {
+                            Conversation.playThankYou();
+                        }
                     }, 200);
                 }, 800);
             },
