@@ -89,7 +89,7 @@
         @keyframes sg1LogoFade {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
             35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
         }
 
@@ -272,7 +272,76 @@
             opacity: 0.8;
         }
 
-        /* Time and probability buttons */
+        /* Text input field for goal and mother questions */
+        .text-input-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s ease;
+            z-index: 10;
+            width: min(500px, 90vw);
+        }
+
+        .text-input-container.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .text-input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 15px 25px;
+            color: white;
+            font-size: clamp(16px, 4vw, 18px);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 200;
+            letter-spacing: 1px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            outline: none;
+        }
+
+        .text-input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+
+        .text-input-field:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .text-submit-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(14px, 3.5vw, 16px);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 200;
+            letter-spacing: 1px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            min-width: 120px;
+        }
+
+        .text-submit-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
         .time-probability-container {
             position: absolute;
             top: 50%; left: 50%;
@@ -399,6 +468,18 @@
                         Keine Ahnung
                         <div class="answer-translation">No idea</div>
                     </div>
+                </div>
+
+                <!-- Text input for goal question (step 2) -->
+                <div class="text-input-container" id="goalInputContainer">
+                    <input type="text" class="text-input-field" id="goalInput" placeholder="Type your goal here..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleGoalSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleGoalSubmit()">Submit</button>
+                </div>
+
+                <!-- Text input for mother question (step 5) -->
+                <div class="text-input-container" id="motherInputContainer">
+                    <input type="text" class="text-input-field" id="motherInput" placeholder="Describe your relationship..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleMotherSubmit()">Submit</button>
                 </div>
 
                 <!-- Time commitment choices for question 3 -->
@@ -594,6 +675,44 @@
                     DebugLog.log('DNA showing probability choices');
                 }
             },
+
+            // Show goal input field
+            showGoalInput: function() {
+                var visualizer = UI.element('visualizer');
+                var goalContainer = UI.element('goalInputContainer');
+                
+                if (goalContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    goalContainer.classList.add('visible');
+                    this.currentMode = 'goal-input';
+                    DebugLog.log('DNA showing goal input field');
+                    
+                    // Focus the input field
+                    setTimeout(function() {
+                        var goalInput = UI.element('goalInput');
+                        if (goalInput) goalInput.focus();
+                    }, 300);
+                }
+            },
+
+            // Show mother input field
+            showMotherInput: function() {
+                var visualizer = UI.element('visualizer');
+                var motherContainer = UI.element('motherInputContainer');
+                
+                if (motherContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    motherContainer.classList.add('visible');
+                    this.currentMode = 'mother-input';
+                    DebugLog.log('DNA showing mother input field');
+                    
+                    // Focus the input field
+                    setTimeout(function() {
+                        var motherInput = UI.element('motherInput');
+                        if (motherInput) motherInput.focus();
+                    }, 300);
+                }
+            },
             
             // Hide all overlays and show DNA
             showDNA: function() {
@@ -602,6 +721,8 @@
                 var choicesContainer = UI.element('answerChoicesContainer');
                 var timeContainer = UI.element('timeChoicesContainer');
                 var probContainer = UI.element('probabilityChoicesContainer');
+                var goalContainer = UI.element('goalInputContainer');
+                var motherContainer = UI.element('motherInputContainer');
                 
                 if (visualizer) {
                     visualizer.classList.remove('text-mode');
@@ -609,6 +730,8 @@
                     if (choicesContainer) choicesContainer.classList.remove('visible');
                     if (timeContainer) timeContainer.classList.remove('visible');
                     if (probContainer) probContainer.classList.remove('visible');
+                    if (goalContainer) goalContainer.classList.remove('visible');
+                    if (motherContainer) motherContainer.classList.remove('visible');
                     this.currentMode = 'dna';
                     DebugLog.log('DNA visible, all text hidden');
                 }
@@ -844,6 +967,80 @@
                         Conversation.completeCourse();
                     }, 200);
                 }, 800);
+            },
+
+            // Handle goal input submission
+            handleGoalSubmit: function() {
+                var goalInput = UI.element('goalInput');
+                var goalValue = goalInput ? goalInput.value.trim() : '';
+                
+                DebugLog.log('Goal submitted: ' + goalValue);
+                
+                // Submit to Google Form
+                if (goalValue) {
+                    this.submitToGoogleForm(goalValue, 'goal');
+                }
+                
+                // Animate container fade out
+                this.animateInputContainerOut('goalInputContainer');
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle mother input submission
+            handleMotherSubmit: function() {
+                var motherInput = UI.element('motherInput');
+                var motherValue = motherInput ? motherInput.value.trim() : '';
+                
+                DebugLog.log('Mother relationship submitted: ' + motherValue);
+                
+                // Submit to Google Form
+                if (motherValue) {
+                    this.submitToGoogleForm(motherValue, 'mother');
+                }
+                
+                // Animate container fade out
+                this.animateInputContainerOut('motherInputContainer');
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.moveToNextQuestion();
+                }, 800);
+            },
+
+            // Submit data to Google Form
+            submitToGoogleForm: function(value, type) {
+                try {
+                    var formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
+                    var fieldName = type === 'goal' ? 'entry.1234567890' : 'entry.0987654321'; // Replace with actual field names
+                    
+                    var formData = new FormData();
+                    formData.append(fieldName, value);
+                    
+                    fetch(formUrl, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors'
+                    }).then(function() {
+                        DebugLog.log('Form submitted successfully: ' + type);
+                    }).catch(function(e) {
+                        DebugLog.log('Form submission error: ' + e.message);
+                    });
+                } catch (e) {
+                    DebugLog.log('Form submission failed: ' + e.message);
+                }
+            },
+
+            // Animate input container fade out
+            animateInputContainerOut: function(containerId) {
+                var container = UI.element(containerId);
+                if (container) {
+                    container.style.opacity = '0';
+                    container.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                }
             }
         };
 
@@ -1077,8 +1274,8 @@
                         case 1: // Why question -> Show answer choices
                             DNAButton.showAnswerChoices();
                             break;
-                        case 2: // Goal question -> Show "Hold to speak"
-                            DNAButton.showText('Hold to speak');
+                        case 2: // Goal question -> Show text input
+                            DNAButton.showGoalInput();
                             break;
                         case 3: // Time question -> Show time choices
                             DNAButton.showTimeChoices();
@@ -1086,15 +1283,14 @@
                         case 4: // Probability question -> Show probability choices
                             DNAButton.showProbabilityChoices();
                             break;
-                        case 5: // Mother question -> Show "Hold to speak"
-                            DNAButton.showText('Hold to speak');
-                            // Auto-interrupt after 7 seconds handled in hold function
+                        case 5: // Mother question -> Show text input
+                            DNAButton.showMotherInput();
                             break;
                         case 6: // Michael introduction -> Show "Ja"
                             DNAButton.showText('Ja');
                             break;
-                        case 7: // Final question -> Show "Hold to speak"
-                            DNAButton.showText('Hold to speak');
+                        case 7: // Final question -> Show "dummy"
+                            DNAButton.showText('dummy');
                             break;
                         case 8: // Final sequence
                             if (!State.inFinalSequence) {
@@ -1393,7 +1589,7 @@
                         }
                         
                         DebugLog.log('Starting SG1 logo animation');
-                        logo.style.animation = 'sg1LogoFade 13s ease-in-out forwards';
+                        logo.style.animation = 'sg1LogoFade 16s ease-in-out forwards';
                         
                         // Backup visibility check
                         setTimeout(function() {
@@ -1404,14 +1600,14 @@
                                 
                                 setTimeout(function() {
                                     logo.style.opacity = '0';
-                                }, 8000);
+                                }, 10000);
                             }
                         }, 3000);
                         
                         setTimeout(function() {
                             logo.style.opacity = '0';
                             logo.style.display = 'none';
-                        }, 12000);
+                        }, 15000);
                         
                     }, 1000);
                 } else {
@@ -1472,7 +1668,7 @@
                             }
                         }, 4100); // Wait for DNA fade-in (4s) before playing audio
                     }
-                }, 14000); // DNA appears at 14s (6s after logo ends at 8s - no overlap)
+                }, 15000); // DNA appears at 15s (1s after logo ends at 14s)
 
                 setTimeout(function() {
                     if (status) status.textContent = 'Ready to begin...';
@@ -1480,7 +1676,7 @@
                     setTimeout(function() {
                         Conversation.startQ1();
                     }, 500);
-                }, 17000); // Voice starts at 17s (back to original timing)
+                }, 18000); // Voice starts at 18s
             },
 
             init: function() {
