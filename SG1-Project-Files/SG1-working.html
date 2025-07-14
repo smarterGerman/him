@@ -76,9 +76,9 @@
             transition: all 0.4s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); display: inline-block; }
         .pre-init-button:hover { background: #45b7d1; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
 
-        .bereit-button, .hold-speak-button, .ja-button, .na-gut-button {
+        .bereit-button, .dummy-button, .ja-button, .na-gut-button {
             position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.8); border: none; padding: 20px 40px; 
+            color: rgba(255, 255, 255, 0.95); border: none; padding: 20px 40px; 
             background: none; border-radius: 0;
             font-size: clamp(18px, 5vw, 24px); 
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -86,17 +86,12 @@
             min-width: auto; min-height: auto; 
             opacity: 0; transition: opacity 0.6s ease, color 0.3s ease; pointer-events: none;
             backdrop-filter: none; z-index: 100;
-            box-shadow: none; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: none; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
-        .bereit-button:hover, .hold-speak-button:hover, .ja-button:hover, .na-gut-button:hover { 
+        .bereit-button:hover, .dummy-button:hover, .ja-button:hover, .na-gut-button:hover { 
             color: rgba(255, 255, 255, 1); 
             transform: translateX(-50%) translateY(-2px);
-        }
-
-        .hold-speak-button.holding { 
-            color: #ffd54f;
-            transform: translateX(-50%) translateY(-1px);
         }
 
         .bereit-button.visible, .hold-speak-button.visible, .ja-button.visible, .na-gut-button.visible,
@@ -116,7 +111,7 @@
         }
 
         .answer-button {
-            color: rgba(255, 255, 255, 0.8); border: none; padding: 15px 25px; 
+            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
             background: none; border-radius: 0;
             font-size: clamp(15px, 3.5vw, 18px); 
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -126,7 +121,7 @@
             backdrop-filter: none;
             box-shadow: none;
             position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
         .answer-button:hover {
@@ -136,13 +131,13 @@
 
         .answer-translation {
             position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
-            background: none; color: rgba(255, 255, 255, 0.6);
+            background: none; color: rgba(255, 255, 255, 0.8);
             padding: 5px 10px; border-radius: 0; font-size: 12px;
             font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 100; letter-spacing: 1px;
             opacity: 0; transition: all 0.3s ease; pointer-events: none;
             box-shadow: none;
             white-space: nowrap; z-index: 1000;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
         /* ===== TIME ANSWER BUTTONS (Q4) ===== */
         .time-buttons-container {
@@ -156,7 +151,7 @@
         }
 
         .time-button {
-            color: rgba(255, 255, 255, 0.8); border: none; padding: 15px 25px; 
+            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
             background: none; border-radius: 0;
             font-size: clamp(16px, 4vw, 20px); 
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -166,7 +161,7 @@
             backdrop-filter: none;
             box-shadow: none;
             position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
         .time-button:hover {
@@ -186,7 +181,7 @@
         }
 
         .probability-button {
-            color: rgba(255, 255, 255, 0.8); border: none; padding: 15px 25px; 
+            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
             background: none; border-radius: 0;
             font-size: clamp(16px, 4vw, 20px); 
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -196,7 +191,7 @@
             backdrop-filter: none;
             box-shadow: none;
             position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
         .probability-button:hover {
@@ -350,11 +345,7 @@
         </div>
 
         <div class="bereit-button" id="bereitButton" onclick="Conversation.handleBereit()">Bereit</div>
-        <div class="hold-speak-button" id="holdSpeakButton" 
-             onmousedown="Conversation.startHolding()" 
-             onmouseup="Conversation.stopHolding()"
-             ontouchstart="Conversation.startHolding()" 
-             ontouchend="Conversation.stopHolding()">Hold to speak</div>
+        <div class="dummy-button" id="dummyButton" onclick="Conversation.handleDummy()">dummy</div>
         <div class="ja-button" id="jaButton" onclick="Conversation.handleJa()">Ja</div>
         <div class="na-gut-button" id="naGutButton" onclick="Conversation.handleNaGut()">Na gut.</div>
 
@@ -489,9 +480,9 @@
                 }
             },
             
-            showHoldSpeakButton: function() {
+            showDummyButton: function() {
                 this.hideAllButtons();
-                var button = this.element('holdSpeakButton');
+                var button = this.element('dummyButton');
                 if (button) button.classList.add('visible');
             },
             
@@ -526,7 +517,7 @@
             },
             
             hideAllButtons: function() {
-                var buttons = ['bereitButton', 'holdSpeakButton', 'jaButton', 'naGutButton'];
+                var buttons = ['bereitButton', 'dummyButton', 'jaButton', 'naGutButton'];
                 for (var i = 0; i < buttons.length; i++) {
                     var button = this.element(buttons[i]);
                     if (button) button.classList.remove('visible');
@@ -679,55 +670,35 @@
                 }, 1000);
             },
 
-            startHolding: function() {
-                if (State.isSpeaking) return;
-                
-                DebugLog.log('Hold button pressed');
-                var button = UI.element('holdSpeakButton');
+            handleDummy: function() {
+                DebugLog.log('Dummy button clicked');
+                // Immediately start fading out the dummy button
+                var button = UI.element('dummyButton');
                 if (button) {
-                    button.classList.add('holding');
-                    button.textContent = 'Recording...';
+                    button.style.opacity = '0';
+                    button.style.transform = 'translateX(-50%) translateY(10px)';
+                    button.style.pointerEvents = 'none';
                 }
-                
-                UI.setVisualizerState('listening');
-            },
-
-            stopHolding: function() {
-                DebugLog.log('Hold button released');
-                var button = UI.element('holdSpeakButton');
-                if (button) {
-                    button.classList.remove('holding');
-                    button.textContent = 'Hold to speak';
-                }
-                
-                UI.setVisualizerState('active');
-                
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                
                 setTimeout(function() {
+                    UI.hideAllButtons();
                     if (State.step === 5) {
                         Conversation.moveToNextQuestion();
                     } else {
                         Conversation.playThankYou();
                     }
-                }, 500);
+                }, 1000);
+            },
+
+            startHolding: function() {
+                // Remove this function as we no longer have hold-to-speak
+            },
+
+            stopHolding: function() {
+                // Remove this function as we no longer have hold-to-speak
             },
 
             simulateInterruption: function() {
                 DebugLog.log('Mother interruption triggered');
-                var button = UI.element('holdSpeakButton');
-                if (button) {
-                    button.classList.remove('holding');
-                    button.textContent = 'Hold to speak';
-                }
-                
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
                 
                 UI.setVisualizerState('active');
                 UI.hideAllButtons();
@@ -927,18 +898,18 @@
                     if (State.step === 1) {
                         UI.showAnswerButtons();
                     } else if (State.step === 2) {
-                        UI.showHoldSpeakButton();
+                        UI.showDummyButton();
                     } else if (State.step === 3) {
                         UI.showTimeButtons();
                     } else if (State.step === 4) {
                         UI.showProbabilityButtons();
                     } else if (State.step === 5) {
-                        UI.showHoldSpeakButton();
+                        UI.showDummyButton();
                         State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
                     } else if (State.step === 6) {
                         UI.showJaButton();
                     } else if (State.step === 7) {
-                        UI.showHoldSpeakButton();
+                        UI.showDummyButton();
                     } else if (State.step === 8) {
                         if (!State.inFinalSequence) {
                             State.inFinalSequence = true;
