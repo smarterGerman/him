@@ -70,140 +70,11 @@
             text-decoration: line-through; 
         }
 
-        /* ===== BUTTONS ===== */
+        /* ===== PRE-INIT BUTTON ===== */
         .pre-init-button { background: #4ecdc4; color: white; border: none; padding: 20px 40px;
             border-radius: 15px; font-size: 1.2em; font-weight: 500; letter-spacing: 1px; cursor: pointer;
             transition: all 0.4s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); display: inline-block; }
         .pre-init-button:hover { background: #45b7d1; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
-
-        .bereit-button, .dummy-button, .ja-button, .na-gut-button {
-            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.95); border: none; padding: 20px 40px; 
-            background: none; border-radius: 0;
-            font-size: clamp(18px, 5vw, 24px); 
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-weight: 200; letter-spacing: 2px; cursor: pointer;
-            min-width: auto; min-height: auto; 
-            opacity: 0; transition: opacity 0.6s ease, color 0.3s ease; pointer-events: none;
-            backdrop-filter: none; z-index: 100;
-            box-shadow: none; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        .bereit-button:hover, .dummy-button:hover, .ja-button:hover, .na-gut-button:hover { 
-            color: rgba(255, 255, 255, 1); 
-            transform: translateX(-50%) translateY(-2px);
-        }
-
-        .bereit-button.visible, .hold-speak-button.visible, .ja-button.visible, .na-gut-button.visible,
-        .answer-button.visible {
-            opacity: 1; pointer-events: all;
-        }
-
-        /* ===== ANSWER BUTTONS (Q2) ===== */
-        .answer-buttons-container {
-            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px;
-            opacity: 0; transition: all 0.6s ease; pointer-events: none; z-index: 100;
-            flex-wrap: wrap;
-        }
-        .answer-buttons-container.visible {
-            opacity: 1; pointer-events: all;
-        }
-
-        .answer-button {
-            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
-            background: none; border-radius: 0;
-            font-size: clamp(15px, 3.5vw, 18px); 
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-weight: 200; letter-spacing: 1px; cursor: pointer;
-            min-width: auto; min-height: auto; 
-            transition: all 0.4s ease;
-            backdrop-filter: none;
-            box-shadow: none;
-            position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        .answer-button:hover {
-            color: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
-        }
-
-        .answer-translation {
-            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
-            background: none; color: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px; border-radius: 0; font-size: 12px;
-            font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 100; letter-spacing: 1px;
-            opacity: 0; transition: all 0.3s ease; pointer-events: none;
-            box-shadow: none;
-            white-space: nowrap; z-index: 1000;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
-        /* ===== TIME ANSWER BUTTONS (Q4) ===== */
-        .time-buttons-container {
-            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px;
-            opacity: 0; transition: all 0.6s ease; pointer-events: none; z-index: 100;
-            flex-wrap: wrap;
-        }
-        .time-buttons-container.visible {
-            opacity: 1; pointer-events: all;
-        }
-
-        .time-button {
-            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
-            background: none; border-radius: 0;
-            font-size: clamp(16px, 4vw, 20px); 
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-weight: 200; letter-spacing: 1px; cursor: pointer;
-            min-width: auto; min-height: auto; 
-            transition: all 0.4s ease;
-            backdrop-filter: none;
-            box-shadow: none;
-            position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        .time-button:hover {
-            color: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
-        }
-
-        /* ===== PROBABILITY ANSWER BUTTONS (Q5) ===== */
-        .probability-buttons-container {
-            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px;
-            opacity: 0; transition: all 0.6s ease; pointer-events: none; z-index: 100;
-            flex-wrap: wrap;
-        }
-        .probability-buttons-container.visible {
-            opacity: 1; pointer-events: all;
-        }
-
-        .probability-button {
-            color: rgba(255, 255, 255, 0.95); border: none; padding: 15px 25px; 
-            background: none; border-radius: 0;
-            font-size: clamp(16px, 4vw, 20px); 
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-weight: 200; letter-spacing: 1px; cursor: pointer;
-            min-width: auto; min-height: auto; 
-            transition: all 0.4s ease;
-            backdrop-filter: none;
-            box-shadow: none;
-            position: relative; overflow: visible;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        .probability-button:hover {
-            color: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
-        }
-
-        .answer-button:hover .answer-translation,
-        .answer-button:active .answer-translation,
-        .answer-button:focus .answer-translation {
-            opacity: 1; transform: translateX(-50%) translateY(-3px);
-        }
 
         /* ===== LOGO ANIMATION ===== */
         .init-logo { 
@@ -222,26 +93,29 @@
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
         }
 
-        /* ===== DNA VISUALIZER ===== */
+        /* ===== DNA VISUALIZER WITH TEXT BUTTON CAPABILITY ===== */
         .voice-visualizer { 
             height: 120px; width: min(450px, 85vw); position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             display: flex; align-items: center; justify-content: center; opacity: 0;
+            cursor: pointer;
+            transition: all 0.6s ease;
         }
 
         .dna-container { 
             display: flex; align-items: center; justify-content: center;
-            z-index: 1; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); width: min(400px, 80vw); height: 80px;
+            z-index: 1; position: relative; width: min(400px, 80vw); height: 80px;
             transform-style: preserve-3d; perspective: 1000px;
         }
 
+        /* DNA Strands */
         .dna-strand { 
             fill: none; stroke: white; stroke-width: 5; stroke-linecap: round;
             animation: sg1DNAFlow 5s linear infinite;
             transform-origin: 50% 50%;
             filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
             opacity: 1;
+            transition: opacity 0.8s ease;
         }
         .dna-strand:nth-child(2) { 
             animation-delay: 0.5s;
@@ -257,7 +131,7 @@
             100% { transform: rotateX(360deg); }
         }
 
-        /* RESTORED: Fast speaking animations */
+        /* Fast speaking animations */
         @keyframes sg1DNAFlowFast1 {
             0% { transform: rotateX(0deg); }
             20% { transform: rotateX(120deg); }
@@ -299,6 +173,140 @@
             filter: drop-shadow(1px 1px 3px rgba(255, 213, 79, 0.4));
         }
 
+        /* ===== DNA TEXT BUTTON ===== */
+        .dna-text-button {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(20px, 5vw, 28px);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 200;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s ease;
+            cursor: pointer;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .dna-text-button.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .dna-text-button:hover {
+            color: rgba(255, 255, 255, 1);
+            transform: translate(-50%, -50%) translateY(-3px);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        /* DNA state when showing text */
+        .voice-visualizer.text-mode .dna-strand {
+            opacity: 0;
+        }
+
+        .voice-visualizer.text-mode .dna-text-button {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Answer choices container */
+        .answer-choices-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s ease;
+            z-index: 10;
+        }
+
+        .answer-choices-container.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .answer-choice {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(14px, 3.5vw, 16px);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 200;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            text-align: center;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .answer-choice:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .answer-translation {
+            font-size: 12px;
+            opacity: 0.7;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* Time and probability buttons */
+        .time-probability-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s ease;
+            z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .time-probability-container.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .time-choice, .probability-choice {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(16px, 4vw, 20px);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 200;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            cursor: pointer;
+            padding: 15px 25px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
+
+        .time-choice:hover, .probability-choice:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: rgba(255, 255, 255, 1);
+        }
+
         /* ===== PROGRESS BAR ===== */
         .progress-container { 
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -314,6 +322,24 @@
         .hidden { opacity: 0 !important; pointer-events: none !important; }
         .visible { opacity: 1 !important; pointer-events: all !important; }
         .active { display: flex !important; }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .answer-choice {
+                min-width: 280px;
+                font-size: 14px;
+            }
+
+            .time-probability-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .time-choice, .probability-choice {
+                min-width: 120px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -330,53 +356,51 @@
             <div style="position: absolute; bottom: 100px; color: white; font-size: 16px; opacity: 0.8;" id="statusText">Initializing audio system...</div>
         </div>
 
-        <div class="voice-visualizer" id="visualizer">
+        <div class="voice-visualizer" id="visualizer" onclick="DNAButton.handleClick()">
             <div class="dna-container">
                 <svg width="100%" height="80" viewBox="0 0 400 80">
                     <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
                     <path class="dna-strand" d="M0,40 Q50,65 100,40 Q150,15 200,40 Q250,65 300,40 Q350,15 400,40" />
                     <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
                 </svg>
+                
+                <!-- Text button overlay -->
+                <div class="dna-text-button" id="dnaTextButton"></div>
+                
+                <!-- Answer choices for question 1 -->
+                <div class="answer-choices-container" id="answerChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(0)">
+                        Gute Frage
+                        <div class="answer-translation">Good question</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
+                        Das geht Dich gar nichts an
+                        <div class="answer-translation">That's none of your business</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
+                        Keine Ahnung
+                        <div class="answer-translation">No idea</div>
+                    </div>
+                </div>
+
+                <!-- Time commitment choices for question 3 -->
+                <div class="time-probability-container" id="timeChoicesContainer">
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(0)">1h/w</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(1)">5hrs/w</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(2)">15hrs/w</div>
+                </div>
+
+                <!-- Probability choices for question 4 -->
+                <div class="time-probability-container" id="probabilityChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">&lt;50%</div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">80%</div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
+                </div>
             </div>
         </div>
 
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
-        </div>
-
-        <div class="bereit-button" id="bereitButton" onclick="Conversation.handleBereit()">Bereit</div>
-        <div class="dummy-button" id="dummyButton" onclick="Conversation.handleDummy()">dummy</div>
-        <div class="ja-button" id="jaButton" onclick="Conversation.handleJa()">Ja</div>
-        <div class="na-gut-button" id="naGutButton" onclick="Conversation.handleNaGut()">Na gut.</div>
-
-        <!-- Answer buttons for Q2 -->
-        <div class="answer-buttons-container" id="answerButtonsContainer">
-            <button class="answer-button answer-button-1" onclick="Conversation.handleAnswerButton()">
-                Gute Frage
-                <div class="answer-translation">Good question</div>
-            </button>
-            <button class="answer-button answer-button-2" onclick="Conversation.handleAnswerButton()">
-                Das geht Dich gar nichts an
-                <div class="answer-translation">That's none of your business</div>
-            </button>
-            <button class="answer-button answer-button-3" onclick="Conversation.handleAnswerButton()">
-                Keine Ahnung
-                <div class="answer-translation">No idea</div>
-            </button>
-        </div>
-
-        <!-- Time commitment buttons for Q4 -->
-        <div class="time-buttons-container" id="timeButtonsContainer">
-            <button class="time-button time-button-1" onclick="Conversation.handleTimeButton()">1h/w</button>
-            <button class="time-button time-button-2" onclick="Conversation.handleTimeButton()">5hrs/w</button>
-            <button class="time-button time-button-3" onclick="Conversation.handleTimeButton()">15hrs/w</button>
-        </div>
-
-        <!-- Probability buttons for Q5 -->
-        <div class="probability-buttons-container" id="probabilityButtonsContainer">
-            <button class="probability-button probability-button-1" onclick="Conversation.handleProbabilityButton('low')">&lt;50%</button>
-            <button class="probability-button probability-button-2" onclick="Conversation.handleProbabilityButton('medium')">80%</button>
-            <button class="probability-button probability-button-3" onclick="Conversation.handleProbabilityButton('high')">100%</button>
         </div>
 
         <!-- Background music -->
@@ -405,6 +429,7 @@
             inFinalSequence: false,
             audioUnlocked: false,
             mobileAudioStarted: false,
+            holdingTimer: null,
             
             audioFiles: {
                 0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
@@ -468,66 +493,266 @@
             updateProgress: function(percentage) {
                 var bar = this.element('progressBar');
                 if (bar) bar.style.width = percentage + '%';
-            },
+            }
+        };
+
+        // DNA Button Controller - handles the DNA-to-text transformation
+        var DNAButton = {
+            currentMode: 'dna', // 'dna', 'text', 'choices', 'time', 'probability'
             
-            showBereitButton: function() {
-                this.hideAllButtons();
-                var button = this.element('bereitButton');
-                if (button) {
-                    button.classList.add('visible');
-                    button.style.opacity = '1';
-                    button.style.pointerEvents = 'all';
+            // Show text on DNA
+            showText: function(text) {
+                var visualizer = UI.element('visualizer');
+                var textButton = UI.element('dnaTextButton');
+                
+                if (textButton && visualizer) {
+                    textButton.textContent = text;
+                    visualizer.classList.add('text-mode');
+                    textButton.classList.add('visible');
+                    this.currentMode = 'text';
+                    DebugLog.log('DNA showing text: ' + text);
                 }
             },
             
-            showDummyButton: function() {
-                this.hideAllButtons();
-                var button = this.element('dummyButton');
-                if (button) button.classList.add('visible');
-            },
-            
-            showJaButton: function() {
-                this.hideAllButtons();
-                var button = this.element('jaButton');
-                if (button) button.classList.add('visible');
-            },
-            
-            showNaGutButton: function() {
-                this.hideAllButtons();
-                var button = this.element('naGutButton');
-                if (button) button.classList.add('visible');
-            },
-
-            showAnswerButtons: function() {
-                this.hideAllButtons();
-                var container = this.element('answerButtonsContainer');
-                if (container) container.classList.add('visible');
-            },
-
-            showTimeButtons: function() {
-                this.hideAllButtons();
-                var container = this.element('timeButtonsContainer');
-                if (container) container.classList.add('visible');
-            },
-
-            showProbabilityButtons: function() {
-                this.hideAllButtons();
-                var container = this.element('probabilityButtonsContainer');
-                if (container) container.classList.add('visible');
-            },
-            
-            hideAllButtons: function() {
-                var buttons = ['bereitButton', 'dummyButton', 'jaButton', 'naGutButton'];
-                for (var i = 0; i < buttons.length; i++) {
-                    var button = this.element(buttons[i]);
-                    if (button) button.classList.remove('visible');
+            // Hide text and show DNA
+            hideTex: function() {
+                var visualizer = UI.element('visualizer');
+                var textButton = UI.element('dnaTextButton');
+                
+                if (textButton && visualizer) {
+                    visualizer.classList.remove('text-mode');
+                    textButton.classList.remove('visible');
+                    this.currentMode = 'dna';
+                    DebugLog.log('DNA text hidden, showing DNA');
                 }
-                var answerContainer = this.element('answerButtonsContainer');
-                if (answerContainer) answerContainer.classList.remove('visible');
-                var timeContainer = this.element('timeButtonsContainer');
-                if (timeContainer) timeContainer.classList.remove('visible');
-                var probabilityContainer = this.element('probabilityButtonsContainer');
-                if (probabilityContainer) probabilityContainer.classList.remove('visible');
+            },
+
+            // Show answer choices
+            showAnswerChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var choicesContainer = UI.element('answerChoicesContainer');
+                
+                if (choicesContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    choicesContainer.classList.add('visible');
+                    this.currentMode = 'choices';
+                    DebugLog.log('DNA showing answer choices');
+                }
+            },
+
+            // Show time choices
+            showTimeChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var timeContainer = UI.element('timeChoicesContainer');
+                
+                if (timeContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    timeContainer.classList.add('visible');
+                    this.currentMode = 'time';
+                    DebugLog.log('DNA showing time choices');
+                }
+            },
+
+            // Show probability choices  
+            showProbabilityChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var probContainer = UI.element('probabilityChoicesContainer');
+                
+                if (probContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    probContainer.classList.add('visible');
+                    this.currentMode = 'probability';
+                    DebugLog.log('DNA showing probability choices');
+                }
+            },
+            
+            // Hide all overlays and show DNA
+            showDNA: function() {
+                var visualizer = UI.element('visualizer');
+                var textButton = UI.element('dnaTextButton');
+                var choicesContainer = UI.element('answerChoicesContainer');
+                var timeContainer = UI.element('timeChoicesContainer');
+                var probContainer = UI.element('probabilityChoicesContainer');
+                
+                if (visualizer) {
+                    visualizer.classList.remove('text-mode');
+                    if (textButton) textButton.classList.remove('visible');
+                    if (choicesContainer) choicesContainer.classList.remove('visible');
+                    if (timeContainer) timeContainer.classList.remove('visible');
+                    if (probContainer) probContainer.classList.remove('visible');
+                    this.currentMode = 'dna';
+                    DebugLog.log('DNA visible, all text hidden');
+                }
+            },
+            
+            // Handle clicks on the DNA area
+            handleClick: function() {
+                if (this.currentMode !== 'text') return;
+                
+                DebugLog.log('DNA text button clicked for step ' + State.step);
+                
+                // Add click animation
+                this.animateClick();
+                
+                // Handle based on current step
+                switch(State.step) {
+                    case 0: // Bereit
+                        this.handleBereit();
+                        break;
+                    case 2: // Hold to speak
+                    case 5: // Mother question hold to speak
+                    case 7: // Final hold to speak
+                        this.handleHoldToSpeak();
+                        break;
+                    case 6: // Ja
+                        this.handleJa();
+                        break;
+                    case 8: // Na gut
+                        this.handleNaGut();
+                        break;
+                }
+            },
+
+            // Handle answer choices
+            handleAnswerChoice: function(choiceIndex) {
+                if (this.currentMode !== 'choices') return;
+                
+                DebugLog.log('Answer choice clicked: ' + choiceIndex);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.moveToNextQuestion();
+                }, 800);
+            },
+
+            // Handle time choices
+            handleTimeChoice: function(choiceIndex) {
+                if (this.currentMode !== 'time') return;
+                
+                DebugLog.log('Time choice clicked: ' + choiceIndex);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.moveToNextQuestion();
+                }, 800);
+            },
+
+            // Handle probability choices
+            handleProbabilityChoice: function(level) {
+                if (this.currentMode !== 'probability') return;
+                
+                DebugLog.log('Probability choice clicked: ' + level);
+                this.animateChoiceClick();
+                
+                // Special handling for <50% option
+                if (level === 'low') {
+                    setTimeout(function() {
+                        window.open('https://smartergerman.com/courses/unblock-your-german/', '_blank');
+                        DNAButton.showDNA();
+                        Conversation.moveToNextQuestion();
+                    }, 800);
+                } else {
+                    setTimeout(function() {
+                        DNAButton.showDNA();
+                        Conversation.moveToNextQuestion();
+                    }, 800);
+                }
+            },
+            
+            // Animate text click
+            animateClick: function() {
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                    textButton.style.opacity = '0.7';
+                    
+                    setTimeout(function() {
+                        textButton.style.transform = 'translate(-50%, -50%) scale(1)';
+                        textButton.style.opacity = '1';
+                    }, 200);
+                }
+            },
+
+            // Animate choice click
+            animateChoiceClick: function() {
+                var containers = ['answerChoicesContainer', 'timeChoicesContainer', 'probabilityChoicesContainer'];
+                containers.forEach(function(id) {
+                    var container = UI.element(id);
+                    if (container && container.classList.contains('visible')) {
+                        container.style.opacity = '0';
+                        container.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                    }
+                });
+            },
+            
+            // Button handlers
+            handleBereit: function() {
+                this.showDNA();
+                setTimeout(function() {
+                    Conversation.moveToNextQuestion();
+                }, 1000);
+            },
+            
+            handleHoldToSpeak: function() {
+                if (State.isSpeaking) return;
+                
+                DebugLog.log('Hold to speak activated');
+                
+                // Change text to indicate recording
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.textContent = 'Recording...';
+                    textButton.style.color = 'rgba(255, 213, 79, 0.95)';
+                }
+                
+                UI.setVisualizerState('listening');
+                
+                // Auto-release after 3 seconds or if it's the mother question with timer
+                var holdDuration = (State.step === 5) ? 7000 : 3000;
+                
+                State.holdingTimer = setTimeout(function() {
+                    DNAButton.stopHoldToSpeak();
+                }, holdDuration);
+            },
+            
+            stopHoldToSpeak: function() {
+                DebugLog.log('Hold to speak released');
+                
+                if (State.holdingTimer) {
+                    clearTimeout(State.holdingTimer);
+                    State.holdingTimer = null;
+                }
+                
+                // Reset text color
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.color = 'rgba(255, 255, 255, 0.95)';
+                }
+                
+                this.showDNA();
+                UI.setVisualizerState('active');
+                
+                setTimeout(function() {
+                    if (State.step === 5) {
+                        Conversation.moveToNextQuestion();
+                    } else {
+                        Conversation.playThankYou();
+                    }
+                }, 500);
+            },
+            
+            handleJa: function() {
+                this.showDNA();
+                setTimeout(function() {
+                    Conversation.moveToNextQuestion();
+                }, 1000);
+            },
+            
+            handleNaGut: function() {
+                this.showDNA();
+                Conversation.completeCourse();
             }
         };
 
@@ -545,7 +770,6 @@
                 }
                 
                 DebugLog.log('Attempting to start background music...');
-                DebugLog.log('Music element state: paused=' + music.paused + ', volume=' + music.volume);
                 
                 music.volume = 0.3;
                 music.muted = false;
@@ -557,8 +781,6 @@
                     }).catch(function(e) {
                         DebugLog.log('❌ Background music prevented: ' + e.name + ' - ' + e.message);
                     });
-                } else {
-                    DebugLog.log('❌ No play promise returned from music.play()');
                 }
             },
             
@@ -655,144 +877,6 @@
         };
 
         var Conversation = {
-            handleBereit: function() {
-                DebugLog.log('Bereit button clicked');
-                // Immediately start fading out the button
-                var button = UI.element('bereitButton');
-                if (button) {
-                    button.style.opacity = '0';
-                    button.style.transform = 'translateX(-50%) translateY(10px)';
-                    button.style.pointerEvents = 'none';
-                }
-                setTimeout(function() {
-                    UI.hideAllButtons();
-                    Conversation.moveToNextQuestion();
-                }, 1000);
-            },
-
-            handleDummy: function() {
-                DebugLog.log('Dummy button clicked');
-                // Immediately start fading out the dummy button
-                var button = UI.element('dummyButton');
-                if (button) {
-                    button.style.opacity = '0';
-                    button.style.transform = 'translateX(-50%) translateY(10px)';
-                    button.style.pointerEvents = 'none';
-                }
-                setTimeout(function() {
-                    UI.hideAllButtons();
-                    if (State.step === 5) {
-                        Conversation.moveToNextQuestion();
-                    } else {
-                        Conversation.playThankYou();
-                    }
-                }, 1000);
-            },
-
-            startHolding: function() {
-                // Remove this function as we no longer have hold-to-speak
-            },
-
-            stopHolding: function() {
-                // Remove this function as we no longer have hold-to-speak
-            },
-
-            simulateInterruption: function() {
-                DebugLog.log('Mother interruption triggered');
-                
-                UI.setVisualizerState('active');
-                UI.hideAllButtons();
-                
-                setTimeout(function() {
-                    if (State.step === 5) {
-                        Conversation.moveToNextQuestion();
-                    } else {
-                        Conversation.playThankYou();
-                    }
-                }, 1000);
-            },
-
-            handleJa: function() {
-                DebugLog.log('Ja button clicked');
-                // Immediately start fading out the JA button
-                var button = UI.element('jaButton');
-                if (button) {
-                    button.style.opacity = '0';
-                    button.style.transform = 'translateX(-50%) translateY(10px)';
-                    button.style.pointerEvents = 'none';
-                }
-                if (State.step === 6) {
-                    setTimeout(function() {
-                        UI.hideAllButtons();
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                }
-            },
-
-            handleNaGut: function() {
-                DebugLog.log('Na gut button clicked');
-                UI.hideAllButtons();
-                this.completeCourse();
-            },
-
-            handleAnswerButton: function() {
-                DebugLog.log('Answer button clicked');
-                // Immediately start fading out the answer buttons
-                var container = UI.element('answerButtonsContainer');
-                if (container) {
-                    container.style.opacity = '0';
-                    container.style.transform = 'translateX(-50%) translateY(10px)';
-                    container.style.pointerEvents = 'none';
-                }
-                setTimeout(function() {
-                    UI.hideAllButtons();
-                    Conversation.moveToNextQuestion();
-                }, 1000);
-            },
-
-            handleTimeButton: function() {
-                DebugLog.log('Time button clicked');
-                // Immediately start fading out the time buttons
-                var container = UI.element('timeButtonsContainer');
-                if (container) {
-                    container.style.opacity = '0';
-                    container.style.transform = 'translateX(-50%) translateY(10px)';
-                    container.style.pointerEvents = 'none';
-                }
-                setTimeout(function() {
-                    UI.hideAllButtons();
-                    Conversation.moveToNextQuestion();
-                }, 1000);
-            },
-
-            handleProbabilityButton: function(level) {
-                DebugLog.log('Probability button clicked: ' + level);
-                
-                // Immediately start fading out the probability buttons
-                var container = UI.element('probabilityButtonsContainer');
-                if (container) {
-                    container.style.opacity = '0';
-                    container.style.transform = 'translateX(-50%) translateY(10px)';
-                    container.style.pointerEvents = 'none';
-                }
-                
-                // Special handling for <50% option
-                if (level === 'low') {
-                    DebugLog.log('Low probability selected, opening external course');
-                    setTimeout(function() {
-                        window.open('https://smartergerman.com/courses/unblock-your-german/', '_blank');
-                        UI.hideAllButtons();
-                        // Still continue to next question after opening the link
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                } else {
-                    setTimeout(function() {
-                        UI.hideAllButtons();
-                        Conversation.moveToNextQuestion();
-                    }, 1000);
-                }
-            },
-
             playThankYou: function() {
                 DebugLog.log('Playing thank you audio');
                 State.isSpeaking = true;
@@ -895,28 +979,41 @@
 
             showNextButton: function() {
                 setTimeout(function() {
-                    if (State.step === 1) {
-                        UI.showAnswerButtons();
-                    } else if (State.step === 2) {
-                        UI.showDummyButton();
-                    } else if (State.step === 3) {
-                        UI.showTimeButtons();
-                    } else if (State.step === 4) {
-                        UI.showProbabilityButtons();
-                    } else if (State.step === 5) {
-                        UI.showDummyButton();
-                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
-                    } else if (State.step === 6) {
-                        UI.showJaButton();
-                    } else if (State.step === 7) {
-                        UI.showDummyButton();
-                    } else if (State.step === 8) {
-                        if (!State.inFinalSequence) {
-                            State.inFinalSequence = true;
-                            setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
-                        }
-                    } else if (State.step === 9) {
-                        UI.showNaGutButton();
+                    switch(State.step) {
+                        case 0: // Welcome -> Show "Bereit"
+                            DNAButton.showText('Bereit');
+                            break;
+                        case 1: // Why question -> Show answer choices
+                            DNAButton.showAnswerChoices();
+                            break;
+                        case 2: // Goal question -> Show "Hold to speak"
+                            DNAButton.showText('Hold to speak');
+                            break;
+                        case 3: // Time question -> Show time choices
+                            DNAButton.showTimeChoices();
+                            break;
+                        case 4: // Probability question -> Show probability choices
+                            DNAButton.showProbabilityChoices();
+                            break;
+                        case 5: // Mother question -> Show "Hold to speak"
+                            DNAButton.showText('Hold to speak');
+                            // Auto-interrupt after 7 seconds handled in hold function
+                            break;
+                        case 6: // Michael introduction -> Show "Ja"
+                            DNAButton.showText('Ja');
+                            break;
+                        case 7: // Final question -> Show "Hold to speak"
+                            DNAButton.showText('Hold to speak');
+                            break;
+                        case 8: // Final sequence
+                            if (!State.inFinalSequence) {
+                                State.inFinalSequence = true;
+                                setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
+                            }
+                            break;
+                        case 9: // Very end -> Show "Na gut."
+                            DNAButton.showText('Na gut.');
+                            break;
                     }
                 }, 1000);
             },
@@ -936,15 +1033,15 @@
                             setTimeout(function() {
                                 State.step = 9;
                                 UI.updateProgress(100);
-                                // ...audio playbook already handled, removed Speech.speak...
+                                DNAButton.showText('Na gut.');
                             }, 7000);
                         },
                         function(e) {
                             DebugLog.log('Final audio error: ' + (e && e.message));
                             State.isSpeaking = false;
                             setTimeout(function() {
-                                State.step = 6;
-                                // ...audio playback already handled, removed Speech.speak...
+                                State.step = 9;
+                                DNAButton.showText('Na gut.');
                             }, 7000);
                         }
                     );
@@ -955,9 +1052,9 @@
                         State.isSpeaking = false;
                         UI.setVisualizerState('active');
                         setTimeout(function() {
-                            State.step = 6;
+                            State.step = 9;
                             UI.updateProgress(100);
-                            // ...audio playback already handled, removed Speech.speak...
+                            DNAButton.showText('Na gut.');
                         }, 7000);
                     };
                     finalAudio.onerror = function() {
@@ -965,14 +1062,14 @@
                         State.isSpeaking = false;
                         setTimeout(function() {
                             State.step = 9;
-                            // ...audio playback already handled, removed Speech.speak...
+                            DNAButton.showText('Na gut.');
                         }, 7000);
                     };
                     finalAudio.play().catch(function(e) {
                         DebugLog.log('Final audio play failed: ' + e.message);
                         setTimeout(function() {
-                            State.step = 6;
-                            // ...audio playback already handled, removed Speech.speak...
+                            State.step = 9;
+                            DNAButton.showText('Na gut.');
                         }, 7000);
                     });
                 }
@@ -1015,23 +1112,23 @@
                     WebAudioHelper.play(url, function() {
                         DebugLog.log('Audio ended for welcome message');
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
                     }, function(e) {
                         DebugLog.log('Audio error for welcome message: ' + (e && e.message));
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
                     });
                 } else {
                     var audio = new Audio(url);
                     audio.onended = function() {
                         DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
                     };
                     audio.onerror = function(e) {
                         DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
                         UI.setVisualizerState('active');
-                        setTimeout(function() { UI.showBereitButton(); }, 2000);
+                        setTimeout(function() { DNAButton.showText('Bereit'); }, 2000);
                     };
                     audio.play();
                 }
@@ -1269,7 +1366,7 @@
                                         DebugLog.log('🏁 Mobile audio ended');
                                         State.isSpeaking = false;
                                         UI.setVisualizerState('active');
-                                        setTimeout(function() { UI.showBereitButton(); }, 1000);
+                                        setTimeout(function() { DNAButton.showText('Bereit'); }, 1000);
                                     };
                                 }).catch(function(e) {
                                     DebugLog.log('🚨 MOBILE AUDIO FAILED:');
