@@ -454,13 +454,32 @@
             }
 
             .time-probability-container {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
                 gap: 15px;
+                justify-content: center;
+                max-width: 90vw;
             }
 
             .time-choice, .probability-choice {
-                min-width: 120px;
+                min-width: 80px;
                 text-align: center;
+                flex: 0 0 auto;
+            }
+
+            /* Scale buttons in grid on mobile */
+            #scaleChoicesContainer, #motherScaleChoicesContainer {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+                max-width: 350px;
+            }
+
+            #scaleChoicesContainer .probability-choice,
+            #motherScaleChoicesContainer .probability-choice {
+                min-width: 50px;
+                padding: 12px 8px;
+                font-size: 16px;
             }
         }
 
@@ -470,6 +489,32 @@
                 font-size: 15px;
                 white-space: normal; /* Allow wrapping on small phones */
             }
+
+            /* Smaller scale buttons on small phones */
+            #scaleChoicesContainer, #motherScaleChoicesContainer {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
+                max-width: 300px;
+            }
+        }
+
+        /* Desktop scale button layout */
+        @media (min-width: 769px) {
+            #scaleChoicesContainer, #motherScaleChoicesContainer {
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 10px;
+                max-width: 600px;
+            }
+
+            #scaleChoicesContainer .probability-choice,
+            #motherScaleChoicesContainer .probability-choice {
+                min-width: 50px;
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -477,15 +522,6 @@
     <div class="sg1-container">
         <!-- Music indicator on all screens -->
         <div class="music-indicator" id="musicIndicator" onclick="SG1.toggleMusic()">music</div>
-
-        <!-- DEVELOPMENT CONTROLS (REMOVE IN PRODUCTION) -->
-        <div class="dev-controls" id="devControls">
-            <div class="dev-info" id="devInfo">Step: 0</div>
-            <button class="dev-button" onclick="DevControls.skip()" id="devSkip">Skip</button>
-            <button class="dev-button" onclick="DevControls.back()" id="devBack" disabled>Back</button>
-            <button class="dev-button" onclick="DevControls.testForm()">Test Form</button>
-        </div>
-        <!-- END DEVELOPMENT CONTROLS -->
 
         <div class="pre-init-overlay overlay-base" id="preInitOverlay">
             <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
@@ -514,12 +550,16 @@
                         <div class="answer-translation">Good question</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
-                        Das geht Dich gar nichts an
-                        <div class="answer-translation">That's none of your business</div>
+                        Nächste Frage
+                        <div class="answer-translation">Next question</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
                         Keine Ahnung
                         <div class="answer-translation">No idea</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(3)">
+                        Das geht Dich gar nichts an
+                        <div class="answer-translation">That's none of your business</div>
                     </div>
                 </div>
 
@@ -537,9 +577,9 @@
 
                 <!-- Time commitment choices for question 3 -->
                 <div class="time-probability-container" id="timeChoicesContainer">
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(0)">1h/w</div>
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(1)">5hrs/w</div>
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(2)">15hrs/w</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(0)">1 hours per day</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(1)">5 hours per day</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(2)">15 hours per day</div>
                 </div>
 
                 <!-- Probability choices for question 4 -->
@@ -547,6 +587,72 @@
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">&lt;50%</div>
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">80%</div>
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
+                </div>
+
+                <!-- Scale 1-10 choices for questions 5, 6 -->
+                <div class="time-probability-container" id="scaleChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(1)">1</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(2)">2</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(3)">3</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(4)">4</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(5)">5</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(6)">6</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(7)">7</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(8)">8</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(9)">9</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(10)">10</div>
+                </div>
+
+                <!-- Food choices for question 7 -->
+                <div class="answer-choices-container" id="foodChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleFoodChoice(0)">
+                        Kartoffelpuffer
+                        <div class="answer-translation">Potato pancakes</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleFoodChoice(1)">
+                        Currywurst
+                        <div class="answer-translation">Curry sausage</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleFoodChoice(2)">
+                        Döner
+                        <div class="answer-translation">Döner kebab</div>
+                    </div>
+                </div>
+
+                <!-- German person choices for question 8 -->
+                <div class="answer-choices-container" id="germanChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleGermanChoice(0)">Adolf Hitler</div>
+                    <div class="answer-choice" onclick="DNAButton.handleGermanChoice(1)">Arnold Schwarzenegger</div>
+                    <div class="answer-choice" onclick="DNAButton.handleGermanChoice(2)">Angela Merkel</div>
+                </div>
+
+                <!-- Call frequency choices for question 10 -->
+                <div class="answer-choices-container" id="callChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleCallChoice(0)">Once per day</div>
+                    <div class="answer-choice" onclick="DNAButton.handleCallChoice(1)">Once per week</div>
+                    <div class="answer-choice" onclick="DNAButton.handleCallChoice(2)">Once per year or less</div>
+                </div>
+
+                <!-- Scale 1-11 choices for question 11 (joke: 11 buttons showing 1-10) -->
+                <div class="time-probability-container" id="motherScaleChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(1)">1</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(2)">2</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(3)">3</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(4)">4</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(5)">5</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(6)">6</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(7)">7</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(8)">8</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(9)">9</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(10)">10</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(11)">10</div>
+                </div>
+
+                <!-- AI type choices for question 12 -->
+                <div class="answer-choices-container" id="aiChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('male')">Male</div>
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('female')">Female</div>
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('diverse')">Diverse</div>
                 </div>
             </div>
         </div>
@@ -557,7 +663,7 @@
 
         <!-- Background music -->
         <audio id="backgroundMusic" loop preload="auto">
-            <source src="https://uploads.teachablecdn.com/attachments/1b02582168af4a60adcfc9dc91660d37.mp3" type="audio/mpeg">
+            <source src="https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3" type="audio/mpeg">
         </audio>
     </div>
 
@@ -567,10 +673,10 @@
             log: function(message) {
                 var timestamp = new Date().toLocaleTimeString();
                 var logMessage = '[' + timestamp + '] ' + String(message);
-                // try { console.log(logMessage); } catch(e){}
+                try { console.log(logMessage); } catch(e){}
             },
             init: function() {
-                // console.log('=== DEBUG SYSTEM INITIALIZED (CONSOLE ONLY) ===');
+                console.log('=== DEBUG SYSTEM INITIALIZED ===');
             }
         };
 
@@ -582,31 +688,30 @@
             audioUnlocked: false,
             mobileAudioStarted: false,
             holdingTimer: null,
+            selectedAIType: null, // For branching logic in Q12
             
             audioFiles: {
-                0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
-                1: 'https://uploads.teachablecdn.com/attachments/91dd16c7d1c64ce6afb59a1d72ded03b.mp3',
-                2: 'https://uploads.teachablecdn.com/attachments/e37c338dcbe745859c45484d45f14666.mp3',
-                3: 'https://uploads.teachablecdn.com/attachments/54355724a83d440cb199271eafe57e24.mp3',
-                4: 'https://uploads.teachablecdn.com/attachments/95631cf6057642709b18f5902c511958.mp3',
-                5: 'https://uploads.teachablecdn.com/attachments/e85d721b671746169040af93a4aa37b1.mp3',
-                6: 'https://uploads.teachablecdn.com/attachments/ac76bcc7a7dd4544b0364e277ceb0970.mp3',
-                7: 'https://uploads.teachablecdn.com/attachments/0cdfc0ce7a3245618d7fed8ce25d7d3b.mp3',
-                8: 'https://uploads.teachablecdn.com/attachments/28a3453828b247529b17c6cfc0cc745c.mp3'
+                0: 'https://uploads.teachablecdn.com/attachments/3623b7eb37e640b2946b7f07b730dff7.mp3',
+                1: 'https://uploads.teachablecdn.com/attachments/9cc7908384fd49c58242394eadc70273.mp3',
+                2: 'https://uploads.teachablecdn.com/attachments/fc2c86bf325b410797aa9a99af512c37.mp3',
+                3: 'https://uploads.teachablecdn.com/attachments/3ac16fa084c24c36aa0dfd5373cdb9e8.mp3',
+                4: 'https://uploads.teachablecdn.com/attachments/a50b18aaab3048598be4786a359612d6.m4a',
+                5: 'https://uploads.teachablecdn.com/attachments/ba1fd841f66b485d8ecd6f17a94edb80.mp3',
+                6: 'https://uploads.teachablecdn.com/attachments/3241a2f7d8e447469e9d3e038afdbf07.mp3',
+                7: 'https://uploads.teachablecdn.com/attachments/60c3a446d2b24be38dc14fe88be58f53.mp3',
+                8: 'https://uploads.teachablecdn.com/attachments/d72b2fb1573f4b73bfa8552d21e99e40.mp3',
+                9: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',
+                10: 'https://uploads.teachablecdn.com/attachments/3886fdb12b16415f89ff5fbe1e4114f0.mp3',
+                11: 'https://uploads.teachablecdn.com/attachments/6af1fcc67d71404fb415c19f720f00af.mp3',
+                12: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3',
+                13: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',
+                14: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',
+                15: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3',
+                16: 'https://uploads.teachablecdn.com/attachments/a02dd5d73da4499dbe9f26cca03a6039.mp3',
+                17: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'
             },
             
-            thankYouAudio: 'https://uploads.teachablecdn.com/attachments/4e2906fba5dc40e6bd0d294332e94123.mp3',
-            finalThankYouAudio: 'https://uploads.teachablecdn.com/attachments/8f1a13b6a0e14abb885ef5f979d3d6c7.mp3',
-            
-            questions: [
-                "Welcome to the world's first artificially intelligent German Course system, SG1.",
-                "Why do you want to learn German? I mean seriously: WHY?",
-                "What's your goal? Where do you want to be with your German after what amount of time?",
-                "How much time do you plan to spend on your German?",
-                "How probable is it that you will reach your goal?",
-                "How would you describe your relationship with your mother?",
-                "Hi there. My name is Michael. I'll be your instructor for the coming 23.5 years. But don't despair. Even the longest journey will come to an end eventually. Sooner or later. In your case rather later. Shall we begin?"
-            ]
+            thankYouAudio: 'https://uploads.teachablecdn.com/attachments/e45836cb3b024909ae5d8d9d6ae3f22c.mp3'
         };
 
         var UI = {
@@ -766,6 +871,84 @@
                     }, 300);
                 }
             },
+
+            // Show scale choices (1-10)
+            showScaleChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var scaleContainer = UI.element('scaleChoicesContainer');
+                
+                if (scaleContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    scaleContainer.classList.add('visible');
+                    this.currentMode = 'scale';
+                    DebugLog.log('DNA showing 1-10 scale choices');
+                }
+            },
+
+            // Show food choices
+            showFoodChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var foodContainer = UI.element('foodChoicesContainer');
+                
+                if (foodContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    foodContainer.classList.add('visible');
+                    this.currentMode = 'food';
+                    DebugLog.log('DNA showing food choices');
+                }
+            },
+
+            // Show German person choices
+            showGermanChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var germanContainer = UI.element('germanChoicesContainer');
+                
+                if (germanContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    germanContainer.classList.add('visible');
+                    this.currentMode = 'german';
+                    DebugLog.log('DNA showing German person choices');
+                }
+            },
+
+            // Show call frequency choices
+            showCallChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var callContainer = UI.element('callChoicesContainer');
+                
+                if (callContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    callContainer.classList.add('visible');
+                    this.currentMode = 'call';
+                    DebugLog.log('DNA showing call frequency choices');
+                }
+            },
+
+            // Show mother scale choices (1-11 buttons showing 1-10)
+            showMotherScaleChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var motherScaleContainer = UI.element('motherScaleChoicesContainer');
+                
+                if (motherScaleContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    motherScaleContainer.classList.add('visible');
+                    this.currentMode = 'mother-scale';
+                    DebugLog.log('DNA showing mother love scale (1-11 buttons)');
+                }
+            },
+
+            // Show AI type choices
+            showAIChoices: function() {
+                var visualizer = UI.element('visualizer');
+                var aiContainer = UI.element('aiChoicesContainer');
+                
+                if (aiContainer && visualizer) {
+                    visualizer.classList.add('text-mode'); // Hide DNA
+                    aiContainer.classList.add('visible');
+                    this.currentMode = 'ai';
+                    DebugLog.log('DNA showing AI type choices');
+                }
+            },
             
             // Hide all overlays and show DNA
             showDNA: function() {
@@ -776,6 +959,12 @@
                 var probContainer = UI.element('probabilityChoicesContainer');
                 var goalContainer = UI.element('goalInputContainer');
                 var motherContainer = UI.element('motherInputContainer');
+                var scaleContainer = UI.element('scaleChoicesContainer');
+                var foodContainer = UI.element('foodChoicesContainer');
+                var germanContainer = UI.element('germanChoicesContainer');
+                var callContainer = UI.element('callChoicesContainer');
+                var motherScaleContainer = UI.element('motherScaleChoicesContainer');
+                var aiContainer = UI.element('aiChoicesContainer');
                 
                 if (visualizer) {
                     visualizer.classList.remove('text-mode');
@@ -785,6 +974,12 @@
                     if (probContainer) probContainer.classList.remove('visible');
                     if (goalContainer) goalContainer.classList.remove('visible');
                     if (motherContainer) motherContainer.classList.remove('visible');
+                    if (scaleContainer) scaleContainer.classList.remove('visible');
+                    if (foodContainer) foodContainer.classList.remove('visible');
+                    if (germanContainer) germanContainer.classList.remove('visible');
+                    if (callContainer) callContainer.classList.remove('visible');
+                    if (motherScaleContainer) motherScaleContainer.classList.remove('visible');
+                    if (aiContainer) aiContainer.classList.remove('visible');
                     this.currentMode = 'dna';
                     DebugLog.log('DNA visible, all text hidden');
                 }
@@ -1027,11 +1222,14 @@
                 var goalInput = UI.element('goalInput');
                 var goalValue = goalInput ? goalInput.value.trim() : '';
                 
-                DebugLog.log('Goal submitted: ' + goalValue);
+                console.log('🎯 USER GOAL SUBMITTED:', goalValue);
                 
                 // Submit to Google Form
                 if (goalValue) {
+                    console.log('📤 Sending goal to Google Sheet...');
                     this.submitToGoogleForm(goalValue, 'goal');
+                } else {
+                    console.log('⚠️ Empty goal - not submitting');
                 }
                 
                 // Animate container fade out
@@ -1048,11 +1246,14 @@
                 var motherInput = UI.element('motherInput');
                 var motherValue = motherInput ? motherInput.value.trim() : '';
                 
-                DebugLog.log('Mother relationship submitted: ' + motherValue);
+                console.log('👩 USER MOTHER RESPONSE SUBMITTED:', motherValue);
                 
                 // Submit to Google Form
                 if (motherValue) {
+                    console.log('📤 Sending mother response to Google Sheet...');
                     this.submitToGoogleForm(motherValue, 'mother');
+                } else {
+                    console.log('⚠️ Empty mother response - not submitting');
                 }
                 
                 // Animate container fade out
@@ -1064,26 +1265,38 @@
                 }, 800);
             },
 
-            // Submit data to Google Form
+            // Submit data to Google Form - ULTRA SIMPLE
             submitToGoogleForm: function(value, type) {
+                console.log('📋 SUBMITTING TO GOOGLE SHEET:', type.toUpperCase(), '=', value);
+                
                 try {
-                    var formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
-                    var fieldName = type === 'goal' ? 'entry.1685277614' : 'entry.745882257'; // Goal field vs Mother field
+                    // Use the exact same method as your pre-filled URL
+                    var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
+                    var fieldName = type === 'goal' ? 'entry.1685277614' : 'entry.745882257';
                     
-                    var formData = new FormData();
-                    formData.append(fieldName, value);
+                    // Create URL with the data (like your pre-filled example)
+                    var params = new URLSearchParams();
+                    params.append(fieldName, value);
+                    params.append('submit', 'Submit');
                     
-                    fetch(formUrl, {
+                    console.log('📝 Using field:', fieldName, 'with value:', value);
+                    
+                    // Simple fetch - exactly like form submission
+                    fetch(baseUrl, {
                         method: 'POST',
-                        body: formData,
-                        mode: 'no-cors'
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: params.toString()
                     }).then(function() {
-                        DebugLog.log('Form submitted successfully: ' + type + ' = ' + value);
+                        console.log('✅ SUBMITTED TO GOOGLE SHEET:', type);
                     }).catch(function(e) {
-                        DebugLog.log('Form submission error: ' + e.message);
+                        console.log('❌ SUBMISSION ERROR:', e.message);
                     });
+                    
                 } catch (e) {
-                    DebugLog.log('Form submission failed: ' + e.message);
+                    console.log('❌ GOOGLE SHEET SUBMISSION ERROR:', e.message);
                 }
             },
 
@@ -1094,6 +1307,75 @@
                     container.style.opacity = '0';
                     container.style.transform = 'translate(-50%, -50%) translateY(10px)';
                 }
+            },
+
+            // Handle scale choices (1-10)
+            handleScaleChoice: function(rating) {
+                console.log('Scale choice clicked:', rating);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle food choices
+            handleFoodChoice: function(choiceIndex) {
+                console.log('Food choice clicked:', choiceIndex);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle German person choices
+            handleGermanChoice: function(choiceIndex) {
+                console.log('German person choice clicked:', choiceIndex);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle call frequency choices
+            handleCallChoice: function(choiceIndex) {
+                console.log('Call frequency choice clicked:', choiceIndex);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle mother scale choices (1-11)
+            handleMotherScaleChoice: function(rating) {
+                console.log('Mother love scale choice clicked:', rating);
+                this.animateChoiceClick();
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            // Handle AI type choices with branching
+            handleAIChoice: function(aiType) {
+                console.log('AI type choice clicked:', aiType);
+                this.animateChoiceClick();
+                
+                // Store the choice for branching logic
+                State.selectedAIType = aiType;
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
             }
         };
 
@@ -1259,62 +1541,82 @@
             },
 
             moveToNextQuestion: function() {
-                if (State.inFinalSequence && State.step >= 8) {
-                    return;
-                }
-                
                 State.step++;
                 DebugLog.log('Moving to step ' + State.step);
                 
-                if (State.step >= State.questions.length) {
+                // Special branching logic for AI type selection (Q12)
+                if (State.step === 13 && State.selectedAIType) {
+                    // Branch based on AI type selection
+                    if (State.selectedAIType === 'male') {
+                        State.step = 13;
+                    } else if (State.selectedAIType === 'female') {
+                        State.step = 14;
+                    } else if (State.selectedAIType === 'diverse') {
+                        State.step = 15;
+                    }
+                    DebugLog.log('AI branching: selected ' + State.selectedAIType + ', going to step ' + State.step);
+                }
+                
+                // After AI responses (Q13/14/15), jump to analysis (Q16)
+                if (State.step === 14 && State.selectedAIType === 'male') {
+                    State.step = 16;
+                } else if (State.step === 15 && State.selectedAIType === 'female') {
+                    State.step = 16;
+                } else if (State.step === 16 && State.selectedAIType === 'diverse') {
+                    State.step = 16;
+                }
+                
+                if (State.step >= 18) {
                     this.completeCourse();
-                } else {
-                    UI.updateProgress((State.step + 1) * 9);
-                    
-                    // Play the audio for the current step
-                    State.isSpeaking = true;
-                    UI.setVisualizerState('speaking');
-                    
-                    var audioUrl = State.audioFiles[State.step];
-                    DebugLog.log('Playing audio for step ' + State.step + ': ' + audioUrl);
-                    
-                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-                        WebAudioHelper.play(
-                            audioUrl,
-                            function() {
-                                DebugLog.log('Audio ended for step ' + State.step);
-                                State.isSpeaking = false;
-                                UI.setVisualizerState('active');
-                                Conversation.showNextButton();
-                            },
-                            function(e) {
-                                DebugLog.log('Audio error for step ' + State.step + ': ' + (e && e.message));
-                                State.isSpeaking = false;
-                                UI.setVisualizerState('active');
-                                Conversation.showNextButton();
-                            }
-                        );
-                    } else {
-                        var audio = new Audio(audioUrl);
-                        audio.onended = function() {
+                    return;
+                }
+                
+                // Update progress (18 total questions)
+                UI.updateProgress((State.step + 1) * (100/18));
+                
+                // Play the audio for the current step
+                State.isSpeaking = true;
+                UI.setVisualizerState('speaking');
+                
+                var audioUrl = State.audioFiles[State.step];
+                DebugLog.log('Playing audio for step ' + State.step + ': ' + audioUrl);
+                
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    WebAudioHelper.play(
+                        audioUrl,
+                        function() {
                             DebugLog.log('Audio ended for step ' + State.step);
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
                             Conversation.showNextButton();
-                        };
-                        audio.onerror = function(e) {
-                            DebugLog.log('Audio error for step ' + State.step + ': ' + e.message);
+                        },
+                        function(e) {
+                            DebugLog.log('Audio error for step ' + State.step + ': ' + (e && e.message));
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
                             Conversation.showNextButton();
-                        };
-                        audio.play().catch(function(e) {
-                            DebugLog.log('Audio play failed for step ' + State.step + ': ' + e.message);
-                            State.isSpeaking = false;
-                            UI.setVisualizerState('active');
-                            Conversation.showNextButton();
-                        });
-                    }
+                        }
+                    );
+                } else {
+                    var audio = new Audio(audioUrl);
+                    audio.onended = function() {
+                        DebugLog.log('Audio ended for step ' + State.step);
+                        State.isSpeaking = false;
+                        UI.setVisualizerState('active');
+                        Conversation.showNextButton();
+                    };
+                    audio.onerror = function(e) {
+                        DebugLog.log('Audio error for step ' + State.step + ': ' + e.message);
+                        State.isSpeaking = false;
+                        UI.setVisualizerState('active');
+                        Conversation.showNextButton();
+                    };
+                    audio.play().catch(function(e) {
+                        DebugLog.log('Audio play failed for step ' + State.step + ': ' + e.message);
+                        State.isSpeaking = false;
+                        UI.setVisualizerState('active');
+                        Conversation.showNextButton();
+                    });
                 }
             },
 
@@ -1324,7 +1626,7 @@
                         case 0: // Welcome -> Show "Bereit"
                             DNAButton.showText('Bereit');
                             break;
-                        case 1: // Why question -> Show answer choices
+                        case 1: // Why question -> Show answer choices (4 options)
                             DNAButton.showAnswerChoices();
                             break;
                         case 2: // Goal question -> Show text input
@@ -1336,23 +1638,49 @@
                         case 4: // Probability question -> Show probability choices
                             DNAButton.showProbabilityChoices();
                             break;
-                        case 5: // Mother question -> Show text input
+                        case 5: // Want to learn scale (1-10)
+                            DNAButton.showScaleChoices();
+                            break;
+                        case 6: // Love Germans scale (1-10)
+                            DNAButton.showScaleChoices();
+                            break;
+                        case 7: // Food question -> Show food choices
+                            DNAButton.showFoodChoices();
+                            break;
+                        case 8: // German person question -> Show German choices
+                            DNAButton.showGermanChoices();
+                            break;
+                        case 9: // Mother relationship -> Show text input
                             DNAButton.showMotherInput();
                             break;
-                        case 6: // Michael introduction -> Show "Ja"
-                            DNAButton.showText('Ja');
+                        case 10: // Call frequency -> Show call choices
+                            DNAButton.showCallChoices();
                             break;
-                        case 7: // Final question -> Show "dummy"
-                            DNAButton.showText('dummy');
+                        case 11: // Love mother scale (1-11 joke) -> Show mother scale choices
+                            DNAButton.showMotherScaleChoices();
                             break;
-                        case 8: // Final sequence
-                            if (!State.inFinalSequence) {
-                                State.inFinalSequence = true;
-                                setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
-                            }
+                        case 12: // AI type -> Show AI choices (triggers branching)
+                            DNAButton.showAIChoices();
                             break;
-                        case 9: // Very end -> Show "Na gut."
-                            DNAButton.showText('Na gut.');
+                        case 13: // Male AI response -> just audio, continue
+                        case 14: // Female AI response -> just audio, continue
+                        case 15: // Diverse AI response -> just audio, continue
+                            // These are just audio, then auto-continue to Q16
+                            setTimeout(function() {
+                                Conversation.moveToNextQuestion();
+                            }, 2000);
+                            break;
+                        case 16: // Analysis -> just audio, continue
+                            setTimeout(function() {
+                                Conversation.moveToNextQuestion();
+                            }, 2000);
+                            break;
+                        case 17: // Final question -> end
+                            setTimeout(function() {
+                                Conversation.completeCourse();
+                            }, 2000);
+                            break;
+                        default:
                             break;
                     }
                 }, 1000);
@@ -1454,14 +1782,12 @@
                         UI.setVisualizerState('active');
                         setTimeout(function() { 
                             DNAButton.showText('Bereit'); 
-                            if (DevControls) DevControls.updateInfo();
                         }, 2000);
                     }, function(e) {
                         DebugLog.log('Audio error for welcome message: ' + (e && e.message));
                         UI.setVisualizerState('active');
                         setTimeout(function() { 
                             DNAButton.showText('Bereit'); 
-                            if (DevControls) DevControls.updateInfo();
                         }, 2000);
                     });
                 } else {
@@ -1480,125 +1806,6 @@
                 }
             }
         };
-
-        // === DEVELOPMENT CONTROLS (REMOVE IN PRODUCTION) ===
-        var DevControls = {
-            updateInfo: function() {
-                var devInfo = UI.element('devInfo');
-                var devBack = UI.element('devBack');
-                if (devInfo) {
-                    devInfo.textContent = 'Step: ' + State.step + ' (' + (State.isSpeaking ? 'Speaking' : 'Ready') + ')';
-                }
-                if (devBack) {
-                    devBack.disabled = (State.step <= 0);
-                }
-            },
-
-            skip: function() {
-                DebugLog.log('[DEV] Skip button clicked - current step: ' + State.step);
-                
-                // Stop any current audio
-                if (State.currentAudio) {
-                    State.currentAudio.pause();
-                    State.currentAudio = null;
-                }
-                
-                // Stop any speaking state
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                
-                // Clear any timers
-                if (State.holdingTimer) {
-                    clearTimeout(State.holdingTimer);
-                    State.holdingTimer = null;
-                }
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                
-                // Hide all current UI
-                DNAButton.showDNA();
-                
-                // Skip to next step or show appropriate button
-                if (State.step === 0) {
-                    DNAButton.showText('Bereit');
-                } else if (State.step < State.questions.length - 1) {
-                    // Move to next question
-                    Conversation.moveToNextQuestion();
-                } else {
-                    // At the end
-                    DNAButton.showText('Na gut.');
-                }
-                
-                this.updateInfo();
-            },
-
-            back: function() {
-                if (State.step <= 0) return;
-                
-                DebugLog.log('[DEV] Back button clicked - current step: ' + State.step);
-                
-                // Stop any current audio
-                if (State.currentAudio) {
-                    State.currentAudio.pause();
-                    State.currentAudio = null;
-                }
-                
-                // Stop any speaking state
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                
-                // Clear any timers
-                if (State.holdingTimer) {
-                    clearTimeout(State.holdingTimer);
-                    State.holdingTimer = null;
-                }
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                
-                // Go back one step
-                State.step--;
-                if (State.step < 0) State.step = 0;
-                
-                // Reset flags
-                State.inFinalSequence = false;
-                State.mobileAudioStarted = false;
-                
-                // Hide all current UI
-                DNAButton.showDNA();
-                
-                // Update progress
-                UI.updateProgress((State.step + 1) * 9);
-                
-                // Show appropriate button for current step
-                setTimeout(function() {
-                    Conversation.showNextButton();
-                }, 200);
-                
-                this.updateInfo();
-            },
-
-            testForm: function() {
-                DebugLog.log('[DEV] Testing Google Form submission');
-                
-                // Test both form fields
-                DNAButton.submitToGoogleForm('DEV TEST GOAL - ' + new Date().toLocaleTimeString(), 'goal');
-                DNAButton.submitToGoogleForm('DEV TEST MOTHER - ' + new Date().toLocaleTimeString(), 'mother');
-                
-                alert('Form test sent! Check your Google Form responses.');
-            }
-        };
-
-        // Update dev info when state changes
-        var originalMoveToNext = Conversation.moveToNextQuestion;
-        Conversation.moveToNextQuestion = function() {
-            originalMoveToNext.call(this);
-            if (DevControls) DevControls.updateInfo();
-        };
-        // === END DEVELOPMENT CONTROLS ===
 
         var SG1 = {
             musicEnabled: true,
@@ -1833,7 +2040,6 @@
                                         UI.setVisualizerState('active');
                                         setTimeout(function() { 
                                             DNAButton.showText('Bereit'); 
-                                            if (DevControls) DevControls.updateInfo();
                                         }, 1000);
                                     };
                                 }).catch(function(e) {
@@ -1863,13 +2069,8 @@
             init: function() {
                 DebugLog.init();
                 DebugLog.log('=== SG1 SYSTEM INIT ===');
-                // Speech synthesis fully removed
                 DebugLog.log('SG1 System ready');
-                
-                // Initialize development controls
-                if (DevControls) {
-                    DevControls.updateInfo();
-                }
+                console.log('SG1 initialized - Current step:', State.step);
             }
         };
 
