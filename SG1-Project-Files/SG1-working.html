@@ -235,33 +235,41 @@
 
         .answer-choice {
             color: rgba(255, 255, 255, 0.95);
-            font-size: clamp(14px, 3.5vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             font-family: 'Helvetica Neue', Arial, sans-serif;
             font-weight: 200;
             letter-spacing: 1px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             cursor: pointer;
-            padding: 10px 20px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 25px;
+            background: transparent;
             transition: all 0.4s ease;
             text-align: center;
-            min-width: 250px;
+            min-width: 350px;
+            max-width: 450px;
             position: relative;
+            white-space: nowrap;
         }
 
         .answer-choice:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
             color: rgba(255, 255, 255, 1);
         }
 
         .answer-translation {
-            font-size: 12px;
-            opacity: 0.7;
+            font-size: 14px;
+            opacity: 0;
             font-style: italic;
-            margin-top: 5px;
+            margin-top: 8px;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: normal;
+        }
+
+        .answer-choice:hover .answer-translation {
+            opacity: 0.8;
         }
 
         /* Time and probability buttons */
@@ -296,13 +304,12 @@
             cursor: pointer;
             padding: 15px 25px;
             border-radius: 25px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: transparent;
             transition: all 0.4s ease;
         }
 
         .time-choice:hover, .probability-choice:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
             color: rgba(255, 255, 255, 1);
         }
@@ -326,8 +333,11 @@
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
             .answer-choice {
-                min-width: 280px;
-                font-size: 14px;
+                min-width: 320px;
+                max-width: 90vw;
+                font-size: 16px;
+                padding: 18px 25px;
+                white-space: normal; /* Allow wrapping on very small screens */
             }
 
             .time-probability-container {
@@ -338,6 +348,14 @@
             .time-choice, .probability-choice {
                 min-width: 120px;
                 text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .answer-choice {
+                min-width: 280px;
+                font-size: 15px;
+                white-space: normal; /* Allow wrapping on small phones */
             }
         }
     </style>
@@ -506,9 +524,20 @@
                 var textButton = UI.element('dnaTextButton');
                 
                 if (textButton && visualizer) {
+                    // Reset any previous animations
+                    textButton.style.transition = 'all 0.8s ease';
+                    textButton.style.opacity = '0';
+                    textButton.style.transform = 'translate(-50%, -50%)';
+                    
                     textButton.textContent = text;
                     visualizer.classList.add('text-mode');
-                    textButton.classList.add('visible');
+                    
+                    // Fade in the new text
+                    setTimeout(function() {
+                        textButton.classList.add('visible');
+                        textButton.style.opacity = '1';
+                    }, 50);
+                    
                     this.currentMode = 'text';
                     DebugLog.log('DNA showing text: ' + text);
                 }
@@ -591,10 +620,7 @@
                 
                 DebugLog.log('DNA text button clicked for step ' + State.step);
                 
-                // Add click animation
-                this.animateClick();
-                
-                // Handle based on current step
+                // Handle based on current step (no animateClick() to avoid conflicts)
                 switch(State.step) {
                     case 0: // Bereit
                         this.handleBereit();
@@ -689,10 +715,23 @@
             
             // Button handlers
             handleBereit: function() {
-                this.showDNA();
+                DebugLog.log('Bereit button clicked - starting fade out');
+                
+                // Animate the text button fade out
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    textButton.style.opacity = '0';
+                    textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                }
+                
+                // Wait for animation to complete, then show DNA and continue
                 setTimeout(function() {
-                    Conversation.moveToNextQuestion();
-                }, 1000);
+                    DNAButton.showDNA();
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 200);
+                }, 800);
             },
             
             handleHoldToSpeak: function() {
@@ -744,15 +783,43 @@
             },
             
             handleJa: function() {
-                this.showDNA();
+                DebugLog.log('Ja button clicked - starting fade out');
+                
+                // Animate the text button fade out
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    textButton.style.opacity = '0';
+                    textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                }
+                
+                // Wait for animation to complete, then show DNA and continue
                 setTimeout(function() {
-                    Conversation.moveToNextQuestion();
-                }, 1000);
+                    DNAButton.showDNA();
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 200);
+                }, 800);
             },
             
             handleNaGut: function() {
-                this.showDNA();
-                Conversation.completeCourse();
+                DebugLog.log('Na gut button clicked - starting fade out');
+                
+                // Animate the text button fade out
+                var textButton = UI.element('dnaTextButton');
+                if (textButton) {
+                    textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    textButton.style.opacity = '0';
+                    textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                }
+                
+                // Wait for animation to complete, then show DNA and complete course
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    setTimeout(function() {
+                        Conversation.completeCourse();
+                    }, 200);
+                }, 800);
             }
         };
 
