@@ -277,6 +277,64 @@
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
         }
 
+        /* ===== STATUS DISPLAY ===== */
+        .status-display {
+            position: absolute;
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(18px, 4vw, 24px);
+            font-family: 'Courier New', monospace;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 1s ease;
+            z-index: 10;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .status-display.visible {
+            opacity: 1;
+        }
+
+        .status-display.error {
+            color: #ff6b6b;
+            animation: statusGlitch 0.5s ease-in-out 3;
+        }
+
+        @keyframes statusGlitch {
+            0% { transform: translate(-50%, -50%) translateX(0); }
+            20% { transform: translate(-50%, -50%) translateX(-2px); }
+            40% { transform: translate(-50%, -50%) translateX(2px); }
+            60% { transform: translate(-50%, -50%) translateX(-1px); }
+            80% { transform: translate(-50%, -50%) translateX(1px); }
+            100% { transform: translate(-50%, -50%) translateX(0); }
+        }
+
+        .dissolve-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(0px);
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 3s ease-out;
+        }
+
+        .dissolve-overlay.active {
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(20px);
+            opacity: 1;
+        }
+
         /* DNA state when showing text */
         .voice-visualizer.text-mode .dna-strand {
             opacity: 0;
@@ -335,6 +393,10 @@
             color: rgba(255, 255, 255, 1);
         }
 
+        .answer-text {
+            transition: opacity 0.3s ease;
+        }
+
         .answer-translation {
             position: absolute;
             top: 50%;
@@ -346,11 +408,20 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
             white-space: normal;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.95);
+            width: 100%;
+        }
+
+        .answer-choice:hover .answer-text {
+            opacity: 0;
         }
 
         .answer-choice:hover .answer-translation {
             opacity: 1;
+        }
+
+        .answer-choice.clicked .answer-text {
+            opacity: 0;
         }
 
         .answer-choice.clicked .answer-translation {
@@ -624,18 +695,21 @@
                 <!-- Text button overlay -->
                 <div class="dna-text-button" id="dnaTextButton"></div>
                 
+                <!-- Status display for final sequence -->
+                <div class="status-display" id="statusDisplay"></div>
+                
                 <!-- Answer choices for question 1 -->
                 <div class="answer-choices-container" id="answerChoicesContainer">
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(0)">
-                        Gute Frage, nächste Frage
+                        <span class="answer-text">Gute Frage, nächste Frage</span>
                         <div class="answer-translation">Good question, next question</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
-                        Keine Ahnung
+                        <span class="answer-text">Keine Ahnung</span>
                         <div class="answer-translation">No idea</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
-                        Das geht Dich gar nichts an
+                        <span class="answer-text">Das geht Dich gar nichts an</span>
                         <div class="answer-translation">That's none of your business</div>
                     </div>
                 </div>
@@ -683,15 +757,15 @@
                 <!-- Food choices -->
                 <div class="answer-choices-container" id="foodChoicesContainer">
                     <div class="answer-choice" onclick="DNAButton.handleFoodChoice(0)">
-                        Kartoffelpuffer
+                        <span class="answer-text">Kartoffelpuffer</span>
                         <div class="answer-translation">Potato pancakes</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleFoodChoice(1)">
-                        Currywurst
+                        <span class="answer-text">Currywurst</span>
                         <div class="answer-translation">Curry sausage</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleFoodChoice(2)">
-                        Döner
+                        <span class="answer-text">Döner</span>
                         <div class="answer-translation">Döner kebab</div>
                     </div>
                 </div>
@@ -737,6 +811,9 @@
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
+
+        <!-- Dissolve overlay for final transition -->
+        <div class="dissolve-overlay" id="dissolveOverlay"></div>
 
         <!-- Background music -->
         <audio id="backgroundMusic" loop preload="auto">
@@ -851,6 +928,31 @@
                     }, 50);
                     
                     this.currentMode = 'text';
+                }
+            },
+
+            showStatus: function(text, isError) {
+                var statusDisplay = UI.element('statusDisplay');
+                var visualizer = UI.element('visualizer');
+                
+                if (statusDisplay && visualizer) {
+                    // Hide DNA and show status
+                    visualizer.classList.add('text-mode');
+                    statusDisplay.textContent = text;
+                    statusDisplay.classList.remove('error');
+                    
+                    if (isError) {
+                        statusDisplay.classList.add('error');
+                    }
+                    
+                    statusDisplay.classList.add('visible');
+                }
+            },
+
+            hideStatus: function() {
+                var statusDisplay = UI.element('statusDisplay');
+                if (statusDisplay) {
+                    statusDisplay.classList.remove('visible', 'error');
                 }
             },
             
@@ -1166,7 +1268,7 @@
                 if (textButton) {
                     textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
                     textButton.style.opacity = '0';
-                    textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+                    textButton.style.transform = 'translate(-50%, -50') translateY(10px)';
                 }
                 
                 setTimeout(function() {
@@ -1188,7 +1290,7 @@
                 setTimeout(function() {
                     DNAButton.showDNA();
                     setTimeout(function() {
-                        Conversation.completeCourse();
+                        Conversation.startFinalSequence();
                     }, 200);
                 }, 800);
             },
@@ -1623,6 +1725,91 @@
                         }
                     }
                 }, 2000);
+            },
+
+            startFinalSequence: function() {
+                var self = this;
+                
+                // Step 1: Analysing German language...
+                setTimeout(function() {
+                    DNAButton.showStatus('Analysing German language...');
+                }, 500);
+                
+                // Step 2: Complexity counting
+                setTimeout(function() {
+                    self.showComplexityCounter();
+                }, 2500);
+                
+                // Step 3: Subject surpassing AI capabilities
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Subject surpassing AI capabilities', true);
+                    }, 500);
+                }, 8000);
+                
+                // Step 4: Falling back to Human AI
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Falling back to Human AI');
+                    }, 500);
+                }, 10500);
+                
+                // Step 5: Dissolve transition
+                setTimeout(function() {
+                    self.dissolveAndTransition();
+                }, 13000);
+            },
+
+            showComplexityCounter: function() {
+                var statusDisplay = UI.element('statusDisplay');
+                var visualizer = UI.element('visualizer');
+                
+                if (statusDisplay && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    statusDisplay.classList.remove('error');
+                    statusDisplay.classList.add('visible');
+                    
+                    var count = 0;
+                    var interval = setInterval(function() {
+                        count += Math.floor(Math.random() * 50) + 25; // Random increments
+                        if (count >= 1000) {
+                            clearInterval(interval);
+                            statusDisplay.textContent = 'Complexity: ERROR';
+                            statusDisplay.classList.add('error');
+                        } else {
+                            statusDisplay.textContent = 'Complexity: ' + count + '%';
+                        }
+                    }, 200);
+                }
+            },
+
+            dissolveAndTransition: function() {
+                var dissolveOverlay = UI.element('dissolveOverlay');
+                
+                if (dissolveOverlay) {
+                    dissolveOverlay.classList.add('active');
+                    
+                    setTimeout(function() {
+                        // Try to find and click course completion buttons
+                        var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+                        for (var i = 0; i < buttons.length; i++) {
+                            var btn = buttons[i];
+                            var text = btn.textContent.toLowerCase();
+                            if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                                btn.click();
+                                return;
+                            }
+                        }
+                        
+                        // Fallback: Try to navigate to next page in course structure
+                        window.location.href = window.location.href.replace(/\/lectures\/\d+/, function(match) {
+                            var num = parseInt(match.split('/').pop()) + 1;
+                            return '/lectures/' + num;
+                        });
+                    }, 3000);
+                }
             },
 
             startQ1: function() {
