@@ -418,10 +418,10 @@
             log: function(message) {
                 var timestamp = new Date().toLocaleTimeString();
                 var logMessage = '[' + timestamp + '] ' + String(message);
-                try { console.log(logMessage); } catch(e){}
+                // try { console.log(logMessage); } catch(e){}
             },
             init: function() {
-                console.log('=== DEBUG SYSTEM INITIALIZED (CONSOLE ONLY) ===');
+                // console.log('=== DEBUG SYSTEM INITIALIZED (CONSOLE ONLY) ===');
             }
         };
 
@@ -432,6 +432,7 @@
             inFinalSequence: false,
             audioUnlocked: false,
             mobileAudioStarted: false,
+            welcomeAudioEnded: false,
             
             audioFiles: {
                 0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
@@ -498,6 +499,12 @@
             },
             
             showBereitButton: function() {
+                // Only show if welcome audio has actually ended
+                if (!State.welcomeAudioEnded) {
+                    DebugLog.log('Bereit button blocked - welcome audio not ended yet');
+                    return;
+                }
+                
                 this.hideAllButtons();
                 var button = this.element('bereitButton');
                 if (button) {
@@ -1062,10 +1069,12 @@
                 if (window.AudioContext && WebAudioHelper) {
                     WebAudioHelper.play(url, function() {
                         DebugLog.log('Audio ended for welcome message');
+                        State.welcomeAudioEnded = true;
                         UI.setVisualizerState('active');
                         setTimeout(function() { UI.showBereitButton(); }, 2000);
                     }, function(e) {
                         DebugLog.log('Audio error for welcome message: ' + (e && e.message));
+                        State.welcomeAudioEnded = true;
                         UI.setVisualizerState('active');
                         setTimeout(function() { UI.showBereitButton(); }, 2000);
                     });
@@ -1073,11 +1082,13 @@
                     var audio = new Audio(url);
                     audio.onended = function() {
                         DebugLog.log('Audio ended for welcome message (HTML5 fallback)');
+                        State.welcomeAudioEnded = true;
                         UI.setVisualizerState('active');
                         setTimeout(function() { UI.showBereitButton(); }, 2000);
                     };
                     audio.onerror = function(e) {
                         DebugLog.log('Audio error for welcome message (HTML5 fallback): ' + (e && e.message));
+                        State.welcomeAudioEnded = true;
                         UI.setVisualizerState('active');
                         setTimeout(function() { UI.showBereitButton(); }, 2000);
                     };
@@ -1297,12 +1308,6 @@
                         DebugLog.log('🚨 MOBILE: Delaying audio playback until DNA visualizer is visible...');
                         setTimeout(function() {
                             DebugLog.log('🎵 NOW ATTEMPTING MOBILE AUDIO PLAYBACK (after DNA fade-in)...');
-                            
-                            // Set flag immediately to prevent desktop logic from running
-                            State.mobileAudioStarted = true;
-                            State.isSpeaking = true;
-                            State.step = 0;
-                            
                             var mobileVoiceAudio = new Audio(State.audioFiles[0]);
                             DebugLog.log('🎵 Audio object created, URL: ' + State.audioFiles[0]);
                             mobileVoiceAudio.volume = 1.0;
@@ -1315,10 +1320,14 @@
                             if (playPromise) {
                                 playPromise.then(function() {
                                     DebugLog.log('✅ SUCCESS: Mobile audio started!');
+                                    State.isSpeaking = true;
+                                    State.step = 0;
+                                    State.mobileAudioStarted = true;
                                     UI.setVisualizerState('speaking');
                                     mobileVoiceAudio.onended = function() {
                                         DebugLog.log('🏁 Mobile audio ended');
                                         State.isSpeaking = false;
+                                        State.welcomeAudioEnded = true;
                                         UI.setVisualizerState('active');
                                         setTimeout(function() { UI.showBereitButton(); }, 1000);
                                     };
@@ -1327,14 +1336,12 @@
                                     DebugLog.log('Error name: ' + e.name);
                                     DebugLog.log('Error message: ' + e.message);
                                     DebugLog.log('Error code: ' + (e.code || 'none'));
-                                    State.isSpeaking = false;
-                                    UI.setVisualizerState('active');
+                                    State.welcomeAudioEnded = true;
                                     setTimeout(function() { UI.showBereitButton(); }, 1000);
                                 });
                             } else {
                                 DebugLog.log('🚨 No play promise returned!');
-                                State.isSpeaking = false;
-                                UI.setVisualizerState('active');
+                                State.welcomeAudioEnded = true;
                                 setTimeout(function() { UI.showBereitButton(); }, 1000);
                             }
                         }, 4100); // Wait for DNA fade-in (4s) before playing audio
