@@ -336,17 +336,25 @@
         }
 
         .answer-translation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 14px;
             opacity: 0;
             font-style: italic;
-            margin-top: 8px;
             transition: opacity 0.3s ease;
             pointer-events: none;
             white-space: normal;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .answer-choice:hover .answer-translation {
-            opacity: 0.8;
+            opacity: 1;
+        }
+
+        .answer-choice.clicked .answer-translation {
+            opacity: 1;
         }
 
         /* Text input field for goal and mother questions */
@@ -518,23 +526,28 @@
             }
 
             .time-choice, .probability-choice {
-                min-width: 80px;
+                min-width: 60px;
                 text-align: center;
                 flex: 0 0 auto;
+                white-space: nowrap;
             }
 
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
+                display: flex;
+                flex-wrap: wrap;
                 gap: 10px;
                 max-width: 350px;
+                justify-content: center;
             }
 
             #scaleChoicesContainer .probability-choice,
             #motherScaleChoicesContainer .probability-choice {
-                min-width: 50px;
+                min-width: 45px;
                 padding: 12px 8px;
                 font-size: 16px;
+                white-space: nowrap;
+                flex: 0 0 auto;
+                text-align: center;
             }
         }
 
@@ -546,27 +559,42 @@
             }
 
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                grid-template-columns: repeat(5, 1fr);
+                display: flex;
+                flex-wrap: wrap;
                 gap: 8px;
                 max-width: 300px;
+                justify-content: center;
+            }
+
+            #scaleChoicesContainer .probability-choice,
+            #motherScaleChoicesContainer .probability-choice {
+                min-width: 45px;
+                padding: 10px 6px;
+                font-size: 14px;
+                white-space: nowrap;
+                flex: 0 0 auto;
             }
         }
 
         @media (min-width: 769px) {
             #scaleChoicesContainer, #motherScaleChoicesContainer {
-                display: grid;
-                grid-template-columns: repeat(10, 1fr);
+                display: flex;
+                flex-wrap: wrap;
                 gap: 10px;
                 max-width: 600px;
+                justify-content: center;
             }
 
             #scaleChoicesContainer .probability-choice,
             #motherScaleChoicesContainer .probability-choice {
-                min-width: 50px;
-                aspect-ratio: 1;
+                min-width: 45px;
+                padding: 15px 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                white-space: nowrap;
+                flex: 0 0 auto;
+                text-align: center;
             }
         }
     </style>
@@ -599,18 +627,14 @@
                 <!-- Answer choices for question 1 -->
                 <div class="answer-choices-container" id="answerChoicesContainer">
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(0)">
-                        Gute Frage
-                        <div class="answer-translation">Good question</div>
+                        Gute Frage, nächste Frage
+                        <div class="answer-translation">Good question, next question</div>
                     </div>
                     <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
-                        Nächste Frage
-                        <div class="answer-translation">Next question</div>
-                    </div>
-                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
                         Keine Ahnung
                         <div class="answer-translation">No idea</div>
                     </div>
-                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(3)">
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
                         Das geht Dich gar nichts an
                         <div class="answer-translation">That's none of your business</div>
                     </div>
@@ -630,9 +654,9 @@
 
                 <!-- Time commitment choices -->
                 <div class="time-probability-container" id="timeChoicesContainer">
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(0)">1 hours per week</div>
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(1)">5 hours per week</div>
-                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(2)">15 hours per week</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(0)">1h/w</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(1)">5hrs/w</div>
+                    <div class="time-choice" onclick="DNAButton.handleTimeChoice(2)">15hrs/w</div>
                 </div>
 
                 <!-- Probability choices -->
@@ -683,10 +707,10 @@
                 <div class="answer-choices-container" id="callChoicesContainer">
                     <div class="answer-choice" onclick="DNAButton.handleCallChoice(0)">Once per day</div>
                     <div class="answer-choice" onclick="DNAButton.handleCallChoice(1)">Once per week</div>
-                    <div class="answer-choice" onclick="DNAButton.handleCallChoice(2)">Once per year or less</div>
+                    <div class="answer-choice" onclick="DNAButton.handleCallChoice(2)">I don't have a mother</div>
                 </div>
 
-                <!-- Scale 1-10 choices for mother question -->
+                <!-- Scale 1-11 choices for mother question -->
                 <div class="time-probability-container" id="motherScaleChoicesContainer">
                     <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(1)">1</div>
                     <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(2)">2</div>
@@ -698,6 +722,7 @@
                     <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(8)">8</div>
                     <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(9)">9</div>
                     <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(10)">10</div>
+                    <div class="probability-choice" onclick="DNAButton.handleMotherScaleChoice(11)">11</div>
                 </div>
 
                 <!-- AI type choices -->
@@ -1022,6 +1047,9 @@
                     case 8:
                         this.handleNaGut();
                         break;
+                    case 17:
+                        this.handleNaGut();
+                        break;
                 }
             },
 
@@ -1033,7 +1061,7 @@
                 
                 setTimeout(function() {
                     DNAButton.showDNA();
-                    Conversation.moveToNextQuestion();
+                    Conversation.playThankYou();
                 }, 800);
             },
 
@@ -1045,7 +1073,7 @@
                 
                 setTimeout(function() {
                     DNAButton.showDNA();
-                    Conversation.moveToNextQuestion();
+                    Conversation.playThankYou();
                 }, 800);
             },
 
@@ -1059,12 +1087,12 @@
                     setTimeout(function() {
                         window.open('https://smartergerman.com/courses/unblock-your-german/', '_blank');
                         DNAButton.showDNA();
-                        Conversation.moveToNextQuestion();
+                        Conversation.playThankYou();
                     }, 800);
                 } else {
                     setTimeout(function() {
                         DNAButton.showDNA();
-                        Conversation.moveToNextQuestion();
+                        Conversation.playThankYou();
                     }, 800);
                 }
             },
@@ -1197,7 +1225,7 @@
                 
                 setTimeout(function() {
                     DNAButton.showDNA();
-                    Conversation.moveToNextQuestion();
+                    Conversation.playThankYou();
                 }, 800);
             },
 
@@ -1575,9 +1603,7 @@
                             }, 2000);
                             break;
                         case 17:
-                            setTimeout(function() {
-                                Conversation.completeCourse();
-                            }, 2000);
+                            DNAButton.showText('Na gut');
                             break;
                         default:
                             break;
