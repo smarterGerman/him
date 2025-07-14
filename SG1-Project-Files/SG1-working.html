@@ -98,6 +98,60 @@
             text-decoration: line-through; 
         }
 
+        /* ===== CONTROL BUTTONS ===== */
+        .skip-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 300;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        .skip-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+        }
+
+        .quit-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 300;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        .quit-button:hover {
+            background: rgba(255, 99, 99, 0.3);
+            border-color: rgba(255, 99, 99, 0.5);
+            color: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+        }
+
         /* ===== PRE-INIT BUTTON ===== */
         .pre-init-button { 
             background: #4ecdc4; 
@@ -672,6 +726,10 @@
 </head>
 <body>
     <div class="sg1-container">
+        <!-- Control buttons -->
+        <div class="quit-button" id="quitButton" onclick="Controls.quit()" title="Quit Assessment">×</div>
+        <div class="skip-button" id="skipButton" onclick="Controls.skip()" title="Skip Question">SKIP</div>
+        
         <!-- Music indicator -->
         <div class="music-indicator" id="musicIndicator" onclick="SG1.toggleMusic()">music</div>
 
@@ -855,6 +913,40 @@
             
             thankYouAudio: 'https://uploads.teachablecdn.com/attachments/e45836cb3b024909ae5d8d9d6ae3f22c.mp3',
             confirmationSound: 'https://uploads.teachablecdn.com/attachments/ebf39ab0ba784db195ca54196bae8784.mp3'
+        };
+
+        var Controls = {
+            skip: function() {
+                // Stop any current audio
+                if (State.isSpeaking) {
+                    var audio = document.querySelector('audio:not(#backgroundMusic)');
+                    if (audio) audio.pause();
+                    State.isSpeaking = false;
+                }
+                
+                // Clear any timers
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                
+                // Skip to next question
+                DNAButton.showDNA();
+                setTimeout(function() {
+                    Conversation.moveToNextQuestion();
+                }, 300);
+            },
+            
+            quit: function() {
+                if (confirm('Are you sure you want to quit the assessment?')) {
+                    // Try to navigate back to course or close
+                    try {
+                        window.history.back();
+                    } catch (e) {
+                        window.close();
+                    }
+                }
+            }
         };
 
         var UI = {
@@ -1390,22 +1482,44 @@
                 this.playConfirmationSound();
                 this.animateChoiceClick();
                 
-                // Special redirections based on choice
+                // Special redirections based on choice - open in background
                 if (choiceIndex === 0) { // Hitler
                     setTimeout(function() {
-                        window.open('https://encyclopedia.ushmm.org/content/en/film/scenes-from-the-liberation-of-buchenwald', '_blank');
+                        // Open in background by creating temporary link
+                        var link = document.createElement('a');
+                        link.href = 'https://encyclopedia.ushmm.org/content/en/film/scenes-from-the-liberation-of-buchenwald';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
                         DNAButton.showDNA();
                         Conversation.playThankYou();
                     }, 800);
                 } else if (choiceIndex === 1) { // Schwarzenegger
                     setTimeout(function() {
-                        window.open('https://www.youtube.com/watch?v=OgGYQGPYvu0&ab_channel=TeamCoco', '_blank');
+                        var link = document.createElement('a');
+                        link.href = 'https://www.youtube.com/watch?v=OgGYQGPYvu0&ab_channel=TeamCoco';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
                         DNAButton.showDNA();
                         Conversation.playThankYou();
                     }, 800);
                 } else if (choiceIndex === 2) { // Merkel
                     setTimeout(function() {
-                        window.open('https://www.youtube.com/watch?v=GVn_zcLJGNQ&t=63s&ab_channel=NationalTreasured', '_blank');
+                        var link = document.createElement('a');
+                        link.href = 'https://www.youtube.com/watch?v=GVn_zcLJGNQ&t=63s&ab_channel=NationalTreasured';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
                         DNAButton.showDNA();
                         Conversation.playThankYou();
                     }, 800);
@@ -1588,7 +1702,8 @@
                 
                 if (State.step === 13 && State.selectedAIType) {
                     if (State.selectedAIType === 'male') {
-                        State.step = 13;
+                        this.startMaleAISequence();
+                        return;
                     } else if (State.selectedAIType === 'female') {
                         State.step = 14;
                     } else if (State.selectedAIType === 'diverse') {
@@ -1647,6 +1762,117 @@
                         UI.setVisualizerState('active');
                         Conversation.showNextButton();
                     });
+                }
+            },
+
+            startMaleAISequence: function() {
+                var self = this;
+                
+                // Step 1: Installing Mansplainer Module
+                setTimeout(function() {
+                    DNAButton.showStatus('Installing Mansplainer Module...');
+                }, 500);
+                
+                // Step 2: Success
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Success');
+                    }, 300);
+                }, 2500);
+                
+                // Step 3: Charging ego-booster
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        self.showEgoBoosterCharging();
+                    }, 300);
+                }, 4000);
+                
+                // Step 4: Ego fully charged
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Ego fully charged. Reduce listening abilities');
+                    }, 300);
+                }, 8000);
+                
+                // Step 5: Reduce listening abilities countdown
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        self.showListeningReduction();
+                    }, 300);
+                }, 10000);
+                
+                // Step 6: Success
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Success');
+                    }, 300);
+                }, 14000);
+                
+                // Step 7: Male AI fully activated
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Male AI fully activated');
+                    }, 300);
+                }, 15500);
+                
+                // Step 8: Continue to next step
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    DNAButton.showDNA();
+                    State.step = 16; // Skip to step 16
+                    setTimeout(function() {
+                        self.moveToNextQuestion();
+                    }, 1000);
+                }, 17500);
+            },
+
+            showEgoBoosterCharging: function() {
+                var statusDisplay = UI.element('statusDisplay');
+                var visualizer = UI.element('visualizer');
+                
+                if (statusDisplay && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    statusDisplay.classList.remove('error');
+                    statusDisplay.classList.add('visible');
+                    
+                    var count = 0;
+                    var interval = setInterval(function() {
+                        count += Math.floor(Math.random() * 15) + 10; // Random increments
+                        if (count >= 200) {
+                            clearInterval(interval);
+                            statusDisplay.textContent = 'Charging ego-booster: 200%';
+                        } else {
+                            statusDisplay.textContent = 'Charging ego-booster: ' + count + '%';
+                        }
+                    }, 150);
+                }
+            },
+
+            showListeningReduction: function() {
+                var statusDisplay = UI.element('statusDisplay');
+                var visualizer = UI.element('visualizer');
+                
+                if (statusDisplay && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    statusDisplay.classList.remove('error');
+                    statusDisplay.classList.add('visible');
+                    
+                    var count = 100;
+                    var interval = setInterval(function() {
+                        count -= Math.floor(Math.random() * 8) + 5; // Random decrements
+                        if (count <= 10) {
+                            clearInterval(interval);
+                            statusDisplay.textContent = 'Listening abilities: 10%';
+                        } else {
+                            statusDisplay.textContent = 'Listening abilities: ' + count + '%';
+                        }
+                    }, 150);
                 }
             },
 
@@ -1885,6 +2111,12 @@
                     preInitButton.textContent = 'Starting...';
                 }
                 
+                // Hide control buttons during initialization
+                var skipButton = UI.element('skipButton');
+                var quitButton = UI.element('quitButton');
+                if (skipButton) skipButton.style.display = 'none';
+                if (quitButton) quitButton.style.display = 'none';
+                
                 var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 
                 var unlockAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBjiI2OvKcyMFl2+z9N2aPAIbWr9yxmAXGFnj8MJzJQUYYbf2xGIYG1nq6MJzJQUYlGt19Mhvaz5gXFztw2kdA0qP2uzGeTYFG3a36Pn0YlFmdXTs8bHnzLqLh6uYfJBaRoZ1puLsxXEvCSdtytNdKAkzWLz6qHNxMEOw6MtbKhJLkM/d3QBVL9JKR5X2QQAwfOYTM8cVkPB29ppqOZN17+o1GAbSrAXvOK9qVsO2P2bfyXU5aOPYqE+TKYeKc1PEJd+7L2XKHOd6d1qTKZ2pXPHZq36DWdF4VJOhJr6l9YNkFJdFaLyJRjF7X1lGf61O2FO8gY0n');
@@ -2028,6 +2260,13 @@
                 setTimeout(function() {
                     if (status) status.textContent = 'Ready to begin...';
                     UI.hideElement('initOverlay');
+                    
+                    // Show control buttons
+                    var skipButton = UI.element('skipButton');
+                    var quitButton = UI.element('quitButton');
+                    if (skipButton) skipButton.style.display = 'block';
+                    if (quitButton) quitButton.style.display = 'flex';
+                    
                     setTimeout(function() {
                         Conversation.startQ1();
                     }, 500);
