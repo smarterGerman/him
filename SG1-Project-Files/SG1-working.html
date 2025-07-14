@@ -158,6 +158,70 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             white-space: nowrap; z-index: 1000;
         }
+        /* ===== TIME ANSWER BUTTONS (Q4) ===== */
+        .time-buttons-container {
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px;
+            opacity: 0; transition: all 0.6s ease; pointer-events: none; z-index: 100;
+            flex-wrap: wrap;
+        }
+        .time-buttons-container.visible {
+            opacity: 1; pointer-events: all;
+        }
+
+        .time-button {
+            color: white; border: none; padding: 15px 25px; border-radius: 20px;
+            font-size: clamp(14px, 3.5vw, 16px); 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-weight: 500; letter-spacing: 0.5px; cursor: pointer;
+            min-width: 100px; min-height: 45px; 
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 20px rgba(76, 205, 196, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            position: relative; overflow: visible;
+        }
+
+        .time-button-1 { background: linear-gradient(135deg, #4ecdc4, #45b7d1); }
+        .time-button-2 { background: linear-gradient(135deg, #ff8a65, #ff7043); }
+        .time-button-3 { background: linear-gradient(135deg, #9c27b0, #e91e63); }
+
+        .time-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(76, 205, 196, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+
+        /* ===== PROBABILITY ANSWER BUTTONS (Q5) ===== */
+        .probability-buttons-container {
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px;
+            opacity: 0; transition: all 0.6s ease; pointer-events: none; z-index: 100;
+            flex-wrap: wrap;
+        }
+        .probability-buttons-container.visible {
+            opacity: 1; pointer-events: all;
+        }
+
+        .probability-button {
+            color: white; border: none; padding: 15px 25px; border-radius: 20px;
+            font-size: clamp(14px, 3.5vw, 16px); 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-weight: 500; letter-spacing: 0.5px; cursor: pointer;
+            min-width: 100px; min-height: 45px; 
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 20px rgba(76, 205, 196, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            position: relative; overflow: visible;
+        }
+
+        .probability-button-1 { background: linear-gradient(135deg, #f44336, #e57373); }
+        .probability-button-2 { background: linear-gradient(135deg, #ff9800, #ffb74d); }
+        .probability-button-3 { background: linear-gradient(135deg, #4caf50, #81c784); }
+
+        .probability-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(76, 205, 196, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+
         .answer-button:hover .answer-translation,
         .answer-button:active .answer-translation,
         .answer-button:focus .answer-translation {
@@ -351,6 +415,20 @@
             </button>
         </div>
 
+        <!-- Time commitment buttons for Q4 -->
+        <div class="time-buttons-container" id="timeButtonsContainer">
+            <button class="time-button time-button-1" onclick="Conversation.handleTimeButton()">1h/w</button>
+            <button class="time-button time-button-2" onclick="Conversation.handleTimeButton()">5hrs/w</button>
+            <button class="time-button time-button-3" onclick="Conversation.handleTimeButton()">15hrs/w</button>
+        </div>
+
+        <!-- Probability buttons for Q5 -->
+        <div class="probability-buttons-container" id="probabilityButtonsContainer">
+            <button class="probability-button probability-button-1" onclick="Conversation.handleProbabilityButton('low')">&lt;50%</button>
+            <button class="probability-button probability-button-2" onclick="Conversation.handleProbabilityButton('medium')">80%</button>
+            <button class="probability-button probability-button-3" onclick="Conversation.handleProbabilityButton('high')">100%</button>
+        </div>
+
         <!-- Background music -->
         <audio id="backgroundMusic" loop preload="auto">
             <source src="https://uploads.teachablecdn.com/attachments/1b02582168af4a60adcfc9dc91660d37.mp3" type="audio/mpeg">
@@ -519,10 +597,12 @@
                 0: 'https://uploads.teachablecdn.com/attachments/fa6567b6d8e64c3dbb04265db8f4b44f.mp3',
                 1: 'https://uploads.teachablecdn.com/attachments/91dd16c7d1c64ce6afb59a1d72ded03b.mp3',
                 2: 'https://uploads.teachablecdn.com/attachments/e37c338dcbe745859c45484d45f14666.mp3',
-                3: 'https://uploads.teachablecdn.com/attachments/e85d721b671746169040af93a4aa37b1.mp3',
-                4: 'https://uploads.teachablecdn.com/attachments/ac76bcc7a7dd4544b0364e277ceb0970.mp3',
-                5: 'https://uploads.teachablecdn.com/attachments/0cdfc0ce7a3245618d7fed8ce25d7d3b.mp3',
-                6: 'https://uploads.teachablecdn.com/attachments/28a3453828b247529b17c6cfc0cc745c.mp3'
+                3: 'https://uploads.teachablecdn.com/attachments/54355724a83d440cb199271eafe57e24.mp3',
+                4: 'https://uploads.teachablecdn.com/attachments/95631cf6057642709b18f5902c511958.mp3',
+                5: 'https://uploads.teachablecdn.com/attachments/e85d721b671746169040af93a4aa37b1.mp3',
+                6: 'https://uploads.teachablecdn.com/attachments/ac76bcc7a7dd4544b0364e277ceb0970.mp3',
+                7: 'https://uploads.teachablecdn.com/attachments/0cdfc0ce7a3245618d7fed8ce25d7d3b.mp3',
+                8: 'https://uploads.teachablecdn.com/attachments/28a3453828b247529b17c6cfc0cc745c.mp3'
             },
             
             thankYouAudio: 'https://uploads.teachablecdn.com/attachments/4e2906fba5dc40e6bd0d294332e94123.mp3',
@@ -532,6 +612,8 @@
                 "Welcome to the world's first artificially intelligent German Course system, SG1.",
                 "Why do you want to learn German? I mean seriously: WHY?",
                 "What's your goal? Where do you want to be with your German after what amount of time?",
+                "How much time do you plan to spend on your German?",
+                "How probable is it that you will reach your goal?",
                 "How would you describe your relationship with your mother?",
                 "Hi there. My name is Michael. I'll be your instructor for the coming 23.5 years. But don't despair. Even the longest journey will come to an end eventually. Sooner or later. In your case rather later. Shall we begin?"
             ]
@@ -609,6 +691,18 @@
                 var container = this.element('answerButtonsContainer');
                 if (container) container.classList.add('visible');
             },
+
+            showTimeButtons: function() {
+                this.hideAllButtons();
+                var container = this.element('timeButtonsContainer');
+                if (container) container.classList.add('visible');
+            },
+
+            showProbabilityButtons: function() {
+                this.hideAllButtons();
+                var container = this.element('probabilityButtonsContainer');
+                if (container) container.classList.add('visible');
+            },
             
             hideAllButtons: function() {
                 var buttons = ['bereitButton', 'holdSpeakButton', 'jaButton', 'naGutButton'];
@@ -616,8 +710,12 @@
                     var button = this.element(buttons[i]);
                     if (button) button.classList.remove('visible');
                 }
-                var container = this.element('answerButtonsContainer');
-                if (container) container.classList.remove('visible');
+                var answerContainer = this.element('answerButtonsContainer');
+                if (answerContainer) answerContainer.classList.remove('visible');
+                var timeContainer = this.element('timeButtonsContainer');
+                if (timeContainer) timeContainer.classList.remove('visible');
+                var probabilityContainer = this.element('probabilityButtonsContainer');
+                if (probabilityContainer) probabilityContainer.classList.remove('visible');
             }
         };
 
@@ -789,7 +887,7 @@
                 }
                 
                 setTimeout(function() {
-                    if (State.step === 2) {
+                    if (State.step === 5) {
                         Conversation.moveToNextQuestion();
                     } else {
                         Conversation.playThankYou();
@@ -814,7 +912,7 @@
                 UI.hideAllButtons();
                 
                 setTimeout(function() {
-                    if (State.step === 2) {
+                    if (State.step === 5) {
                         Conversation.moveToNextQuestion();
                     } else {
                         Conversation.playThankYou();
@@ -824,9 +922,16 @@
 
             handleJa: function() {
                 DebugLog.log('Ja button clicked');
-                UI.hideAllButtons();
-                if (State.step === 3) {
+                // Immediately start fading out the JA button
+                var button = UI.element('jaButton');
+                if (button) {
+                    button.style.opacity = '0';
+                    button.style.transform = 'translateX(-50%) translateY(10px)';
+                    button.style.pointerEvents = 'none';
+                }
+                if (State.step === 6) {
                     setTimeout(function() {
+                        UI.hideAllButtons();
                         Conversation.moveToNextQuestion();
                     }, 1000);
                 }
@@ -840,10 +945,60 @@
 
             handleAnswerButton: function() {
                 DebugLog.log('Answer button clicked');
-                UI.hideAllButtons();
+                // Immediately start fading out the answer buttons
+                var container = UI.element('answerButtonsContainer');
+                if (container) {
+                    container.style.opacity = '0';
+                    container.style.transform = 'translateX(-50%) translateY(10px)';
+                    container.style.pointerEvents = 'none';
+                }
                 setTimeout(function() {
+                    UI.hideAllButtons();
                     Conversation.moveToNextQuestion();
                 }, 1000);
+            },
+
+            handleTimeButton: function() {
+                DebugLog.log('Time button clicked');
+                // Immediately start fading out the time buttons
+                var container = UI.element('timeButtonsContainer');
+                if (container) {
+                    container.style.opacity = '0';
+                    container.style.transform = 'translateX(-50%) translateY(10px)';
+                    container.style.pointerEvents = 'none';
+                }
+                setTimeout(function() {
+                    UI.hideAllButtons();
+                    Conversation.moveToNextQuestion();
+                }, 1000);
+            },
+
+            handleProbabilityButton: function(level) {
+                DebugLog.log('Probability button clicked: ' + level);
+                
+                // Immediately start fading out the probability buttons
+                var container = UI.element('probabilityButtonsContainer');
+                if (container) {
+                    container.style.opacity = '0';
+                    container.style.transform = 'translateX(-50%) translateY(10px)';
+                    container.style.pointerEvents = 'none';
+                }
+                
+                // Special handling for <50% option
+                if (level === 'low') {
+                    DebugLog.log('Low probability selected, opening external course');
+                    setTimeout(function() {
+                        window.open('https://smartergerman.com/courses/unblock-your-german/', '_blank');
+                        UI.hideAllButtons();
+                        // Still continue to next question after opening the link
+                        Conversation.moveToNextQuestion();
+                    }, 1000);
+                } else {
+                    setTimeout(function() {
+                        UI.hideAllButtons();
+                        Conversation.moveToNextQuestion();
+                    }, 1000);
+                }
             },
 
             playThankYou: function() {
@@ -887,7 +1042,7 @@
             },
 
             moveToNextQuestion: function() {
-                if (State.inFinalSequence && State.step >= 5) {
+                if (State.inFinalSequence && State.step >= 8) {
                     return;
                 }
                 
@@ -897,7 +1052,7 @@
                 if (State.step >= State.questions.length) {
                     this.completeCourse();
                 } else {
-                    UI.updateProgress((State.step + 1) * 12);
+                    UI.updateProgress((State.step + 1) * 9);
                     
                     // Play the audio for the current step
                     State.isSpeaking = true;
@@ -952,17 +1107,23 @@
                         UI.showAnswerButtons();
                     } else if (State.step === 2) {
                         UI.showHoldSpeakButton();
-                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
                     } else if (State.step === 3) {
-                        UI.showJaButton();
+                        UI.showTimeButtons();
                     } else if (State.step === 4) {
-                        UI.showHoldSpeakButton();
+                        UI.showProbabilityButtons();
                     } else if (State.step === 5) {
+                        UI.showHoldSpeakButton();
+                        State.motherInterruptTimer = setTimeout(function() { Conversation.simulateInterruption(); }, 7000);
+                    } else if (State.step === 6) {
+                        UI.showJaButton();
+                    } else if (State.step === 7) {
+                        UI.showHoldSpeakButton();
+                    } else if (State.step === 8) {
                         if (!State.inFinalSequence) {
                             State.inFinalSequence = true;
                             setTimeout(function() { Conversation.playFinalSequence(); }, 2000);
                         }
-                    } else if (State.step === 6) {
+                    } else if (State.step === 9) {
                         UI.showNaGutButton();
                     }
                 }, 1000);
@@ -981,9 +1142,9 @@
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
                             setTimeout(function() {
-                                State.step = 6;
+                                State.step = 9;
                                 UI.updateProgress(100);
-                                // ...audio playback already handled, removed Speech.speak...
+                                // ...audio playbook already handled, removed Speech.speak...
                             }, 7000);
                         },
                         function(e) {
@@ -1011,7 +1172,7 @@
                         DebugLog.log('Final audio error');
                         State.isSpeaking = false;
                         setTimeout(function() {
-                            State.step = 6;
+                            State.step = 9;
                             // ...audio playback already handled, removed Speech.speak...
                         }, 7000);
                     };
