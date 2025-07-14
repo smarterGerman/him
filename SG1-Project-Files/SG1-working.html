@@ -711,7 +711,8 @@
                 17: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'
             },
             
-            thankYouAudio: 'https://uploads.teachablecdn.com/attachments/e45836cb3b024909ae5d8d9d6ae3f22c.mp3'
+            thankYouAudio: 'https://uploads.teachablecdn.com/attachments/e45836cb3b024909ae5d8d9d6ae3f22c.mp3',
+            confirmationSound: 'https://uploads.teachablecdn.com/attachments/ebf39ab0ba784db195ca54196bae8784.mp3'
         };
 
         var UI = {
@@ -755,7 +756,20 @@
 
         // DNA Button Controller - handles the DNA-to-text transformation
         var DNAButton = {
-            currentMode: 'dna', // 'dna', 'text', 'choices', 'time', 'probability'
+            currentMode: 'dna', // 'dna', 'text', 'choices', 'time', 'probability', etc.
+            
+            // Play confirmation sound on button clicks
+            playConfirmationSound: function() {
+                try {
+                    var confirmAudio = new Audio(State.confirmationSound);
+                    confirmAudio.volume = 0.7; // Slightly quieter than main audio
+                    confirmAudio.play().catch(function(e) {
+                        console.log('Confirmation sound failed:', e.message);
+                    });
+                } catch (e) {
+                    console.log('Confirmation sound error:', e.message);
+                }
+            },
             
             // Show text on DNA
             showText: function(text) {
@@ -1087,6 +1101,7 @@
             // Button handlers
             handleBereit: function() {
                 DebugLog.log('Bereit button clicked - starting fade out');
+                this.playConfirmationSound();
                 
                 // Animate the text button fade out
                 var textButton = UI.element('dnaTextButton');
@@ -1107,6 +1122,7 @@
             
             handleDummy: function() {
                 DebugLog.log('Dummy button clicked - starting fade out');
+                this.playConfirmationSound();
                 
                 // Animate the text button fade out
                 var textButton = UI.element('dnaTextButton');
