@@ -344,18 +344,31 @@
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
         }
 
-        /* Translation for text buttons */
-        .dna-text-button[data-translation]:hover::after {
-            content: attr(data-translation);
+        /* Text button translation system like answer choices */
+        .dna-text-content {
+            transition: opacity 0.3s ease;
+        }
+
+        .dna-text-translation {
             position: absolute;
-            top: 100%;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            margin-top: 10px;
-            font-size: 14px;
+            transform: translate(-50%, -50%);
+            font-size: inherit;
+            opacity: 0;
             font-style: italic;
-            opacity: 0.8;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
             white-space: nowrap;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .dna-text-button:hover .dna-text-content {
+            opacity: 0;
+        }
+
+        .dna-text-button:hover .dna-text-translation {
+            opacity: 1;
         }
 
         /* ===== STATUS DISPLAY ===== */
@@ -923,7 +936,7 @@
                 2: 'https://uploads.teachablecdn.com/attachments/fc2c86bf325b410797aa9a99af512c37.mp3',
                 3: 'https://uploads.teachablecdn.com/attachments/3ac16fa084c24c36aa0dfd5373cdb9e8.mp3',
                 4: 'https://uploads.teachablecdn.com/attachments/95e986d1bd1f427db03b976b4f60f0a7.mp3', // How likely are you to reach your goal?
-                5: 'https://uploads.teachablecdn.com/attachments/ba1fd841f66b485d8ecd6f17a94edb80.mp3',
+                5: 'https://uploads.teachablecdn.com/attachments/64ab0d397cb140dd86458e0b42ea494e.mp3', // Q6-how-much-love-germans.mp3
                 6: 'https://uploads.teachablecdn.com/attachments/3241a2f7d8e447469e9d3e038afdbf07.mp3',
                 7: 'https://uploads.teachablecdn.com/attachments/60c3a446d2b24be38dc14fe88be58f53.mp3',
                 8: 'https://uploads.teachablecdn.com/attachments/d72b2fb1573f4b73bfa8552d21e99e40.mp3',
@@ -1095,11 +1108,20 @@
                     textButton.style.opacity = '0';
                     textButton.style.transform = 'translate(-50%, -50%)';
                     
-                    textButton.textContent = text;
+                    // Clear existing content
+                    textButton.innerHTML = '';
+                    
+                    // Create content and translation elements
+                    var contentSpan = document.createElement('span');
+                    contentSpan.className = 'dna-text-content';
+                    contentSpan.textContent = text;
+                    textButton.appendChild(contentSpan);
+                    
                     if (translation) {
-                        textButton.setAttribute('data-translation', translation);
-                    } else {
-                        textButton.removeAttribute('data-translation');
+                        var translationSpan = document.createElement('span');
+                        translationSpan.className = 'dna-text-translation';
+                        translationSpan.textContent = translation;
+                        textButton.appendChild(translationSpan);
                     }
                     
                     visualizer.classList.add('text-mode');
@@ -1929,17 +1951,17 @@
                             function() {
                                 State.isSpeaking = false;
                                 UI.setVisualizerState('active');
-                                // Continue to next step (step 17)
+                                // Add 3 second delay after "will prepare your course"
                                 setTimeout(function() {
                                     self.moveToNextQuestion();
-                                }, 1000);
+                                }, 4000); // 1000ms + 3000ms delay
                             },
                             function(e) {
                                 State.isSpeaking = false;
                                 UI.setVisualizerState('active');
                                 setTimeout(function() {
                                     self.moveToNextQuestion();
-                                }, 1000);
+                                }, 4000);
                             }
                         );
                     } else {
@@ -1947,23 +1969,24 @@
                         audio.onended = function() {
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
+                            // Add 3 second delay after "will prepare your course"
                             setTimeout(function() {
                                 self.moveToNextQuestion();
-                            }, 1000);
+                            }, 4000); // 1000ms + 3000ms delay
                         };
                         audio.onerror = function(e) {
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
                             setTimeout(function() {
                                 self.moveToNextQuestion();
-                            }, 1000);
+                            }, 4000);
                         };
                         audio.play().catch(function(e) {
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
                             setTimeout(function() {
                                 self.moveToNextQuestion();
-                            }, 1000);
+                            }, 4000);
                         });
                     }
                 }, 17500);
@@ -2068,7 +2091,10 @@
                             }, 2000);
                             break;
                         case 17:
-                            DNAButton.showText('Na gut', 'Oh well');
+                            // Add 3 second delay after "hi there" message
+                            setTimeout(function() {
+                                DNAButton.showText('Na gut', 'Oh well');
+                            }, 4000); // 1000ms + 3000ms delay
                             break;
                         default:
                             break;
@@ -2103,9 +2129,13 @@
                     self.showComplexityCounter();
                 }, 2500);
                 
-                // Step 3: Subject surpassing AI capabilities
+                // Step 3: Subject surpassing AI capabilities + Play system error audio
                 setTimeout(function() {
                     DNAButton.hideStatus();
+                    
+                    // Play system error audio
+                    self.playSystemErrorAudio();
+                    
                     setTimeout(function() {
                         DNAButton.showStatus('Subject surpassing AI capabilities', true);
                     }, 500);
@@ -2123,6 +2153,32 @@
                 setTimeout(function() {
                     self.dissolveAndTransition();
                 }, 13000);
+            },
+
+            playSystemErrorAudio: function() {
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    WebAudioHelper.play(
+                        State.systemErrorAudio,
+                        function() {
+                            console.log('System error audio completed');
+                        },
+                        function(e) {
+                            console.log('System error audio failed:', e.message);
+                        }
+                    );
+                } else {
+                    var audio = new Audio(State.systemErrorAudio);
+                    audio.volume = 0.8;
+                    audio.onended = function() {
+                        console.log('System error audio completed');
+                    };
+                    audio.onerror = function(e) {
+                        console.log('System error audio failed:', e.message);
+                    };
+                    audio.play().catch(function(e) {
+                        console.log('System error audio failed:', e.message);
+                    });
+                }
             },
 
             showComplexityCounter: function() {
