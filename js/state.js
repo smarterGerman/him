@@ -22,11 +22,21 @@ var State = {
     score: 0,                         // Internal scoring system
     
     // === AUDIO FILES (from Config) ===
-    audioFiles: Config.audioFiles,
-    thankYouAudio: Config.specialAudio.thankYou,
-    confirmationSound: Config.specialAudio.confirmation,
-    systemErrorAudio: Config.specialAudio.systemError,
-    humanWakeupAudio: Config.specialAudio.humanWakeup,
+    get audioFiles() {
+    return typeof Config !== 'undefined' ? Config.audioFiles : {};
+    },
+    get thankYouAudio() {
+    return typeof Config !== 'undefined' ? Config.specialAudio.thankYou : '';
+    },
+    get confirmationSound() {
+    return typeof Config !== 'undefined' ? Config.specialAudio.confirmation : '';
+    },
+    get systemErrorAudio() {
+    return typeof Config !== 'undefined' ? Config.specialAudio.systemError : '';
+    },
+    get humanWakeupAudio() {
+    return typeof Config !== 'undefined' ? Config.specialAudio.humanWakeup : '';
+    },
     
     // === STATE MANAGEMENT METHODS ===
     
