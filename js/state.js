@@ -152,14 +152,14 @@ var UI = {
     
     // === DNA VISUALIZER CONTROL ===
     setVisualizerState: function(state) { 
-        var visualizer = this.element('visualizer');
-        if (visualizer) {
-            // Remove all state classes
-            visualizer.classList.remove('speaking', 'listening', 'active', 'text-mode');
-            // Add new state
-            visualizer.className = 'voice-visualizer active ' + state;
-        }
-    },
+    var visualizer = this.element('visualizer');
+    if (visualizer) {
+        // Remove only animation state classes, keep text-mode
+        visualizer.classList.remove('speaking', 'listening', 'active');
+        // Add new state
+        visualizer.classList.add('active', state);
+    }
+},
     
     // === PROGRESS BAR ===
     updateProgress: function(percentage) {
