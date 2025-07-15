@@ -1,0 +1,195 @@
+/* ===== BASE STYLES & RESET ===== */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body, html { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    background: none; 
+    overflow: hidden;
+}
+
+.sg1-container { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    z-index: 999999;
+    background: linear-gradient(-45deg, #4ecdc4, #45b7d1, #96ceb4, #ffecd2);
+    background-size: 400% 400%; 
+    animation: sg1GradientShift 15s ease infinite;
+    overflow: hidden; 
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    display: block !important;
+}
+
+/* ===== OVERLAYS ===== */
+.overlay-base { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    transition: opacity 1s ease-out; 
+}
+
+.pre-init-overlay { 
+    z-index: 2000; 
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.init-overlay { 
+    z-index: 1000; 
+    opacity: 0; 
+    pointer-events: none;
+    background: none !important;
+    transition: opacity 0.5s ease;
+}
+
+.init-overlay.visible { 
+    opacity: 1; 
+    pointer-events: all;
+}
+
+.init-overlay.hidden { 
+    opacity: 0; 
+    pointer-events: none; 
+    display: none !important;
+}
+
+/* ===== CONTROL BUTTONS ===== */
+.skip-button, .music-button {
+    position: fixed;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    user-select: none;
+}
+
+.skip-button {
+    bottom: 20px;
+    right: 20px;
+}
+
+.music-button {
+    top: 20px;
+    right: 20px;
+}
+
+.skip-button:hover, .music-button:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.music-button.off {
+    text-decoration: line-through;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.quit-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    user-select: none;
+}
+
+.quit-button:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.exit-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: rgba(128, 128, 128, 0.8);
+    font-size: 18px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    user-select: none;
+}
+
+.exit-button:hover {
+    color: rgba(99, 99, 99, 0.9);
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-container { 
+    position: absolute; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    width: min(400px, 80vw); 
+    height: 4px; 
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px; 
+    overflow: hidden; 
+    z-index: 50;
+}
+
+.progress-bar { 
+    height: 100%; 
+    background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+    width: 0%; 
+    transition: width 1s ease; 
+    border-radius: 2px;
+}
+
+/* ===== DISSOLVE OVERLAY ===== */
+.dissolve-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0);
+    backdrop-filter: blur(0px);
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 3s ease-out;
+}
+
+.dissolve-overlay.active {
+    background: rgba(255, 255, 255, 1);
+    backdrop-filter: blur(20px);
+    opacity: 1;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.hidden { 
+    opacity: 0 !important; 
+    pointer-events: none !important; 
+}
+
+.visible { 
+    opacity: 1 !important; 
+    pointer-events: all !important; 
+}
+
+.active { 
+    display: flex !important; 
+}

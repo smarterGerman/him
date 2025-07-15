@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG1 - AI German Learning System</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div class="sg1-container">
+        <!-- Control buttons -->
+        <div class="quit-button" id="quitButton" onclick="Controls.quit()" title="Quit Assessment">×</div>
+        <div class="skip-button" id="skipButton" onclick="Controls.skip()" title="Skip Question">SKIP</div>
+        <div class="music-button" id="musicButton" onclick="SG1.toggleMusic()">MUSIC</div>
+
+        <div class="pre-init-overlay overlay-base" id="preInitOverlay">
+            <div class="exit-button" onclick="Controls.exitAssessment()" title="Exit Assessment">×</div>
+            <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
+        </div>
+
+        <div class="init-overlay overlay-base" id="initOverlay">
+            <div class="init-logo">SG1</div>
+            <div style="position: absolute; bottom: 100px; color: white; font-size: 16px; opacity: 0.8;" id="statusText">Initializing audio system...</div>
+        </div>
+
+        <div class="voice-visualizer" id="visualizer" onclick="DNAButton.handleClick()">
+            <div class="dna-container">
+                <svg width="100%" height="80" viewBox="0 0 400 80">
+                    <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
+                    <path class="dna-strand" d="M0,40 Q50,65 100,40 Q150,15 200,40 Q250,65 300,40 Q350,15 400,40" />
+                    <path class="dna-strand" d="M0,40 Q50,15 100,40 Q150,65 200,40 Q250,15 300,40 Q350,65 400,40" />
+                </svg>
+                
+                <!-- Text button overlay -->
+                <div class="dna-text-button" id="dnaTextButton"></div>
+                
+                <!-- Status display for final sequence -->
+                <div class="status-display" id="statusDisplay"></div>
+                
+                <!-- Answer choices for question 1 -->
+                <div class="answer-choices-container" id="answerChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(0)">
+                        <span class="answer-text">Gute Frage, nächste Frage</span>
+                        <div class="answer-translation">Good question, next question</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
+                        <span class="answer-text">Keine Ahnung</span>
+                        <div class="answer-translation">No idea</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
+                        <span class="answer-text">Das geht Dich gar nichts an</span>
+                        <div class="answer-translation">That's none of your business</div>
+                    </div>
+                </div>
+
+                <!-- Text input for why German question (Q1) -->
+                <div class="text-input-container" id="whyGermanInputContainer">
+                    <input type="text" class="text-input-field" id="whyGermanInput" placeholder="Why do you want to learn German?..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleWhyGermanSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleWhyGermanSubmit()">Submit</button>
+                </div>
+
+                <!-- Text input for goal question -->
+                <div class="text-input-container" id="goalInputContainer">
+                    <input type="text" class="text-input-field" id="goalInput" placeholder="Type your goal here..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleGoalSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleGoalSubmit()">Submit</button>
+                </div>
+
+                <!-- Time commitment text input -->
+                <div class="text-input-container" id="timeInputContainer">
+                    <input type="text" class="text-input-field" id="timeInput" placeholder="How many hours per week can you study?..." maxlength="100" onkeypress="if(event.key==='Enter') DNAButton.handleTimeSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleTimeSubmit()">Submit</button>
+                </div>
+
+                <!-- Probability choices -->
+                <div class="time-probability-container" id="probabilityChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">&lt;50%</div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">80%</div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
+                </div>
+
+                <!-- Scale 1-10 choices -->
+                <div class="time-probability-container" id="scaleChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(1)">1</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(2)">2</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(3)">3</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(4)">4</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(5)">5</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(6)">6</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(7)">7</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(8)">8</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(9)">9</div>
+                    <div class="probability-choice" onclick="DNAButton.handleScaleChoice(10)">10</div>
+                </div>
+
+                <!-- AI type choices -->
+                <div class="answer-choices-container" id="aiChoicesContainer">
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('male')">
+                        <span class="answer-text">Männlich</span>
+                        <div class="answer-translation">Male</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('female')">
+                        <span class="answer-text">Weiblich</span>
+                        <div class="answer-translation">Female</div>
+                    </div>
+                    <div class="answer-choice" onclick="DNAButton.handleAIChoice('diverse')">
+                        <span class="answer-text">Divers</span>
+                        <div class="answer-translation">Diverse</div>
+                    </div>
+                </div>
+
+                <!-- Text input for mother description -->
+                <div class="text-input-container" id="motherDescriptionContainer">
+                    <input type="text" class="text-input-field" id="motherDescriptionInput" placeholder="Describe your relationship with your mother..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherDescriptionSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
+                </div>
+
+                <!-- Psychological profile display -->
+                <div class="answer-choices-container" id="profileContainer">
+                    <div id="profileTitle" style="font-size: 24px; margin-bottom: 20px; color: rgba(255, 255, 255, 0.95);"></div>
+                    <div id="profileDescription" style="font-size: 16px; max-width: 600px; text-align: center; line-height: 1.5; color: rgba(255, 255, 255, 0.85);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Dissolve overlay for final transition -->
+        <div class="dissolve-overlay" id="dissolveOverlay"></div>
+
+        <!-- Background music -->
+        <audio id="backgroundMusic" loop preload="auto">
+            <source src="https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/conversation.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+/* ===== PRE-INIT BUTTON ===== */
+.pre-init-button { 
+    background: #4ecdc4; 
+    color: white; 
+    border: none; 
+    padding: 20px 40px;
+    border-radius: 15px; 
+    font-size: 1.2em; 
+    font-weight: 500; 
+    letter-spacing: 1px; 
+    cursor: pointer;
+    transition: all 0.4s ease; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
+    display: inline-block; 
+}
+
+.pre-init-button:hover { 
+    background: #45b7d1; 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); 
+}
+
+/* ===== DNA TEXT BUTTON ===== */
+.dna-text-button {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: clamp(20px, 5vw, 28px);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 200;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.8s ease;
+    cursor: pointer;
+    z-index: 10;
+    white-space: nowrap;
+    
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 30px;
+    backdrop-filter: blur(10px);
+    min-width: 200px;
+    text-align: center;
+}
+
+.dna-text-button.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.dna-text-button:hover {
+    color: rgba(255, 255, 255, 1);
+    transform: translate(-50%, -50%) translateY(-3px);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.dna-text-content {
+    transition: opacity 0.3s ease;
+}
+
+.dna-text-translation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: inherit;
+    opacity: 0;
+    font-style: italic;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.dna-text-button:hover .dna-text-content {
+    opacity: 0;
+}
+
+.dna-text-button:hover .dna-text-translation {
+    opacity: 1;
+}
+
+.voice-visualizer.text-mode .dna-text-button {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ===== STATUS DISPLAY ===== */
+.status-display {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: clamp(18px, 4vw, 24px);
+    font-family: 'Courier New', monospace;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 1s ease;
+    z-index: 10;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.status-display.visible {
+    opacity: 1;
+}
+
+.status-display.error {
+    color: #ff6b6b;
+    animation: statusGlitch 0.5s ease-in-out 3;
+}
+
+/* ===== ANSWER CHOICE CONTAINERS ===== */
+.answer-choices-container {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.8s ease;
+    z-index: 10;
+}
+
+.answer-choices-container.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.answer-choice {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: clamp(16px, 4vw, 18px);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    padding: 15px 30px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+    text-align: center;
+    min-width: 350px;
+    max-width: 450px;
+    position: relative;
+    white-space: nowrap;
+    margin: 8px 0;
+}
+
+.answer-choice:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    color: rgba(255, 255, 255, 1);
+}
+
+.answer-text {
+    transition: opacity 0.3s ease;
+}
+
+.answer-translation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    opacity: 0;
+    font-style: italic;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: normal;
+    color: rgba(255, 255, 255, 0.95);
+    width: 100%;
+}
+
+.answer-choice:hover .answer-text {
+    opacity: 0;
+}
+
+.answer-choice:hover .answer-translation {
+    opacity: 1;
+}
+
+.answer-choice.clicked .answer-text {
+    opacity: 0;
+}
+
+.answer-choice.clicked .answer-translation {
+    opacity: 1;
+}
+
+/* ===== TEXT INPUT ===== */
+.text-input-container {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.8s ease;
+    z-index: 10;
+    width: min(500px, 90vw);
+}
+
+.text-input-container.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.text-input-field {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 25px;
+    color: white;
+    font-size: clamp(16px, 4vw, 18px);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+    outline: none;
+}
+
+.text-input-field::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.text-input-field:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+}
+
+.text-submit-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 12px 30px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: clamp(14px, 3.5vw, 16px);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+    min-width: 120px;
+}
+
+.text-submit-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* ===== TIME/PROBABILITY CHOICES ===== */
+.time-probability-container {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.8s ease;
+    z-index: 10;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.time-probability-container.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.time-choice, .probability-choice {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: clamp(16px, 4vw, 20px);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    padding: 15px 25px;
+    border-radius: 25px;
+    background: transparent;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+.time-choice:hover, .probability-choice:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    color: rgba(255, 255, 255, 1);
+}
+
+.choice-text {
+    transition: opacity 0.3s ease;
+}
+
+.choice-translation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    opacity: 0;
+    font-style: italic;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.time-choice:hover .choice-text {
+    opacity: 0;
+}
+
+.time-choice:hover .choice-translation {
+    opacity: 1;
+}
+
+/* ===== MOBILE RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .answer-choice {
+        min-width: 320px;
+        max-width: 90vw;
+        font-size: 16px;
+        padding: 18px 25px;
+        white-space: normal;
+    }
+
+    .time-probability-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        max-width: 90vw;
+    }
+
+    .time-choice, .probability-choice {
+        min-width: 60px;
+        text-align: center;
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    #scaleChoicesContainer, #motherScaleChoicesContainer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        max-width: 90vw;
+        justify-content: center;
+    }
+
+    #scaleChoicesContainer .probability-choice,
+    #motherScaleChoicesContainer .probability-choice {
+        min-width: 35px;
+        padding: 10px 8px;
+        font-size: 14px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .answer-choice {
+        min-width: 280px;
+        font-size: 15px;
+        white-space: normal;
+    }
+
+    #scaleChoicesContainer, #motherScaleChoicesContainer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-width: 90vw;
+        justify-content: center;
+    }
+
+    #scaleChoicesContainer .probability-choice,
+    #motherScaleChoicesContainer .probability-choice {
+        min-width: 30px;
+        padding: 8px 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+}
+
+@media (min-width: 769px) {
+    #scaleChoicesContainer, #motherScaleChoicesContainer {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 12px;
+        max-width: 700px;
+        justify-content: center;
+    }
+
+    #scaleChoicesContainer .probability-choice,
+    #motherScaleChoicesContainer .probability-choice {
+        min-width: 45px;
+        padding: 15px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        text-align: center;
+    }
+}

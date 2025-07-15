@@ -1,0 +1,151 @@
+/* ===== GRADIENT ANIMATION ===== */
+@keyframes sg1GradientShift { 
+    0% { background-position: 0% 50%; } 
+    50% { background-position: 100% 50%; } 
+    100% { background-position: 0% 50%; } 
+}
+
+/* ===== LOGO ANIMATION ===== */
+.init-logo { 
+    font-size: clamp(5em, 20vw, 7.5em); 
+    font-weight: 100; 
+    color: white; 
+    letter-spacing: 3px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+@keyframes sg1LogoFade {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+}
+
+/* ===== DNA VISUALIZER ===== */
+.voice-visualizer { 
+    height: 120px; 
+    width: min(450px, 85vw); 
+    position: absolute;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.6s ease;
+}
+
+.dna-container { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    z-index: 1; 
+    position: relative; 
+    width: min(400px, 80vw); 
+    height: 80px;
+    transform-style: preserve-3d; 
+    perspective: 1000px;
+}
+
+.dna-strand { 
+    fill: none; 
+    stroke: white; 
+    stroke-width: 5; 
+    stroke-linecap: round;
+    animation: sg1DNAFlow 5s linear infinite;
+    transform-origin: 50% 50%;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+    opacity: 1;
+    transition: opacity 0.8s ease;
+}
+
+.dna-strand:nth-child(2) { 
+    animation-delay: 0.5s;
+    filter: drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.35));
+}
+
+.dna-strand:nth-child(3) { 
+    animation-delay: 1s;
+    filter: drop-shadow(1px 1px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* ===== DNA ANIMATION STATES ===== */
+@keyframes sg1DNAFlow {
+    0% { transform: rotateX(0deg); }
+    100% { transform: rotateX(360deg); }
+}
+
+@keyframes sg1DNAFlowFast1 {
+    0% { transform: rotateX(0deg); }
+    20% { transform: rotateX(120deg); }
+    40% { transform: rotateX(180deg); }
+    70% { transform: rotateX(300deg); }
+    100% { transform: rotateX(360deg); }
+}
+
+@keyframes sg1DNAFlowFast2 {
+    0% { transform: rotateX(0deg); }
+    30% { transform: rotateX(90deg); }
+    50% { transform: rotateX(240deg); }
+    80% { transform: rotateX(300deg); }
+    100% { transform: rotateX(360deg); }
+}
+
+@keyframes sg1DNAFlowFast3 {
+    0% { transform: rotateX(0deg); }
+    15% { transform: rotateX(150deg); }
+    60% { transform: rotateX(210deg); }
+    85% { transform: rotateX(330deg); }
+    100% { transform: rotateX(360deg); }
+}
+
+/* ===== DNA STATES ===== */
+.speaking .dna-strand { 
+    stroke-width: 6; 
+}
+
+.speaking .dna-strand:nth-child(1) { 
+    animation: sg1DNAFlowFast1 0.7s ease-in-out infinite; 
+}
+
+.speaking .dna-strand:nth-child(2) { 
+    animation: sg1DNAFlowFast2 0.5s ease-in-out infinite; 
+}
+
+.speaking .dna-strand:nth-child(3) { 
+    animation: sg1DNAFlowFast3 0.6s ease-in-out infinite; 
+}
+
+.listening .dna-strand { 
+    animation: sg1DNAFlow 2s linear infinite;
+    stroke: #ffd54f;
+    filter: drop-shadow(1px 1px 3px rgba(255, 213, 79, 0.4));
+}
+
+.voice-visualizer.text-mode .dna-strand {
+    opacity: 0;
+}
+
+/* ===== STATUS DISPLAY ANIMATIONS ===== */
+@keyframes statusGlitch {
+    0% { transform: translate(-50%, -50%) translateX(0); }
+    20% { transform: translate(-50%, -50%) translateX(-2px); }
+    40% { transform: translate(-50%, -50%) translateX(2px); }
+    60% { transform: translate(-50%, -50%) translateX(-1px); }
+    80% { transform: translate(-50%, -50%) translateX(1px); }
+    100% { transform: translate(-50%, -50%) translateX(0); }
+}
+
+/* Add fade out effect for final audio */
+.audio-fade-out {
+    transition: volume 2s ease-out;
+}
