@@ -215,13 +215,201 @@ var UI = {
     }
 };
 
-// === CONTROLS ===
 var Controls = {
+    // Comprehensive audio stopping function
+    stopAllAudio: function() {
+        console.log('🛑 STOPPING ALL AUDIO - Exit button clicked');
+        
+        try {
+            // Method 1: Stop all HTML5 audio elements
+            var allAudio = document.querySelectorAll('audio');
+            console.log('Found ' + allAudio.length + ' audio elements');
+            
+            for (var i = 0; i < allAudio.length; i++) {
+                try {
+                    allAudio[i].pause();
+                    allAudio[i].currentTime = 0;
+                    allAudio[i].volume = 0;
+                    allAudio[i].muted = true;
+                    // Don't clear src immediately as it might cause errors
+                    console.log('Stopped audio element ' + i);
+                } catch (e) {
+                    console.log('Error stopping audio element ' + i + ':', e);
+                }
+            }
+        } catch (e) {
+            console.log('Error stopping HTML5 audio:', e);
+        }
+
+        try {
+            // Method 2: Stop Web Audio API sources
+            if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
+                WebAudioHelper.currentSource.stop();
+                WebAudioHelper.currentSource = null;
+                console.log('Stopped WebAudio source');
+            }
+        } catch (e) {
+            console.log('Error stopping WebAudio:', e);
+        }
+
+        try {
+            // Method 3: Stop tracked audio elements
+            if (window.audioElements && Array.isArray(window.audioElements)) {
+                console.log('Stopping ' + window.audioElements.length + ' tracked audio elements');
+                window.audioElements.forEach(function(audio, index) {
+                    try {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.volume = 0;
+                        audio.muted = true;
+                        console.log('Stopped tracked audio ' + index);
+                    } catch (e) {
+                        console.log('Error stopping tracked audio ' + index + ':', e);
+                    }
+                });
+                window.audioElements = [];
+            }
+        } catch (e) {
+            console.log('Error stopping tracked audio:', e);
+        }
+
+        try {
+            // Method 4: Suspend Audio Context
+            if (window.globalAudioContext) {
+                window.globalAudioContext.suspend().then(function() {
+                    console.log('Audio context suspended');
+                }).catch(function(e) {
+                    console.log('Error suspending audio context:', e);
+                });
+            }
+        } catch (e) {
+            console.log('Error with audio context:', e);
+        }
+
+        try {
+            // Method 5: Stop AudioManager if available
+            if (typeof AudioManager !== 'undefined' && AudioManager.stopAllAudio) {
+                AudioManager.stopAllAudio();
+                console.log('Called AudioManager.stopAllAudio()');
+            }
+        } catch (e) {
+            console.log('Error calling AudioManager:', e);
+        }
+
+        // Method 6: Clear any timers that might restart audio
+        try {
+            if (typeof State !== 'undefined') {
+                State.isSpeaking = false;
+                if (State.motherInterruptTimer) {
+                    clearTimeout(State.motherInterruptTimer);
+                    State.motherInterruptTimer = null;
+                }
+                if (State.holdingTimer) {
+                    clearTimeout(State.holdingTimer);
+                    State.holdingTimer = null;
+                }
+            }
+        } catch (e) {
+            console.log('Error clearing timers:', e);
+        }
+
+        console.log('✅ Audio stopping sequence completed');
+    },
+
+    // New exit function with guaranteed audio stopping
+    exitAssessment: function() {
+        console.log('🚪 Exit button clicked');
+        
+        // Always stop audio first, regardless of confirmation
+        this.stopAllAudio();
+        
+        // Exit fullscreen immediately
+        try {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else if (document.webkitFullscreenElement) {
+                document.webkitExitFullscreen();
+            } else if (document.mozFullScreenElement) {
+                document.mozCancelFullScreen();
+            }
+        } catch (e) {
+            console.log('Fullscreen exit error:', e);
+        }
+        
+        // Confirm exit with user
+        var shouldExit = confirm('Exit the AI assessment?');
+        
+        if (shouldExit) {
+            // Final audio stop before navigation
+            this.stopAllAudio();
+            
+            // Multiple exit strategies
+            try {
+                // Try to go back in history
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // If no history, try to close or redirect
+                    this.tryCloseOrRedirect();
+                }
+            } catch (e) {
+                console.log('Navigation error:', e);
+                this.tryCloseOrRedirect();
+            }
+        } else {
+            // User cancelled - restart audio if needed
+            this.handleExitCancelled();
+        }
+    },
+    
+    // Handle when user cancels exit
+    handleExitCancelled: function() {
+        console.log('Exit cancelled by user');
+        
+        // If background music should be playing, restart it
+        try {
+            if (typeof SG1 !== 'undefined' && SG1.musicEnabled) {
+                var music = document.getElementById('backgroundMusic');
+                if (music) {
+                    music.volume = 0.3;
+                    music.muted = false;
+                    music.play().catch(function(e) {
+                        console.log('Could not restart background music:', e);
+                    });
+                }
+            }
+        } catch (e) {
+            console.log('Error restarting audio:', e);
+        }
+    },
+    
+    // Fallback exit methods
+    tryCloseOrRedirect: function() {
+        try {
+            // Try to close the window (works if opened via JavaScript)
+            window.close();
+            
+            // If still here after 500ms, try redirect
+            setTimeout(function() {
+                try {
+                    // Redirect to a safe page
+                    window.location.href = 'about:blank';
+                } catch (e) {
+                    // Last resort - reload page
+                    window.location.reload();
+                }
+            }, 500);
+            
+        } catch (e) {
+            console.log('Final exit attempt failed:', e);
+        }
+    },
+
     skip: function() {
         console.log('Skip button clicked for step:', State.step);
         
         // Stop all audio
-        AudioManager.stopAllAudio();
+        this.stopAllAudio();
         
         // Clear timers
         if (State.motherInterruptTimer) {
@@ -231,104 +419,65 @@ var Controls = {
         
         // Reset speaking state
         State.isSpeaking = false;
-        UI.setVisualizerState('active');
-        
-        // Hide current UI
-        UI.hideAllInteractiveElements();
+        if (typeof UI !== 'undefined') {
+            UI.setVisualizerState('active');
+            UI.hideAllInteractiveElements();
+        }
         
         // Handle current step logic with appropriate default values
-        if (DNAButton.currentMode === 'text') {
-            setTimeout(function() {
-                DNAButton.handleClick();
-            }, 100);
-        } else if (DNAButton.currentMode === 'probability') {
-            DNAButton.handleProbabilityChoice('medium');
-        } else if (DNAButton.currentMode === 'scale') {
-            DNAButton.handleScaleChoice(5);
-        } else if (DNAButton.currentMode === 'ai') {
-            DNAButton.handleAIChoice('diverse');
-        } else if (DNAButton.currentMode === 'why-german-input') {
-            // Set default value and submit
-            var whyInput = UI.element('whyGermanInput');
-            if (whyInput) whyInput.value = 'Skipped';
-            DNAButton.handleWhyGermanSubmit();
-        } else if (DNAButton.currentMode === 'goal-input') {
-            var goalInput = UI.element('goalInput');
-            if (goalInput) goalInput.value = 'Skipped';
-            DNAButton.handleGoalSubmit();
-        } else if (DNAButton.currentMode === 'time-input') {
-            var timeInput = UI.element('timeInput');
-            if (timeInput) timeInput.value = '5 hours';
-            DNAButton.handleTimeSubmit();
-        } else if (DNAButton.currentMode === 'mother-description') {
-            var motherInput = UI.element('motherDescriptionInput');
-            if (motherInput) motherInput.value = 'Skipped';
-            DNAButton.handleMotherDescriptionSubmit();
-        } else if (DNAButton.currentMode === 'profile') {
-            Conversation.dissolveAndTransition();
-        } else {
-            // Default action - advance to next step
-            UI.setVisualizerState('active');
-            setTimeout(function() {
-                Conversation.moveToNextQuestion();
-            }, 300);
-        }
-    },
-    
-    quit: function() {
-        if (confirm('Are you sure you want to quit the assessment?')) {
-            try {
-                window.history.back();
-            } catch (e) {
-                window.close();
+        if (typeof DNAButton !== 'undefined') {
+            if (DNAButton.currentMode === 'text') {
+                setTimeout(function() {
+                    DNAButton.handleClick();
+                }, 100);
+            } else if (DNAButton.currentMode === 'probability') {
+                DNAButton.handleProbabilityChoice('medium');
+            } else if (DNAButton.currentMode === 'scale') {
+                DNAButton.handleScaleChoice(5);
+            } else if (DNAButton.currentMode === 'ai') {
+                DNAButton.handleAIChoice('diverse');
+            } else if (DNAButton.currentMode === 'why-german-input') {
+                var whyInput = document.getElementById('whyGermanInput');
+                if (whyInput) whyInput.value = 'Skipped';
+                DNAButton.handleWhyGermanSubmit();
+            } else if (DNAButton.currentMode === 'goal-input') {
+                var goalInput = document.getElementById('goalInput');
+                if (goalInput) goalInput.value = 'Skipped';
+                DNAButton.handleGoalSubmit();
+            } else if (DNAButton.currentMode === 'time-input') {
+                var timeInput = document.getElementById('timeInput');
+                if (timeInput) timeInput.value = '5 hours';
+                DNAButton.handleTimeSubmit();
+            } else if (DNAButton.currentMode === 'mother-description') {
+                var motherInput = document.getElementById('motherDescriptionInput');
+                if (motherInput) motherInput.value = 'Skipped';
+                DNAButton.handleMotherDescriptionSubmit();
+            } else if (DNAButton.currentMode === 'profile') {
+                if (typeof Conversation !== 'undefined') {
+                    Conversation.dissolveAndTransition();
+                }
+            } else {
+                // Default action - advance to next step
+                if (typeof UI !== 'undefined') {
+                    UI.setVisualizerState('active');
+                }
+                setTimeout(function() {
+                    if (typeof Conversation !== 'undefined') {
+                        Conversation.moveToNextQuestion();
+                    }
+                }, 300);
             }
         }
     },
 
-    exitAssessment: function() {
-    if (confirm('Are you sure you want to exit the assessment?')) {
-        // STOP ALL AUDIO - More aggressive approach
-        try {
-            // Stop all HTML5 audio elements (including background music)
-            var allAudio = document.querySelectorAll('audio');
-            for (var i = 0; i < allAudio.length; i++) {
-                allAudio[i].pause();
-                allAudio[i].currentTime = 0;
-                allAudio[i].src = '';
+    quit: function() {
+        if (confirm('Are you sure you want to quit the assessment?')) {
+            this.stopAllAudio();
+            try {
+                window.history.back();
+            } catch (e) {
+                this.tryCloseOrRedirect();
             }
-            
-            // Stop Web Audio sources
-            if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
-                WebAudioHelper.currentSource.stop();
-                WebAudioHelper.currentSource = null;
-            }
-            
-            // Stop tracked audio elements
-            if (window.audioElements) {
-                window.audioElements.forEach(function(audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.src = '';
-                });
-                window.audioElements = [];
-            }
-            
-            // Stop global audio context
-            if (window.globalAudioContext) {
-                window.globalAudioContext.suspend();
-            }
-            
-            // Call existing AudioManager stop function
-            if (typeof AudioManager !== 'undefined') {
-                AudioManager.stopAllAudio();
-            }
-            
-        } catch (e) {
-            console.log('Audio stop error:', e);
         }
-        
-        // Navigate back to Teachable
-        window.history.back();
-    }
     }
 };
