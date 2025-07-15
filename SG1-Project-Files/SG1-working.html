@@ -77,27 +77,6 @@
             display: none !important;
         }
 
-        /* ===== MUSIC INDICATOR ===== */
-        .music-indicator { 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            color: rgba(255, 255, 255, 0.7); 
-            font-size: 14px; 
-            cursor: pointer; 
-            user-select: none; 
-            z-index: 10000;
-            transition: color 0.3s ease;
-        }
-        
-        .music-indicator:hover { 
-            color: rgba(255, 255, 255, 1); 
-        }
-        
-        .music-indicator.off { 
-            text-decoration: line-through; 
-        }
-
         /* ===== CONTROL BUTTONS ===== */
         .skip-button, .music-button {
             position: fixed;
@@ -148,7 +127,6 @@
             color: rgba(255, 255, 255, 1);
         }
 
-        /* Exit button for pre-init screen */
         .exit-button {
             position: fixed;
             top: 20px;
@@ -240,7 +218,6 @@
             perspective: 1000px;
         }
 
-        /* DNA Strands */
         .dna-strand { 
             fill: none; 
             stroke: white; 
@@ -268,7 +245,6 @@
             100% { transform: rotateX(360deg); }
         }
 
-        /* Fast speaking animations */
         @keyframes sg1DNAFlowFast1 {
             0% { transform: rotateX(0deg); }
             20% { transform: rotateX(120deg); }
@@ -334,7 +310,6 @@
             z-index: 10;
             white-space: nowrap;
             
-            /* Button styling */
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 25px;
@@ -357,7 +332,6 @@
             border-color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Text button translation system like answer choices */
         .dna-text-content {
             transition: opacity 0.3s ease;
         }
@@ -442,7 +416,6 @@
             opacity: 1;
         }
 
-        /* DNA state when showing text */
         .voice-visualizer.text-mode .dna-strand {
             opacity: 0;
         }
@@ -452,7 +425,7 @@
             pointer-events: all;
         }
 
-        /* Answer choices container */
+        /* ===== ANSWER CHOICE CONTAINERS ===== */
         .answer-choices-container {
             position: absolute;
             top: 50%; 
@@ -535,7 +508,7 @@
             opacity: 1;
         }
 
-        /* Text input field for goal and mother questions */
+        /* ===== TEXT INPUT ===== */
         .text-input-container {
             position: absolute;
             top: 50%; 
@@ -607,6 +580,7 @@
             transform: translateY(-2px);
         }
 
+        /* ===== TIME/PROBABILITY CHOICES ===== */
         .time-probability-container {
             position: absolute;
             top: 50%; 
@@ -809,8 +783,6 @@
         <!-- Control buttons -->
         <div class="quit-button" id="quitButton" onclick="Controls.quit()" title="Quit Assessment">×</div>
         <div class="skip-button" id="skipButton" onclick="Controls.skip()" title="Skip Question">SKIP</div>
-        
-        <!-- Music button -->
         <div class="music-button" id="musicButton" onclick="SG1.toggleMusic()">MUSIC</div>
 
         <div class="pre-init-overlay overlay-base" id="preInitOverlay">
@@ -853,16 +825,16 @@
                     </div>
                 </div>
 
+                <!-- Text input for why German question (Q1) -->
+                <div class="text-input-container" id="whyGermanInputContainer">
+                    <input type="text" class="text-input-field" id="whyGermanInput" placeholder="Why do you want to learn German?..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleWhyGermanSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleWhyGermanSubmit()">Submit</button>
+                </div>
+
                 <!-- Text input for goal question -->
                 <div class="text-input-container" id="goalInputContainer">
                     <input type="text" class="text-input-field" id="goalInput" placeholder="Type your goal here..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleGoalSubmit()">
                     <button class="text-submit-button" onclick="DNAButton.handleGoalSubmit()">Submit</button>
-                </div>
-
-                <!-- Text input for mother question -->
-                <div class="text-input-container" id="motherInputContainer">
-                    <input type="text" class="text-input-field" id="motherInput" placeholder="Describe your relationship..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherSubmit()">
-                    <button class="text-submit-button" onclick="DNAButton.handleMotherSubmit()">Submit</button>
                 </div>
 
                 <!-- Time commitment choices -->
@@ -886,12 +858,6 @@
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">&lt;50%</div>
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">80%</div>
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
-                </div>
-
-                <!-- Text input for mother question -->
-                <div class="text-input-container" id="motherDescriptionContainer">
-                    <input type="text" class="text-input-field" id="motherDescriptionInput" placeholder="Describe your relationship with your mother..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherDescriptionSubmit()">
-                    <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
                 </div>
 
                 <!-- Scale 1-10 choices -->
@@ -940,6 +906,12 @@
                     </div>
                 </div>
 
+                <!-- Text input for mother description -->
+                <div class="text-input-container" id="motherDescriptionContainer">
+                    <input type="text" class="text-input-field" id="motherDescriptionInput" placeholder="Describe your relationship with your mother..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherDescriptionSubmit()">
+                    <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
+                </div>
+
                 <!-- Psychological profile display -->
                 <div class="answer-choices-container" id="profileContainer">
                     <div id="profileTitle" style="font-size: 24px; margin-bottom: 20px; color: rgba(255, 255, 255, 0.95);"></div>
@@ -977,16 +949,16 @@
                 1: 'https://uploads.teachablecdn.com/attachments/9cc7908384fd49c58242394eadc70273.mp3',
                 2: 'https://uploads.teachablecdn.com/attachments/fc2c86bf325b410797aa9a99af512c37.mp3',
                 3: 'https://uploads.teachablecdn.com/attachments/3ac16fa084c24c36aa0dfd5373cdb9e8.mp3',
-                4: 'https://uploads.teachablecdn.com/attachments/95e986d1bd1f427db03b976b4f60f0a7.mp3', // How likely are you to reach your goal?
-                5: 'https://uploads.teachablecdn.com/attachments/64ab0d397cb140dd86458e0b42ea494e.mp3', // Q6-how-much-love-germans.mp3
+                4: 'https://uploads.teachablecdn.com/attachments/95e986d1bd1f427db03b976b4f60f0a7.mp3',
+                5: 'https://uploads.teachablecdn.com/attachments/64ab0d397cb140dd86458e0b42ea494e.mp3',
                 6: 'https://uploads.teachablecdn.com/attachments/3241a2f7d8e447469e9d3e038afdbf07.mp3',
-                7: 'https://uploads.teachablecdn.com/attachments/60c3a446d2b24be38dc14fe88be58f53.mp3', // Food question
-                8: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3', // Mother relationship question
-                9: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3', // AI choice question
+                7: 'https://uploads.teachablecdn.com/attachments/60c3a446d2b24be38dc14fe88be58f53.mp3',
+                8: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',
+                9: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3',
                 10: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',
                 11: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',
                 12: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3',
-                13: 'https://uploads.teachablecdn.com/attachments/45396480d7f748f29608c56ac2e11ad7.mp3', // New analysis audio
+                13: 'https://uploads.teachablecdn.com/attachments/45396480d7f748f29608c56ac2e11ad7.mp3',
                 14: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'
             },
             
@@ -995,83 +967,49 @@
             systemErrorAudio: 'https://uploads.teachablecdn.com/attachments/595285714e734e99bc63b49e3e70a1e4.mp3',
             humanWakeupAudio: 'https://uploads.teachablecdn.com/attachments/cec6086e76134866a3e151ba70ab4651.mp3',
 
-            // Response tracking
             responses: {},
             score: 0
         };
 
         var Controls = {
             skip: function() {
-                // Stop ALL audio sources immediately
                 this.stopAllAudio();
                 
-                // Clear any timers
                 if (State.motherInterruptTimer) {
                     clearTimeout(State.motherInterruptTimer);
                     State.motherInterruptTimer = null;
                 }
                 
-                // Reset speaking state
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
                 
-                // Properly hide any current text buttons
                 this.forceHideCurrentButton();
                 
-                // Handle different modes
                 if (DNAButton.currentMode === 'text') {
-                    // For text buttons, simulate click after proper cleanup
                     setTimeout(function() {
                         DNAButton.handleClick();
                     }, 100);
-                } else if (DNAButton.currentMode === 'choices' || 
-                          DNAButton.currentMode === 'time' || 
-                          DNAButton.currentMode === 'probability' ||
-                          DNAButton.currentMode === 'scale' ||
-                          DNAButton.currentMode === 'food' ||
-                          DNAButton.currentMode === 'german' ||
-                          DNAButton.currentMode === 'call' ||
-                          DNAButton.currentMode === 'mother-scale' ||
-                          DNAButton.currentMode === 'ai') {
-                    // For choice modes, select first option
-                    switch(DNAButton.currentMode) {
-                        case 'choices':
-                            DNAButton.handleAnswerChoice(0);
-                            break;
-                        case 'time':
-                            DNAButton.handleTimeChoice(0);
-                            break;
-                        case 'probability':
-                            DNAButton.handleProbabilityChoice('medium');
-                            break;
-                        case 'scale':
-                            DNAButton.handleScaleChoice(5);
-                            break;
-                        case 'food':
-                            DNAButton.handleFoodChoice(0);
-                            break;
-                        case 'german':
-                            DNAButton.handleGermanChoice(0);
-                            break;
-                        case 'call':
-                            DNAButton.handleCallChoice(1);
-                            break;
-                        case 'mother-scale':
-                            DNAButton.handleMotherScaleChoice(5);
-                            break;
-                        case 'ai':
-                            DNAButton.handleAIChoice('diverse');
-                            break;
-                    }
+                } else if (DNAButton.currentMode === 'choices') {
+                    DNAButton.handleAnswerChoice(0);
+                } else if (DNAButton.currentMode === 'time') {
+                    DNAButton.handleTimeChoice(0);
+                } else if (DNAButton.currentMode === 'probability') {
+                    DNAButton.handleProbabilityChoice('medium');
+                } else if (DNAButton.currentMode === 'scale') {
+                    DNAButton.handleScaleChoice(5);
+                } else if (DNAButton.currentMode === 'food') {
+                    DNAButton.handleFoodChoice(0);
+                } else if (DNAButton.currentMode === 'ai') {
+                    DNAButton.handleAIChoice('diverse');
+                } else if (DNAButton.currentMode === 'why-german-input') {
+                    DNAButton.handleWhyGermanSubmit();
                 } else if (DNAButton.currentMode === 'goal-input') {
                     DNAButton.handleGoalSubmit();
                 } else if (DNAButton.currentMode === 'mother-description') {
                     DNAButton.handleMotherDescriptionSubmit();
                 } else if (DNAButton.currentMode === 'profile') {
-                    // For profile viewing, dissolve and transition
                     Conversation.dissolveAndTransition();
                 } else {
-                    // For DNA mode or speaking, skip to next question
                     DNAButton.showDNA();
                     setTimeout(function() {
                         Conversation.moveToNextQuestion();
@@ -1080,7 +1018,6 @@
             },
 
             stopAllAudio: function() {
-                // Stop WebAudio sources
                 try {
                     if (WebAudioHelper.currentSource) {
                         WebAudioHelper.currentSource.stop();
@@ -1090,7 +1027,6 @@
                     console.log('WebAudio stop error:', e);
                 }
                 
-                // Stop all HTML5 audio elements except background music
                 var allAudio = document.querySelectorAll('audio:not(#backgroundMusic)');
                 for (var i = 0; i < allAudio.length; i++) {
                     try {
@@ -1101,7 +1037,6 @@
                     }
                 }
                 
-                // Stop any created Audio objects
                 window.audioElements = window.audioElements || [];
                 window.audioElements.forEach(function(audio) {
                     try {
@@ -1119,7 +1054,6 @@
                     textButton.style.opacity = '0';
                     textButton.classList.remove('visible');
                     
-                    // Clear the content
                     setTimeout(function() {
                         textButton.innerHTML = '';
                     }, 300);
@@ -1128,7 +1062,6 @@
             
             quit: function() {
                 if (confirm('Are you sure you want to quit the assessment?')) {
-                    // Try to navigate back to course or close
                     try {
                         window.history.back();
                     } catch (e) {
@@ -1139,13 +1072,11 @@
 
             exitAssessment: function() {
                 if (confirm('Are you sure you want to exit the assessment?')) {
-                    // Exit from start screen - hide the SG1 container to show underlying Teachable content
                     var sg1Container = document.querySelector('.sg1-container');
                     if (sg1Container) {
                         sg1Container.style.display = 'none';
                     }
                     
-                    // Try to restore normal page scroll
                     document.body.style.overflow = 'auto';
                     document.documentElement.style.overflow = 'auto';
                 }
@@ -1214,10 +1145,8 @@
                     textButton.style.opacity = '0';
                     textButton.style.transform = 'translate(-50%, -50%)';
                     
-                    // Clear existing content
                     textButton.innerHTML = '';
                     
-                    // Create content and translation elements
                     var contentSpan = document.createElement('span');
                     contentSpan.className = 'dna-text-content';
                     contentSpan.textContent = text;
@@ -1246,7 +1175,6 @@
                 var visualizer = UI.element('visualizer');
                 
                 if (statusDisplay && visualizer) {
-                    // Hide DNA and show status
                     visualizer.classList.add('text-mode');
                     statusDisplay.textContent = text;
                     statusDisplay.classList.remove('error');
@@ -1310,6 +1238,22 @@
                 }
             },
 
+            showWhyGermanInput: function() {
+                var visualizer = UI.element('visualizer');
+                var whyContainer = UI.element('whyGermanInputContainer');
+                
+                if (whyContainer && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    whyContainer.classList.add('visible');
+                    this.currentMode = 'why-german-input';
+                    
+                    setTimeout(function() {
+                        var whyInput = UI.element('whyGermanInput');
+                        if (whyInput) whyInput.focus();
+                    }, 300);
+                }
+            },
+
             showGoalInput: function() {
                 var visualizer = UI.element('visualizer');
                 var goalContainer = UI.element('goalInputContainer');
@@ -1322,22 +1266,6 @@
                     setTimeout(function() {
                         var goalInput = UI.element('goalInput');
                         if (goalInput) goalInput.focus();
-                    }, 300);
-                }
-            },
-
-            showMotherInput: function() {
-                var visualizer = UI.element('visualizer');
-                var motherContainer = UI.element('motherInputContainer');
-                
-                if (motherContainer && visualizer) {
-                    visualizer.classList.add('text-mode');
-                    motherContainer.classList.add('visible');
-                    this.currentMode = 'mother-input';
-                    
-                    setTimeout(function() {
-                        var motherInput = UI.element('motherInput');
-                        if (motherInput) motherInput.focus();
                     }, 300);
                 }
             },
@@ -1364,39 +1292,6 @@
                 }
             },
 
-            showGermanChoices: function() {
-                var visualizer = UI.element('visualizer');
-                var germanContainer = UI.element('germanChoicesContainer');
-                
-                if (germanContainer && visualizer) {
-                    visualizer.classList.add('text-mode');
-                    germanContainer.classList.add('visible');
-                    this.currentMode = 'german';
-                }
-            },
-
-            showCallChoices: function() {
-                var visualizer = UI.element('visualizer');
-                var callContainer = UI.element('callChoicesContainer');
-                
-                if (callContainer && visualizer) {
-                    visualizer.classList.add('text-mode');
-                    callContainer.classList.add('visible');
-                    this.currentMode = 'call';
-                }
-            },
-
-            showMotherScaleChoices: function() {
-                var visualizer = UI.element('visualizer');
-                var motherScaleContainer = UI.element('motherScaleChoicesContainer');
-                
-                if (motherScaleContainer && visualizer) {
-                    visualizer.classList.add('text-mode');
-                    motherScaleContainer.classList.add('visible');
-                    this.currentMode = 'mother-scale';
-                }
-            },
-
             showAIChoices: function() {
                 var visualizer = UI.element('visualizer');
                 var aiContainer = UI.element('aiChoicesContainer');
@@ -1407,6 +1302,22 @@
                     this.currentMode = 'ai';
                 }
             },
+
+            showMotherDescriptionInput: function() {
+                var visualizer = UI.element('visualizer');
+                var motherContainer = UI.element('motherDescriptionContainer');
+                
+                if (motherContainer && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    motherContainer.classList.add('visible');
+                    this.currentMode = 'mother-description';
+                    
+                    setTimeout(function() {
+                        var motherInput = UI.element('motherDescriptionInput');
+                        if (motherInput) motherInput.focus();
+                    }, 300);
+                }
+            },
             
             showDNA: function() {
                 var visualizer = UI.element('visualizer');
@@ -1414,8 +1325,8 @@
                 var choicesContainer = UI.element('answerChoicesContainer');
                 var timeContainer = UI.element('timeChoicesContainer');
                 var probContainer = UI.element('probabilityChoicesContainer');
+                var whyContainer = UI.element('whyGermanInputContainer');
                 var goalContainer = UI.element('goalInputContainer');
-                var motherContainer = UI.element('motherInputContainer');
                 var motherDescContainer = UI.element('motherDescriptionContainer');
                 var scaleContainer = UI.element('scaleChoicesContainer');
                 var foodContainer = UI.element('foodChoicesContainer');
@@ -1428,8 +1339,8 @@
                     if (choicesContainer) choicesContainer.classList.remove('visible');
                     if (timeContainer) timeContainer.classList.remove('visible');
                     if (probContainer) probContainer.classList.remove('visible');
+                    if (whyContainer) whyContainer.classList.remove('visible');
                     if (goalContainer) goalContainer.classList.remove('visible');
-                    if (motherContainer) motherContainer.classList.remove('visible');
                     if (motherDescContainer) motherDescContainer.classList.remove('visible');
                     if (scaleContainer) scaleContainer.classList.remove('visible');
                     if (foodContainer) foodContainer.classList.remove('visible');
@@ -1466,9 +1377,8 @@
             handleAnswerChoice: function(choiceIndex) {
                 if (this.currentMode !== 'choices') return;
                 
-                // Score the response
                 State.responses.firstQuestion = choiceIndex;
-                State.score += [3, 1, -2][choiceIndex]; // "Gute Frage" = +3, "Keine Ahnung" = +1, "Geht dich nichts an" = -2
+                State.score += [3, 1, -2][choiceIndex];
                 
                 this.playConfirmationSound();
                 this.animateChoiceClick();
@@ -1482,11 +1392,10 @@
             handleTimeChoice: function(choiceIndex) {
                 if (this.currentMode !== 'time') return;
                 
-                // Score the response and store weekly hours
                 var weeklyHours = [1, 5, 15][choiceIndex];
                 State.responses.timeCommitment = choiceIndex;
                 State.responses.weeklyHours = weeklyHours;
-                State.score += [1, 3, 5][choiceIndex]; // More time = higher score
+                State.score += [1, 3, 5][choiceIndex];
                 
                 this.playConfirmationSound();
                 this.animateChoiceClick();
@@ -1500,7 +1409,6 @@
             handleProbabilityChoice: function(level) {
                 if (this.currentMode !== 'probability') return;
                 
-                // Score the response
                 State.responses.goalLikelihood = level;
                 State.score += level === 'low' ? -1 : level === 'medium' ? 2 : 4;
                 
@@ -1520,6 +1428,110 @@
                     }, 800);
                 }
             },
+
+            handleScaleChoice: function(rating) {
+                this.playConfirmationSound();
+                this.animateChoiceClick();
+                
+                if (State.step === 5) {
+                    State.responses.germanLove = rating;
+                    State.score += Math.max(0, rating - 5);
+                } else if (State.step === 6) {
+                    State.responses.germanLove2 = rating;
+                    State.score += Math.max(0, rating - 5);
+                }
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            handleFoodChoice: function(choiceIndex) {
+                this.playConfirmationSound();
+                this.animateChoiceClick();
+                
+                State.responses.foodChoice = choiceIndex;
+                State.score += [2, 1, 3][choiceIndex];
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            handleAIChoice: function(aiType) {
+                this.playConfirmationSound();
+                this.animateChoiceClick();
+                
+                State.responses.aiChoice = aiType;
+                State.score += aiType === 'diverse' ? 3 : aiType === 'female' ? 2 : 1;
+                
+                State.selectedAIType = aiType;
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            handleWhyGermanSubmit: function() {
+                var whyInput = UI.element('whyGermanInput');
+                var whyValue = whyInput ? whyInput.value.trim() : '';
+                
+                this.playConfirmationSound();
+                
+                if (whyValue) {
+                    // Store the response
+                    State.responses.whyGerman = whyValue;
+                    this.submitToGoogleForm(whyValue, 'why_german');
+                }
+                
+                this.animateInputContainerOut('whyGermanInputContainer');
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            handleGoalSubmit: function() {
+                var goalInput = UI.element('goalInput');
+                var goalValue = goalInput ? goalInput.value.trim() : '';
+                
+                this.playConfirmationSound();
+                
+                if (goalValue) {
+                    this.scoreGoal(goalValue);
+                    this.submitToGoogleForm(goalValue, 'goal');
+                }
+                
+                this.animateInputContainerOut('goalInputContainer');
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
+
+            handleMotherDescriptionSubmit: function() {
+                var motherInput = UI.element('motherDescriptionInput');
+                var motherValue = motherInput ? motherInput.value.trim() : '';
+                
+                this.playConfirmationSound();
+                
+                if (motherValue) {
+                    this.scoreMotherDescription(motherValue);
+                    this.submitToGoogleForm(motherValue, 'mother_description');
+                }
+                
+                this.animateInputContainerOut('motherDescriptionContainer');
+                
+                setTimeout(function() {
+                    DNAButton.showDNA();
+                    Conversation.playThankYou();
+                }, 800);
+            },
             
             animateClick: function() {
                 var textButton = UI.element('dnaTextButton');
@@ -1535,7 +1547,7 @@
             },
 
             animateChoiceClick: function() {
-                var containers = ['answerChoicesContainer', 'timeChoicesContainer', 'probabilityChoicesContainer'];
+                var containers = ['answerChoicesContainer', 'timeChoicesContainer', 'probabilityChoicesContainer', 'scaleChoicesContainer', 'foodChoicesContainer', 'aiChoicesContainer'];
                 containers.forEach(function(id) {
                     var container = UI.element(id);
                     if (container && container.classList.contains('visible')) {
@@ -1617,31 +1629,10 @@
                 }, 800);
             },
 
-            handleGoalSubmit: function() {
-                var goalInput = UI.element('goalInput');
-                var goalValue = goalInput ? goalInput.value.trim() : '';
-                
-                this.playConfirmationSound();
-                
-                if (goalValue) {
-                    // Score the goal
-                    this.scoreGoal(goalValue);
-                    this.submitToGoogleForm(goalValue, 'goal');
-                }
-                
-                this.animateInputContainerOut('goalInputContainer');
-                
-                setTimeout(function() {
-                    DNAButton.showDNA();
-                    Conversation.playThankYou();
-                }, 800);
-            },
-
             scoreGoal: function(goal) {
                 var analysis = this.analyzeGoalSentiment(goal);
                 var level = this.estimateTargetLevel(goal, analysis);
                 
-                // Calculate composite score
                 var score = analysis.ambition + analysis.confidence + analysis.urgency + analysis.specificity;
                 
                 State.responses.goal = score;
@@ -1661,27 +1652,22 @@
                     context: 'general'
                 };
                 
-                // Ambition indicators
                 var highAmbition = ['fluent', 'perfect', 'native', 'master', 'expert', 'c2', 'advanced', 'proficient'];
                 var mediumAmbition = ['conversational', 'comfortable', 'confident', 'intermediate', 'b2', 'b1'];
                 var lowAmbition = ['basic', 'survive', 'get by', 'understand', 'a2', 'a1', 'beginner'];
                 
-                // Confidence indicators
                 var confident = ['will', 'going to', 'determined', 'committed', 'plan to', 'must', 'need to'];
                 var uncertain = ['maybe', 'hopefully', 'try to', 'would like', 'wish', 'might', 'possibly'];
                 var doubtful = ['probably not', 'difficult', 'hard', 'impossible', 'doubt'];
                 
-                // Urgency indicators
                 var urgent = ['immediately', 'asap', 'quickly', 'soon', 'next month', 'deadline', 'exam'];
                 var moderate = ['next year', 'few months', 'this year', 'by summer'];
                 var relaxed = ['eventually', 'someday', 'when i can', 'no rush', 'retirement'];
                 
-                // Specificity indicators
                 var specific = ['c2 level', 'goethe', 'business meetings', 'university', 'job interview', 'move to germany', 'work in berlin'];
                 var contextual = ['travel', 'work', 'study', 'girlfriend', 'boyfriend', 'family', 'business'];
                 var vague = ['better', 'improve', 'learn some', 'understand more', 'bit of'];
                 
-                // Context detection
                 if (cleanText.includes('work') || cleanText.includes('job') || cleanText.includes('business') || cleanText.includes('career')) {
                     analysis.context = 'professional';
                     analysis.specificity += 2;
@@ -1690,12 +1676,11 @@
                     analysis.specificity += 3;
                 } else if (cleanText.includes('girlfriend') || cleanText.includes('boyfriend') || cleanText.includes('partner') || cleanText.includes('love')) {
                     analysis.context = 'romantic';
-                    analysis.confidence += 2; // Love is a strong motivator!
+                    analysis.confidence += 2;
                 } else if (cleanText.includes('travel') || cleanText.includes('vacation') || cleanText.includes('visit')) {
                     analysis.context = 'travel';
                 }
                 
-                // Score ambition
                 highAmbition.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.ambition += 3;
                 });
@@ -1706,7 +1691,6 @@
                     if (cleanText.includes(word)) analysis.ambition += 1;
                 });
                 
-                // Score confidence
                 confident.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.confidence += 2;
                 });
@@ -1717,7 +1701,6 @@
                     if (cleanText.includes(word)) analysis.confidence -= 2;
                 });
                 
-                // Score urgency
                 urgent.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.urgency += 3;
                 });
@@ -1728,7 +1711,6 @@
                     if (cleanText.includes(word)) analysis.urgency += 1;
                 });
                 
-                // Score specificity
                 specific.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.specificity += 3;
                 });
@@ -1739,7 +1721,6 @@
                     if (cleanText.includes(word)) analysis.specificity -= 1;
                 });
                 
-                // Humor detection (bonus points!)
                 var humor = ['world domination', 'take over', 'rule the world', 'impress germans', 'escape'];
                 humor.forEach(function(phrase) {
                     if (cleanText.includes(phrase)) {
@@ -1748,7 +1729,6 @@
                     }
                 });
                 
-                // Ensure minimum values
                 analysis.ambition = Math.max(0, analysis.ambition);
                 analysis.confidence = Math.max(-3, analysis.confidence);
                 analysis.urgency = Math.max(0, analysis.urgency);
@@ -1760,7 +1740,6 @@
             estimateTargetLevel: function(text, analysis) {
                 var cleanText = text.toLowerCase();
                 
-                // Direct level mentions
                 if (cleanText.includes('c2') || cleanText.includes('native') || cleanText.includes('perfect')) return 6;
                 if (cleanText.includes('c1') || cleanText.includes('advanced') || cleanText.includes('fluent')) return 5;
                 if (cleanText.includes('b2') || cleanText.includes('upper intermediate')) return 4;
@@ -1768,27 +1747,25 @@
                 if (cleanText.includes('a2') || cleanText.includes('elementary')) return 2;
                 if (cleanText.includes('a1') || cleanText.includes('beginner') || cleanText.includes('basic')) return 1;
                 
-                // Context-based estimation
-                if (analysis.context === 'academic') return 5; // C1 for university
-                if (analysis.context === 'professional') return 4; // B2 for work
-                if (analysis.context === 'romantic') return 3; // B1 for relationships
-                if (analysis.context === 'travel') return 2; // A2 for travel
+                if (analysis.context === 'academic') return 5;
+                if (analysis.context === 'professional') return 4;
+                if (analysis.context === 'romantic') return 3;
+                if (analysis.context === 'travel') return 2;
                 
-                // Ambition-based fallback
-                if (analysis.ambition >= 8) return 6; // Very high ambition = C2
-                if (analysis.ambition >= 6) return 5; // High ambition = C1
-                if (analysis.ambition >= 4) return 4; // Medium ambition = B2
-                if (analysis.ambition >= 2) return 3; // Some ambition = B1
+                if (analysis.ambition >= 8) return 6;
+                if (analysis.ambition >= 6) return 5;
+                if (analysis.ambition >= 4) return 4;
+                if (analysis.ambition >= 2) return 3;
                 
-                return 2; // Default A2
+                return 2;
             },
 
             calculateTimelineEstimate: function() {
-                var level = State.responses.goalLevel || 3; // Default B1
-                var hoursPerWeek = State.responses.weeklyHours || 5; // Default 5hrs
+                var level = State.responses.goalLevel || 3;
+                var hoursPerWeek = State.responses.weeklyHours || 5;
                 
-                var totalHours = level * 200; // 200 hours per level
-                var hoursWithBuffer = totalHours * 1.1; // Add 10% buffer
+                var totalHours = level * 200;
+                var hoursWithBuffer = totalHours * 1.1;
                 var weeks = Math.ceil(hoursWithBuffer / hoursPerWeek);
                 
                 var years = Math.floor(weeks / 52);
@@ -1813,42 +1790,6 @@
                 };
             },
 
-            showMotherDescriptionInput: function() {
-                var visualizer = UI.element('visualizer');
-                var motherContainer = UI.element('motherDescriptionContainer');
-                
-                if (motherContainer && visualizer) {
-                    visualizer.classList.add('text-mode');
-                    motherContainer.classList.add('visible');
-                    this.currentMode = 'mother-description';
-                    
-                    setTimeout(function() {
-                        var motherInput = UI.element('motherDescriptionInput');
-                        if (motherInput) motherInput.focus();
-                    }, 300);
-                }
-            },
-
-            handleMotherDescriptionSubmit: function() {
-                var motherInput = UI.element('motherDescriptionInput');
-                var motherValue = motherInput ? motherInput.value.trim() : '';
-                
-                this.playConfirmationSound();
-                
-                // Score the mother description
-                if (motherValue) {
-                    this.scoreMotherDescription(motherValue);
-                    this.submitToGoogleForm(motherValue, 'mother_description');
-                }
-                
-                this.animateInputContainerOut('motherDescriptionContainer');
-                
-                setTimeout(function() {
-                    DNAButton.showDNA();
-                    Conversation.playThankYou();
-                }, 800);
-            },
-
             scoreMotherDescription: function(description) {
                 var analysis = this.analyzeMotherSentiment(description);
                 var score = analysis.relationship + analysis.emotional + analysis.communication + analysis.humor;
@@ -1868,30 +1809,25 @@
                     type: 'normal'
                 };
                 
-                // Relationship quality indicators
                 var excellent = ['amazing', 'wonderful', 'best friend', 'love her', 'perfect', 'incredible'];
                 var good = ['good', 'great', 'nice', 'caring', 'supportive', 'close', 'warm'];
                 var neutral = ['okay', 'fine', 'normal', 'average', 'decent'];
                 var difficult = ['complicated', 'difficult', 'challenging', 'strained', 'tense'];
                 var poor = ['bad', 'terrible', 'awful', 'toxic', 'horrible', 'hate'];
                 
-                // Emotional indicators
                 var positive = ['happy', 'joy', 'love', 'grateful', 'blessed', 'lucky'];
                 var mixed = ['complex', 'mixed feelings', 'complicated emotions'];
                 var negative = ['sad', 'frustrated', 'angry', 'hurt', 'disappointed'];
                 
-                // Communication patterns
                 var frequent = ['calls daily', 'talks all the time', 'constantly in touch', 'too much contact'];
                 var healthy = ['regular contact', 'weekly calls', 'stay in touch', 'good communication'];
                 var minimal = ['rarely talk', 'limited contact', 'don\'t call much', 'distant'];
                 var none = ['no contact', 'don\'t speak', 'cut off', 'estranged'];
                 
-                // Special situations
                 var deceased = ['passed away', 'died', 'dead', 'lost her', 'no longer with us'];
                 var therapy = ['therapist', 'therapy', 'counseling', 'psychologist', 'freud'];
                 var guilt = ['guilt', 'guilty', 'obligation', 'should call more', 'feel bad'];
                 
-                // Score relationship quality
                 excellent.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.relationship += 4;
                 });
@@ -1908,7 +1844,6 @@
                     if (cleanText.includes(word)) analysis.relationship -= 3;
                 });
                 
-                // Score emotional tone
                 positive.forEach(function(word) {
                     if (cleanText.includes(word)) analysis.emotional += 2;
                 });
@@ -1919,7 +1854,6 @@
                     if (cleanText.includes(word)) analysis.emotional -= 2;
                 });
                 
-                // Score communication
                 frequent.forEach(function(phrase) {
                     if (cleanText.includes(phrase)) {
                         analysis.communication += 2;
@@ -1939,36 +1873,33 @@
                     }
                 });
                 
-                // Special situations (bonus points for humor/insight)
                 deceased.forEach(function(phrase) {
                     if (cleanText.includes(phrase)) {
                         analysis.type = 'deceased';
-                        analysis.humor += 3; // Dark humor points
+                        analysis.humor += 3;
                     }
                 });
                 
                 therapy.forEach(function(word) {
                     if (cleanText.includes(word)) {
-                        analysis.humor += 5; // Self-awareness bonus!
+                        analysis.humor += 5;
                         analysis.type = 'therapeutic';
                     }
                 });
                 
                 guilt.forEach(function(word) {
                     if (cleanText.includes(word)) {
-                        analysis.humor += 2; // Classic mother-child dynamic
+                        analysis.humor += 2;
                         analysis.emotional -= 1;
                     }
                 });
                 
-                // Detect oversharing (length-based humor)
                 if (text.length > 150) {
-                    analysis.humor += 2; // Oversharing bonus
+                    analysis.humor += 2;
                 }
                 
-                // Detect avoidance
                 if (text.length < 10 || cleanText.includes('private') || cleanText.includes('personal')) {
-                    analysis.humor += 1; // Avoidance detected
+                    analysis.humor += 1;
                     analysis.type = 'avoidant';
                 }
                 
@@ -1978,7 +1909,22 @@
             submitToGoogleForm: function(value, type) {
                 try {
                     var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
-                    var fieldName = type === 'goal' ? 'entry.1685277614' : 'entry.745882257';
+                    var fieldName;
+                    
+                    // Map different types to form fields
+                    switch(type) {
+                        case 'why_german':
+                            fieldName = 'entry.1234567890'; // Replace with actual form field ID
+                            break;
+                        case 'goal':
+                            fieldName = 'entry.1685277614';
+                            break;
+                        case 'mother_description':
+                            fieldName = 'entry.745882257';
+                            break;
+                        default:
+                            fieldName = 'entry.1685277614'; // Default fallback
+                    }
                     
                     var params = new URLSearchParams();
                     params.append(fieldName, value);
@@ -2008,55 +1954,6 @@
                     container.style.opacity = '0';
                     container.style.transform = 'translate(-50%, -50%) translateY(10px)';
                 }
-            },
-
-            handleScaleChoice: function(rating) {
-                this.playConfirmationSound();
-                this.animateChoiceClick();
-                
-                // Score based on which question this is
-                if (State.step === 5) {
-                    State.responses.germanLove = rating;
-                    State.score += Math.max(0, rating - 5); // Only positive scores for high ratings
-                } else if (State.step === 6) {
-                    State.responses.germanLove2 = rating;
-                    State.score += Math.max(0, rating - 5);
-                }
-                
-                setTimeout(function() {
-                    DNAButton.showDNA();
-                    Conversation.playThankYou();
-                }, 800);
-            },
-
-            handleFoodChoice: function(choiceIndex) {
-                this.playConfirmationSound();
-                this.animateChoiceClick();
-                
-                // Score the food choice
-                State.responses.foodChoice = choiceIndex;
-                State.score += [2, 1, 3][choiceIndex]; // Kartoffelpuffer=2, Currywurst=1, Döner=3
-                
-                setTimeout(function() {
-                    DNAButton.showDNA();
-                    Conversation.playThankYou();
-                }, 800);
-            },
-
-            handleAIChoice: function(aiType) {
-                this.playConfirmationSound();
-                this.animateChoiceClick();
-                
-                // Score the AI choice
-                State.responses.aiChoice = aiType;
-                State.score += aiType === 'diverse' ? 3 : aiType === 'female' ? 2 : 1;
-                
-                State.selectedAIType = aiType;
-                
-                setTimeout(function() {
-                    DNAButton.showDNA();
-                    Conversation.playThankYou();
-                }, 800);
             },
 
             getPersonalityProfile: function() {
@@ -2092,7 +1989,7 @@
                     }
                 }
                 
-                return profiles[2]; // Default to Realist
+                return profiles[2];
             },
 
             showPersonalityProfile: function() {
@@ -2141,7 +2038,6 @@
             createAudio: function(url) {
                 var audio = new Audio(url);
                 
-                // Track audio element for cleanup
                 window.audioElements = window.audioElements || [];
                 window.audioElements.push(audio);
                 
@@ -2265,24 +2161,15 @@
             moveToNextQuestion: function() {
                 State.step++;
                 
-                if (State.step === 13 && State.selectedAIType) {
-                    if (State.selectedAIType === 'male') {
-                        this.startMaleAISequence();
-                        return;
-                    } else if (State.selectedAIType === 'female') {
-                        self.startFemaleAISequence();
-                        return;
-                    } else if (State.selectedAIType === 'diverse') {
-                        State.step = 12;
-                    }
-                }
-                
-                if (State.step === 11 && State.selectedAIType === 'male') {
-                    State.step = 13;
-                } else if (State.step === 12 && State.selectedAIType === 'female') {
-                    State.step = 13;
-                } else if (State.step === 13 && State.selectedAIType === 'diverse') {
-                    State.step = 13;
+                // Fixed AI sequence logic
+                if (State.step === 10 && State.selectedAIType === 'male') {
+                    this.startMaleAISequence();
+                    return;
+                } else if (State.step === 10 && State.selectedAIType === 'female') {
+                    this.startFemaleAISequence();
+                    return;
+                } else if (State.step === 10 && State.selectedAIType === 'diverse') {
+                    State.step = 13; // Skip to analysis step
                 }
                 
                 if (State.step >= 15) {
@@ -2334,12 +2221,10 @@
             startMaleAISequence: function() {
                 var self = this;
                 
-                // Step 1: Installing Mansplainer Module
                 setTimeout(function() {
                     DNAButton.showStatus('Installing Mansplainer Module...');
                 }, 500);
                 
-                // Step 2: Success
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2347,7 +2232,6 @@
                     }, 300);
                 }, 2500);
                 
-                // Step 3: Charging ego
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2355,7 +2239,6 @@
                     }, 300);
                 }, 4000);
                 
-                // Step 4: Ego fully charged
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2363,7 +2246,6 @@
                     }, 300);
                 }, 8000);
                 
-                // Step 5: Reduce listening abilities (separate message)
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2371,7 +2253,6 @@
                     }, 300);
                 }, 9500);
                 
-                // Step 6: Success
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2379,7 +2260,6 @@
                     }, 300);
                 }, 14000);
                 
-                // Step 7: Male AI fully activated
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2387,13 +2267,11 @@
                     }, 300);
                 }, 15500);
                 
-                // Step 8: Play Q16 audio and continue
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     DNAButton.showDNA();
-                    State.step = 13; // Skip to step 13
+                    State.step = 13;
                     
-                    // Play the Q13 audio (new analysis audio)
                     State.isSpeaking = true;
                     UI.setVisualizerState('speaking');
                     
@@ -2405,10 +2283,9 @@
                             function() {
                                 State.isSpeaking = false;
                                 UI.setVisualizerState('active');
-                                // Add 3 second delay after "will prepare your course"
                                 setTimeout(function() {
                                     self.moveToNextQuestion();
-                                }, 4000); // 1000ms + 3000ms delay
+                                }, 4000);
                             },
                             function(e) {
                                 State.isSpeaking = false;
@@ -2423,10 +2300,9 @@
                         audio.onended = function() {
                             State.isSpeaking = false;
                             UI.setVisualizerState('active');
-                            // Add 3 second delay after "will prepare your course"
                             setTimeout(function() {
                                 self.moveToNextQuestion();
-                            }, 4000); // 1000ms + 3000ms delay
+                            }, 4000);
                         };
                         audio.onerror = function(e) {
                             State.isSpeaking = false;
@@ -2446,6 +2322,90 @@
                 }, 17500);
             },
 
+            // Fixed: Add the missing startFemaleAISequence function
+            startFemaleAISequence: function() {
+                var self = this;
+                
+                setTimeout(function() {
+                    DNAButton.showStatus('Installing Empathy Protocols...');
+                }, 500);
+                
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Success');
+                    }, 300);
+                }, 2500);
+                
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        self.showListeningEnhancement();
+                    }, 300);
+                }, 4000);
+                
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    setTimeout(function() {
+                        DNAButton.showStatus('Female AI fully activated');
+                    }, 300);
+                }, 8000);
+                
+                setTimeout(function() {
+                    DNAButton.hideStatus();
+                    DNAButton.showDNA();
+                    State.step = 13;
+                    
+                    State.isSpeaking = true;
+                    UI.setVisualizerState('speaking');
+                    
+                    var audioUrl = State.audioFiles[13];
+                    
+                    if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                        WebAudioHelper.play(
+                            audioUrl,
+                            function() {
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                setTimeout(function() {
+                                    self.moveToNextQuestion();
+                                }, 4000);
+                            },
+                            function(e) {
+                                State.isSpeaking = false;
+                                UI.setVisualizerState('active');
+                                setTimeout(function() {
+                                    self.moveToNextQuestion();
+                                }, 4000);
+                            }
+                        );
+                    } else {
+                        var audio = AudioManager.createAudio(audioUrl);
+                        audio.onended = function() {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 4000);
+                        };
+                        audio.onerror = function(e) {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 4000);
+                        };
+                        audio.play().catch(function(e) {
+                            State.isSpeaking = false;
+                            UI.setVisualizerState('active');
+                            setTimeout(function() {
+                                self.moveToNextQuestion();
+                            }, 4000);
+                        });
+                    }
+                }, 10000);
+            },
+
             showEgoCharging: function() {
                 var statusDisplay = UI.element('statusDisplay');
                 var visualizer = UI.element('visualizer');
@@ -2457,7 +2417,7 @@
                     
                     var count = 0;
                     var interval = setInterval(function() {
-                        count += Math.floor(Math.random() * 15) + 10; // Random increments
+                        count += Math.floor(Math.random() * 15) + 10;
                         if (count >= 200) {
                             clearInterval(interval);
                             statusDisplay.textContent = 'Charging ego: 200%';
@@ -2479,10 +2439,33 @@
                     
                     var count = 100;
                     var interval = setInterval(function() {
-                        count -= Math.floor(Math.random() * 8) + 5; // Random decrements
+                        count -= Math.floor(Math.random() * 8) + 5;
                         if (count <= 10) {
                             clearInterval(interval);
                             statusDisplay.textContent = 'Listening abilities: 10%';
+                        } else {
+                            statusDisplay.textContent = 'Listening abilities: ' + count + '%';
+                        }
+                    }, 150);
+                }
+            },
+
+            // Fixed: Add the missing showListeningEnhancement function
+            showListeningEnhancement: function() {
+                var statusDisplay = UI.element('statusDisplay');
+                var visualizer = UI.element('visualizer');
+                
+                if (statusDisplay && visualizer) {
+                    visualizer.classList.add('text-mode');
+                    statusDisplay.classList.remove('error');
+                    statusDisplay.classList.add('visible');
+                    
+                    var count = 100;
+                    var interval = setInterval(function() {
+                        count += Math.floor(Math.random() * 15) + 10;
+                        if (count >= 300) {
+                            clearInterval(interval);
+                            statusDisplay.textContent = 'Listening abilities: 300%';
                         } else {
                             statusDisplay.textContent = 'Listening abilities: ' + count + '%';
                         }
@@ -2497,7 +2480,7 @@
                             DNAButton.showText('Bereit', 'Ready');
                             break;
                         case 1:
-                            DNAButton.showAnswerChoices();
+                            DNAButton.showWhyGermanInput();
                             break;
                         case 2:
                             DNAButton.showGoalInput();
@@ -2536,10 +2519,9 @@
                             }, 2000);
                             break;
                         case 14:
-                            // Add 3 second delay after "hi there" message
                             setTimeout(function() {
                                 DNAButton.showText('Na gut', 'Oh well');
-                            }, 4000); // 1000ms + 3000ms delay
+                            }, 4000);
                             break;
                         default:
                             break;
@@ -2564,36 +2546,30 @@
             startFinalSequence: function() {
                 var self = this;
                 
-                // Step 1: Analysing German language...
                 setTimeout(function() {
                     DNAButton.showStatus('Analysing German language...');
                 }, 500);
                 
-                // Step 2: Complexity counting
                 setTimeout(function() {
                     self.showComplexityCounter();
                 }, 2500);
                 
-                // Step 3: Subject surpassing AI capabilities + Play system error audio
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     
-                    // Play system error audio immediately
                     setTimeout(function() {
                         console.log('🎵 Playing system error audio now...');
                         self.playSystemErrorAudio();
-                    }, 100); // Small delay to ensure status is hidden
+                    }, 100);
                     
                     setTimeout(function() {
                         DNAButton.showStatus('Subject surpassing AI capabilities', true);
                     }, 500);
                 }, 8000);
                 
-                // Step 4: Falling back to Human Intelligence + Play human wakeup audio
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     
-                    // Play human wakeup audio
                     setTimeout(function() {
                         console.log('🎵 Playing human wakeup audio...');
                         self.playHumanWakeupAudio();
@@ -2604,7 +2580,6 @@
                     }, 500);
                 }, 10500);
                 
-                // Step 5: Show personality profile
                 setTimeout(function() {
                     DNAButton.hideStatus();
                     setTimeout(function() {
@@ -2612,10 +2587,9 @@
                     }, 1000);
                 }, 13000);
                 
-                // Step 6: Dissolve transition after profile viewing
                 setTimeout(function() {
                     self.dissolveAndTransition();
-                }, 20000); // Give time to read the profile
+                }, 20000);
             },
 
             playHumanWakeupAudio: function() {
@@ -2625,7 +2599,6 @@
                 audio.volume = 0.8;
                 audio.preload = 'auto';
                 
-                // Track audio element for cleanup
                 window.audioElements = window.audioElements || [];
                 window.audioElements.push(audio);
                 
@@ -2641,7 +2614,6 @@
                     console.log('❌ Human wakeup audio failed:', e);
                 };
                 
-                // Try to play immediately
                 var playPromise = audio.play();
                 if (playPromise !== undefined) {
                     playPromise.then(function() {
@@ -2649,7 +2621,6 @@
                     }).catch(function(e) {
                         console.log('❌ Human wakeup audio play failed:', e.message);
                         
-                        // Fallback: try WebAudio if available
                         if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
                             console.log('🔄 Trying WebAudio fallback for human wakeup...');
                             WebAudioHelper.play(
@@ -2687,7 +2658,6 @@
                     console.log('❌ System error audio failed:', e);
                 };
                 
-                // Try to play immediately
                 var playPromise = audio.play();
                 if (playPromise !== undefined) {
                     playPromise.then(function() {
@@ -2695,7 +2665,6 @@
                     }).catch(function(e) {
                         console.log('❌ System error audio play failed:', e.message);
                         
-                        // Fallback: try WebAudio if available
                         if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
                             console.log('🔄 Trying WebAudio fallback...');
                             WebAudioHelper.play(
@@ -2725,7 +2694,7 @@
                     
                     var count = 0;
                     var interval = setInterval(function() {
-                        count += Math.floor(Math.random() * 50) + 25; // Random increments
+                        count += Math.floor(Math.random() * 50) + 25;
                         if (count >= 1000) {
                             clearInterval(interval);
                             statusDisplay.textContent = 'Complexity: ERROR';
@@ -2744,7 +2713,6 @@
                     dissolveOverlay.classList.add('active');
                     
                     setTimeout(function() {
-                        // Try to find and click course completion buttons
                         var buttons = document.querySelectorAll('button, .btn, [role="button"]');
                         for (var i = 0; i < buttons.length; i++) {
                             var btn = buttons[i];
@@ -2755,7 +2723,6 @@
                             }
                         }
                         
-                        // Fallback: Try to navigate to next page in course structure
                         window.location.href = window.location.href.replace(/\/lectures\/\d+/, function(match) {
                             var num = parseInt(match.split('/').pop()) + 1;
                             return '/lectures/' + num;
@@ -2837,7 +2804,6 @@
                     preInitButton.textContent = 'Starting...';
                 }
                 
-                // Hide control buttons during initialization
                 var skipButton = UI.element('skipButton');
                 var quitButton = UI.element('quitButton');
                 var musicButton = UI.element('musicButton');
@@ -2937,18 +2903,12 @@
                             }
                         }, 3000);
                         
-                        setTimeout(function() {
-                            logo.style.opacity = '0';
-                            logo.style.display = 'none';
-                        }, 15000);
-                        
                     }, 1000);
                 }
                 
                 setTimeout(function() {
                     if (status) status.textContent = 'Loading neural interface...';
                     
-                    // Add 1 second delay before showing DNA
                     setTimeout(function() {
                         UI.showElement('visualizer');
                         
@@ -2986,7 +2946,7 @@
                                 }
                             }, 4100);
                         }
-                    }, 1000); // 1 second delay
+                    }, 1000);
                 }, 15000);
 
                 setTimeout(function() {
