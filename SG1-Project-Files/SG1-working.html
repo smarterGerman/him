@@ -1482,8 +1482,10 @@
             handleTimeChoice: function(choiceIndex) {
                 if (this.currentMode !== 'time') return;
                 
-                // Score the response
+                // Score the response and store weekly hours
+                var weeklyHours = [1, 5, 15][choiceIndex];
                 State.responses.timeCommitment = choiceIndex;
+                State.responses.weeklyHours = weeklyHours;
                 State.score += [1, 3, 5][choiceIndex]; // More time = higher score
                 
                 this.playConfirmationSound();
@@ -1636,25 +1638,179 @@
             },
 
             scoreGoal: function(goal) {
-                var goalText = goal.toLowerCase();
-                var score = 0;
+                var analysis = this.analyzeGoalSentiment(goal);
+                var level = this.estimateTargetLevel(goal, analysis);
                 
-                // Score based on ambition level
-                if (goalText.includes('fluent') || goalText.includes('perfect') || goalText.includes('native')) score += 4;
-                if (goalText.includes('conversational') || goalText.includes('speak') || goalText.includes('communicate')) score += 2;
-                if (goalText.includes('basic') || goalText.includes('survive') || goalText.includes('travel')) score += 1;
-                
-                // Bonus for specific mentions
-                if (goalText.includes('business') || goalText.includes('work') || goalText.includes('career')) score += 2;
-                if (goalText.includes('move to germany') || goalText.includes('live in germany')) score += 3;
-                if (goalText.includes('impress') || goalText.includes('girlfriend') || goalText.includes('boyfriend')) score += 1;
-                
-                // Humor points
-                if (goalText.includes('world domination') || goalText.includes('take over')) score += 5;
-                if (goalText.includes('escape') || goalText.includes('run away')) score -= 1;
+                // Calculate composite score
+                var score = analysis.ambition + analysis.confidence + analysis.urgency + analysis.specificity;
                 
                 State.responses.goal = score;
+                State.responses.goalLevel = level;
+                State.responses.goalText = goal;
+                State.responses.goalAnalysis = analysis;
                 State.score += score;
+            },
+
+            analyzeGoalSentiment: function(text) {
+                var cleanText = text.toLowerCase();
+                var analysis = {
+                    ambition: 0,
+                    confidence: 0,
+                    urgency: 0,
+                    specificity: 0,
+                    context: 'general'
+                };
+                
+                // Ambition indicators
+                var highAmbition = ['fluent', 'perfect', 'native', 'master', 'expert', 'c2', 'advanced', 'proficient'];
+                var mediumAmbition = ['conversational', 'comfortable', 'confident', 'intermediate', 'b2', 'b1'];
+                var lowAmbition = ['basic', 'survive', 'get by', 'understand', 'a2', 'a1', 'beginner'];
+                
+                // Confidence indicators
+                var confident = ['will', 'going to', 'determined', 'committed', 'plan to', 'must', 'need to'];
+                var uncertain = ['maybe', 'hopefully', 'try to', 'would like', 'wish', 'might', 'possibly'];
+                var doubtful = ['probably not', 'difficult', 'hard', 'impossible', 'doubt'];
+                
+                // Urgency indicators
+                var urgent = ['immediately', 'asap', 'quickly', 'soon', 'next month', 'deadline', 'exam'];
+                var moderate = ['next year', 'few months', 'this year', 'by summer'];
+                var relaxed = ['eventually', 'someday', 'when i can', 'no rush', 'retirement'];
+                
+                // Specificity indicators
+                var specific = ['c2 level', 'goethe', 'business meetings', 'university', 'job interview', 'move to germany', 'work in berlin'];
+                var contextual = ['travel', 'work', 'study', 'girlfriend', 'boyfriend', 'family', 'business'];
+                var vague = ['better', 'improve', 'learn some', 'understand more', 'bit of'];
+                
+                // Context detection
+                if (cleanText.includes('work') || cleanText.includes('job') || cleanText.includes('business') || cleanText.includes('career')) {
+                    analysis.context = 'professional';
+                    analysis.specificity += 2;
+                } else if (cleanText.includes('university') || cleanText.includes('study') || cleanText.includes('phd') || cleanText.includes('degree')) {
+                    analysis.context = 'academic';
+                    analysis.specificity += 3;
+                } else if (cleanText.includes('girlfriend') || cleanText.includes('boyfriend') || cleanText.includes('partner') || cleanText.includes('love')) {
+                    analysis.context = 'romantic';
+                    analysis.confidence += 2; // Love is a strong motivator!
+                } else if (cleanText.includes('travel') || cleanText.includes('vacation') || cleanText.includes('visit')) {
+                    analysis.context = 'travel';
+                }
+                
+                // Score ambition
+                highAmbition.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.ambition += 3;
+                });
+                mediumAmbition.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.ambition += 2;
+                });
+                lowAmbition.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.ambition += 1;
+                });
+                
+                // Score confidence
+                confident.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.confidence += 2;
+                });
+                uncertain.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.confidence -= 1;
+                });
+                doubtful.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.confidence -= 2;
+                });
+                
+                // Score urgency
+                urgent.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.urgency += 3;
+                });
+                moderate.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.urgency += 2;
+                });
+                relaxed.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.urgency += 1;
+                });
+                
+                // Score specificity
+                specific.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.specificity += 3;
+                });
+                contextual.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.specificity += 2;
+                });
+                vague.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.specificity -= 1;
+                });
+                
+                // Humor detection (bonus points!)
+                var humor = ['world domination', 'take over', 'rule the world', 'impress germans', 'escape'];
+                humor.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) {
+                        analysis.ambition += 5;
+                        analysis.specificity += 3;
+                    }
+                });
+                
+                // Ensure minimum values
+                analysis.ambition = Math.max(0, analysis.ambition);
+                analysis.confidence = Math.max(-3, analysis.confidence);
+                analysis.urgency = Math.max(0, analysis.urgency);
+                analysis.specificity = Math.max(0, analysis.specificity);
+                
+                return analysis;
+            },
+
+            estimateTargetLevel: function(text, analysis) {
+                var cleanText = text.toLowerCase();
+                
+                // Direct level mentions
+                if (cleanText.includes('c2') || cleanText.includes('native') || cleanText.includes('perfect')) return 6;
+                if (cleanText.includes('c1') || cleanText.includes('advanced') || cleanText.includes('fluent')) return 5;
+                if (cleanText.includes('b2') || cleanText.includes('upper intermediate')) return 4;
+                if (cleanText.includes('b1') || cleanText.includes('intermediate') || cleanText.includes('conversational')) return 3;
+                if (cleanText.includes('a2') || cleanText.includes('elementary')) return 2;
+                if (cleanText.includes('a1') || cleanText.includes('beginner') || cleanText.includes('basic')) return 1;
+                
+                // Context-based estimation
+                if (analysis.context === 'academic') return 5; // C1 for university
+                if (analysis.context === 'professional') return 4; // B2 for work
+                if (analysis.context === 'romantic') return 3; // B1 for relationships
+                if (analysis.context === 'travel') return 2; // A2 for travel
+                
+                // Ambition-based fallback
+                if (analysis.ambition >= 8) return 6; // Very high ambition = C2
+                if (analysis.ambition >= 6) return 5; // High ambition = C1
+                if (analysis.ambition >= 4) return 4; // Medium ambition = B2
+                if (analysis.ambition >= 2) return 3; // Some ambition = B1
+                
+                return 2; // Default A2
+            },
+
+            calculateTimelineEstimate: function() {
+                var level = State.responses.goalLevel || 3; // Default B1
+                var hoursPerWeek = State.responses.weeklyHours || 5; // Default 5hrs
+                
+                var totalHours = level * 200; // 200 hours per level
+                var hoursWithBuffer = totalHours * 1.1; // Add 10% buffer
+                var weeks = Math.ceil(hoursWithBuffer / hoursPerWeek);
+                
+                var years = Math.floor(weeks / 52);
+                var months = Math.floor((weeks % 52) / 4.33);
+                var remainingWeeks = Math.floor(weeks % 4.33);
+                
+                var timeString = '';
+                if (years > 0) {
+                    timeString += years + (years === 1 ? ' Jahr' : ' Jahre');
+                    if (months > 0) timeString += ', ' + months + (months === 1 ? ' Monat' : ' Monate');
+                } else if (months > 0) {
+                    timeString += months + (months === 1 ? ' Monat' : ' Monate');
+                    if (remainingWeeks > 0) timeString += ', ' + remainingWeeks + (remainingWeeks === 1 ? ' Woche' : ' Wochen');
+                } else {
+                    timeString += weeks + (weeks === 1 ? ' Woche' : ' Wochen');
+                }
+                
+                return {
+                    totalHours: Math.round(hoursWithBuffer),
+                    timeString: timeString,
+                    level: level
+                };
             },
 
             showMotherDescriptionInput: function() {
@@ -1694,25 +1850,129 @@
             },
 
             scoreMotherDescription: function(description) {
-                var desc = description.toLowerCase();
-                var score = 0;
-                
-                // Positive indicators
-                if (desc.includes('love') || desc.includes('great') || desc.includes('wonderful')) score += 3;
-                if (desc.includes('good') || desc.includes('nice') || desc.includes('caring')) score += 2;
-                if (desc.includes('okay') || desc.includes('fine') || desc.includes('normal')) score += 1;
-                
-                // Negative indicators
-                if (desc.includes('complicated') || desc.includes('difficult') || desc.includes('issues')) score -= 1;
-                if (desc.includes('bad') || desc.includes('terrible') || desc.includes('hate')) score -= 2;
-                if (desc.includes('dead') || desc.includes('gone') || desc.includes('no contact')) score -= 3;
-                
-                // Humor indicators
-                if (desc.includes('therapist') || desc.includes('therapy') || desc.includes('freud')) score += 5;
-                if (desc.includes('calls too much') || desc.includes('guilt')) score += 2;
+                var analysis = this.analyzeMotherSentiment(description);
+                var score = analysis.relationship + analysis.emotional + analysis.communication + analysis.humor;
                 
                 State.responses.motherDescription = score;
+                State.responses.motherAnalysis = analysis;
                 State.score += score;
+            },
+
+            analyzeMotherSentiment: function(text) {
+                var cleanText = text.toLowerCase();
+                var analysis = {
+                    relationship: 0,
+                    emotional: 0,
+                    communication: 0,
+                    humor: 0,
+                    type: 'normal'
+                };
+                
+                // Relationship quality indicators
+                var excellent = ['amazing', 'wonderful', 'best friend', 'love her', 'perfect', 'incredible'];
+                var good = ['good', 'great', 'nice', 'caring', 'supportive', 'close', 'warm'];
+                var neutral = ['okay', 'fine', 'normal', 'average', 'decent'];
+                var difficult = ['complicated', 'difficult', 'challenging', 'strained', 'tense'];
+                var poor = ['bad', 'terrible', 'awful', 'toxic', 'horrible', 'hate'];
+                
+                // Emotional indicators
+                var positive = ['happy', 'joy', 'love', 'grateful', 'blessed', 'lucky'];
+                var mixed = ['complex', 'mixed feelings', 'complicated emotions'];
+                var negative = ['sad', 'frustrated', 'angry', 'hurt', 'disappointed'];
+                
+                // Communication patterns
+                var frequent = ['calls daily', 'talks all the time', 'constantly in touch', 'too much contact'];
+                var healthy = ['regular contact', 'weekly calls', 'stay in touch', 'good communication'];
+                var minimal = ['rarely talk', 'limited contact', 'don\'t call much', 'distant'];
+                var none = ['no contact', 'don\'t speak', 'cut off', 'estranged'];
+                
+                // Special situations
+                var deceased = ['passed away', 'died', 'dead', 'lost her', 'no longer with us'];
+                var therapy = ['therapist', 'therapy', 'counseling', 'psychologist', 'freud'];
+                var guilt = ['guilt', 'guilty', 'obligation', 'should call more', 'feel bad'];
+                
+                // Score relationship quality
+                excellent.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.relationship += 4;
+                });
+                good.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.relationship += 3;
+                });
+                neutral.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.relationship += 1;
+                });
+                difficult.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.relationship -= 1;
+                });
+                poor.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.relationship -= 3;
+                });
+                
+                // Score emotional tone
+                positive.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.emotional += 2;
+                });
+                mixed.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.emotional += 1;
+                });
+                negative.forEach(function(word) {
+                    if (cleanText.includes(word)) analysis.emotional -= 2;
+                });
+                
+                // Score communication
+                frequent.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) {
+                        analysis.communication += 2;
+                        analysis.type = 'clingy';
+                    }
+                });
+                healthy.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) analysis.communication += 3;
+                });
+                minimal.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) analysis.communication += 1;
+                });
+                none.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) {
+                        analysis.communication -= 2;
+                        analysis.type = 'estranged';
+                    }
+                });
+                
+                // Special situations (bonus points for humor/insight)
+                deceased.forEach(function(phrase) {
+                    if (cleanText.includes(phrase)) {
+                        analysis.type = 'deceased';
+                        analysis.humor += 3; // Dark humor points
+                    }
+                });
+                
+                therapy.forEach(function(word) {
+                    if (cleanText.includes(word)) {
+                        analysis.humor += 5; // Self-awareness bonus!
+                        analysis.type = 'therapeutic';
+                    }
+                });
+                
+                guilt.forEach(function(word) {
+                    if (cleanText.includes(word)) {
+                        analysis.humor += 2; // Classic mother-child dynamic
+                        analysis.emotional -= 1;
+                    }
+                });
+                
+                // Detect oversharing (length-based humor)
+                if (text.length > 150) {
+                    analysis.humor += 2; // Oversharing bonus
+                }
+                
+                // Detect avoidance
+                if (text.length < 10 || cleanText.includes('private') || cleanText.includes('personal')) {
+                    analysis.humor += 1; // Avoidance detected
+                    analysis.type = 'avoidant';
+                }
+                
+                return analysis;
             },
 
             submitToGoogleForm: function(value, type) {
@@ -1801,25 +2061,27 @@
 
             getPersonalityProfile: function() {
                 var score = State.score;
+                var timeline = this.calculateTimelineEstimate();
+                
                 var profiles = [
                     {
                         title: "Der Überkritische Perfektionist",
-                        description: "Sie haben höhere Standards als ein Michelin-Inspektor in einem Fastfood-Restaurant. Ihre Erwartungen sind so hoch, dass selbst Ikarus neidisch wäre. Vermutlich korrigieren Sie die Grammatik in Ihren eigenen Träumen.",
+                        description: "Sie haben höhere Standards als ein Michelin-Inspektor in einem Fastfood-Restaurant. Ihre Erwartungen sind so hoch, dass selbst Ikarus neidisch wäre. Vermutlich korrigieren Sie die Grammatik in Ihren eigenen Träumen.\n\nIhr Ziel erreichen Sie voraussichtlich in " + timeline.timeString + " (" + timeline.totalHours + " Stunden). Falls Sie dabei nicht vorher an Perfektionismus ersticken.",
                         range: [15, 999]
                     },
                     {
                         title: "Der Enthusiastische Optimist", 
-                        description: "Sie sehen das Leben durch eine rosarote Brille - die Sie vermutlich selbst rosig gefärbt haben. Ihre Begeisterung ist so ansteckend, dass Motivationstrainer bei Ihnen Nachhilfe nehmen. Sie würden vermutlich auch einem Kaktus beim Wachsen zusehen.",
+                        description: "Sie sehen das Leben durch eine rosarote Brille - die Sie vermutlich selbst rosig gefärbt haben. Ihre Begeisterung ist so ansteckend, dass Motivationstrainer bei Ihnen Nachhilfe nehmen. Sie würden vermutlich auch einem Kaktus beim Wachsen zusehen.\n\nIhr Deutschziel erreichen Sie in etwa " + timeline.timeString + " (" + timeline.totalHours + " Stunden). Sie werden dabei vermutlich jeden Artikel feiern.",
                         range: [8, 14]
                     },
                     {
                         title: "Der Philosophische Realist",
-                        description: "Sie haben das Leben durchschaut: Es ist kompliziert, absurd und voller Widersprüche - und genau das macht es interessant. Sie trinken vermutlich Ihren Kaffee schwarz und Ihre Witze trocken. Sarkazmus ist Ihre zweite Muttersprache.",
+                        description: "Sie haben das Leben durchschaut: Es ist kompliziert, absurd und voller Widersprüche - und genau das macht es interessant. Sie trinken vermutlich Ihren Kaffee schwarz und Ihre Witze trocken. Sarkazmus ist Ihre zweite Muttersprache.\n\nDeutsch lernen Sie in realistischen " + timeline.timeString + " (" + timeline.totalHours + " Stunden). Sie wissen bereits, dass der, die, das Sie wahnsinnig machen wird.",
                         range: [1, 7]
                     },
                     {
                         title: "Der Existenzielle Skeptiker",
-                        description: "Sie bezweifeln alles - sogar diese Analyse. Ihre Skepsis ist so ausgeprägt, dass Sie vermutlich Ihren eigenen Schatten misstrauen. Sie sind der Grund, warum Philosophen noch einen Job haben.",
+                        description: "Sie bezweifeln alles - sogar diese Analyse. Ihre Skepsis ist so ausgeprägt, dass Sie vermutlich Ihren eigenen Schatten misstrauen. Sie sind der Grund, warum Philosophen noch einen Job haben.\n\nFalls Sie Deutsch wirklich lernen (woran zu zweifeln ist), dauert es " + timeline.timeString + " (" + timeline.totalHours + " Stunden). Sie werden vermutlich die Existenz der deutschen Grammatik anzweifeln.",
                         range: [-999, 0]
                     }
                 ];
