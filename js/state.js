@@ -318,62 +318,92 @@ var Controls = {
 
     // New exit function with guaranteed audio stopping
     exitAssessment: function() {
-    console.log('🚪 Exit button clicked');
+    console.log('🚪 Exit button clicked - AGGRESSIVE STOP');
     
-    // IMMEDIATE audio stop - no delays
-    this.stopAllAudio();
+    // NUCLEAR OPTION - Stop everything immediately
+    var self = this;
     
-    // Also force stop any audio that might restart
-    setTimeout(function() {
-        Controls.stopAllAudio();
-    }, 100);
-    
-    // Prevent any new audio from starting
-    if (typeof State !== 'undefined') {
-        State.isSpeaking = false;
-        State.audioUnlocked = false;
-    }
-    
-    // Exit fullscreen AFTER audio is stopped
-    setTimeout(function() {
-        try {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else if (document.webkitFullscreenElement) {
-                document.webkitExitFullscreen();
-            } else if (document.mozFullScreenElement) {
-                document.mozCancelFullScreen();
-            }
-        } catch (e) {
-            console.log('Fullscreen exit error:', e);
+    // Stop audio with multiple methods simultaneously
+    try {
+        // Method 1: Immediate HTML5 audio stop
+        var allAudio = document.querySelectorAll('audio');
+        for (var i = 0; i < allAudio.length; i++) {
+            allAudio[i].pause();
+            allAudio[i].currentTime = 0;
+            allAudio[i].volume = 0;
+            allAudio[i].muted = true;
+            allAudio[i].src = '';
         }
         
-        // Show confirmation after fullscreen exit
-        setTimeout(function() {
-            var shouldExit = confirm('Exit the AI assessment?');
-            
-            if (shouldExit) {
-                // Final audio stop before navigation
-                Controls.stopAllAudio();
-                
-                // Navigate away
-                try {
-                    if (window.history.length > 1) {
-                        window.history.back();
-                    } else {
-                        Controls.tryCloseOrRedirect();
-                    }
-                } catch (e) {
-                    console.log('Navigation error:', e);
-                    Controls.tryCloseOrRedirect();
-                }
-            } else {
-                // User cancelled - but keep audio stopped
-                console.log('Exit cancelled - audio remains stopped');
-            }
-        }, 200);
+        // Method 2: Stop WebAudio immediately
+        if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
+            WebAudioHelper.currentSource.stop();
+            WebAudioHelper.currentSource = null;
+        }
         
-    }, 200);
+        // Method 3: Suspend audio context immediately
+        if (window.globalAudioContext) {
+            window.globalAudioContext.suspend();
+        }
+        
+        // Method 4: Clear tracked audio
+        if (window.audioElements) {
+            window.audioElements.forEach(function(audio) {
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = 0;
+                    audio.muted = true;
+                    audio.src = '';
+                } catch(e) {}
+            });
+            window.audioElements = [];
+        }
+        
+        // Method 5: Block any new audio
+        if (typeof State !== 'undefined') {
+            State.isSpeaking = false;
+            State.audioUnlocked = false;
+            State.inFinalSequence = true; // Block conversation flow
+        }
+        
+        console.log('✅ NUCLEAR audio stop completed');
+        
+    } catch (e) {
+        console.log('Audio stop error:', e);
+    }
+    
+    // Prevent any event bubbling that might cause fullscreen issues
+    if (window.event) {
+        window.event.stopPropagation();
+        window.event.preventDefault();
+    }
+    
+    // Force exit fullscreen without waiting
+    try {
+        document.exitFullscreen?.();
+        document.webkitExitFullscreen?.();
+        document.mozCancelFullScreen?.();
+    } catch (e) {}
+    
+    // Show dialog immediately
+    setTimeout(function() {
+        var shouldExit = confirm('Exit the AI assessment?');
+        
+        if (shouldExit) {
+            // Navigate away
+            try {
+                window.history.back();
+            } catch (e) {
+                try {
+                    window.close();
+                } catch (e2) {
+                    window.location.href = 'about:blank';
+                }
+            }
+        }
+        // If cancelled, audio stays stopped (which is what we want)
+    }, 100);
 },
     
     // Handle when user cancels exit
