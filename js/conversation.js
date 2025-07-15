@@ -587,15 +587,15 @@ var Conversation = {
         console.log('🔄 Moving to step:', State.step);
         
         // Handle AI sequence branching
-        if (State.step === 7 && State.selectedAIType === 'male') {
-            this.startMaleAISequence();
-            return;
-        } else if (State.step === 7 && State.selectedAIType === 'female') {
-            this.startFemaleAISequence();
-            return;
-        } else if (State.step === 7 && State.selectedAIType === 'diverse') {
-            State.step = 10; // Skip to analysis step
-        }
+if (State.step === 8 && State.selectedAIType === 'male') {
+    this.startMaleAISequence();
+    return;
+} else if (State.step === 8 && State.selectedAIType === 'female') {
+    this.startFemaleAISequence();
+    return;
+} else if (State.step === 8 && State.selectedAIType === 'diverse') {
+    State.step = 10; // Skip to analysis step
+}
         
         if (State.step >= 12) {
             this.completeCourse();
