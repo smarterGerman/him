@@ -691,24 +691,96 @@ var Conversation = {
     },
 
     startMaleAISequence: function() {
-        // Male AI installation sequence
-        // (Implementation details from original code)
-        console.log('Starting male AI sequence');
+    var self = this;
+    
+    setTimeout(function() {
+        DNAButton.showStatus('Installing Mansplainer Module...');
+    }, 500);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
         setTimeout(function() {
-            State.step = 10;
-            Conversation.moveToNextQuestion();
-        }, 5000);
-    },
+            DNAButton.showStatus('Success');
+        }, 300);
+    }, 2500);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        setTimeout(function() {
+            DNAButton.showStatus('Charging ego: 0%');
+            var count = 0;
+            var interval = setInterval(function() {
+                count += Math.floor(Math.random() * 15) + 10;
+                if (count >= 200) {
+                    clearInterval(interval);
+                    DNAButton.showStatus('Ego fully charged: 200%');
+                } else {
+                    DNAButton.showStatus('Charging ego: ' + count + '%');
+                }
+            }, 150);
+        }, 300);
+    }, 4000);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        setTimeout(function() {
+            DNAButton.showStatus('Male AI fully activated');
+        }, 300);
+    }, 8000);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        DNAButton.showDNA();
+        State.step = 10;
+        self.moveToNextQuestion();
+    }, 10000);
+},
 
     startFemaleAISequence: function() {
-        // Female AI installation sequence
-        // (Implementation details from original code)
-        console.log('Starting female AI sequence');
+    var self = this;
+    
+    setTimeout(function() {
+        DNAButton.showStatus('Installing Empathy Protocols...');
+    }, 500);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
         setTimeout(function() {
-            State.step = 10;
-            Conversation.moveToNextQuestion();
-        }, 3000);
-    },
+            DNAButton.showStatus('Success');
+        }, 300);
+    }, 2500);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        setTimeout(function() {
+            DNAButton.showStatus('Listening abilities: 100%');
+            var count = 100;
+            var interval = setInterval(function() {
+                count += Math.floor(Math.random() * 15) + 10;
+                if (count >= 300) {
+                    clearInterval(interval);
+                    DNAButton.showStatus('Listening abilities: 300%');
+                } else {
+                    DNAButton.showStatus('Listening abilities: ' + count + '%');
+                }
+            }, 150);
+        }, 300);
+    }, 4000);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        setTimeout(function() {
+            DNAButton.showStatus('Female AI fully activated');
+        }, 300);
+    }, 7000);
+    
+    setTimeout(function() {
+        DNAButton.hideStatus();
+        DNAButton.showDNA();
+        State.step = 10;
+        self.moveToNextQuestion();
+    }, 9000);
+},
 
     startFinalSequence: function() {
         // Final analysis and personality profile sequence
