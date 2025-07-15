@@ -694,12 +694,13 @@ var Conversation = {
                     Conversation.showNextButton();
                 }
             );
-        } else {
-            var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-            };
+       } else {
+    var audio = AudioManager.createAudio(audioUrl);
+    audio.onended = function() {
+        State.isSpeaking = false;
+        UI.setVisualizerState('active');
+        Conversation.showNextButton();
+    };
             audio.onerror = function(e) {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
