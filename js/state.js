@@ -330,6 +330,5 @@ var Controls = {
         // Navigate back to Teachable
         window.history.back();
     }
-}
     }
 };
