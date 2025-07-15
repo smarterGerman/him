@@ -180,6 +180,30 @@ var DNAButton = {
         UI.hideAllInteractiveElements();
         this.currentMode = 'dna';
     },
+
+    showStatus: function(text, isError) {
+    var statusDisplay = UI.element('statusDisplay');
+    var visualizer = UI.element('visualizer');
+    
+    if (statusDisplay && visualizer) {
+        visualizer.classList.add('text-mode');
+        statusDisplay.textContent = text;
+        statusDisplay.classList.remove('error');
+        
+        if (isError) {
+            statusDisplay.classList.add('error');
+        }
+        
+        statusDisplay.classList.add('visible');
+    }
+    },
+
+    hideStatus: function() {
+    var statusDisplay = UI.element('statusDisplay');
+    if (statusDisplay) {
+        statusDisplay.classList.remove('visible', 'error');
+    }
+    },
     
     handleClick: function() {
         if (this.currentMode !== 'text') return;
