@@ -331,3 +331,83 @@ if (typeof window.SG1Debug !== 'undefined') {
 }
 
 console.log('🔧 SG1 Verification system loaded');
+
+// ===== DIRECT EXIT BUTTON HANDLER =====
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var exitButton = document.getElementById('exitButton');
+        if (exitButton) {
+            // Remove any existing handlers
+            exitButton.onclick = null;
+            exitButton.onmousedown = null;
+            
+            // Add our direct handler
+            exitButton.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                console.log('🚨 DIRECT EXIT HANDLER TRIGGERED');
+                
+                // Immediate audio nuclear option
+                handleImmediateExit();
+                
+                return false;
+            }, { capture: true, once: false });
+            
+            console.log('✅ Direct exit handler installed');
+        }
+    }, 1000);
+});
+
+function handleImmediateExit() {
+    console.log('🚨 IMMEDIATE EXIT - Nuclear option');
+    
+    // Stop ALL audio with brute force
+    try {
+        // Stop all HTML5 audio
+        document.querySelectorAll('audio').forEach(function(audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 0;
+            audio.muted = true;
+            audio.src = 'data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ4AAAAAAAAAAAAAAAAAAA==';
+        });
+        
+        // Stop WebAudio
+        if (window.globalAudioContext) {
+            window.globalAudioContext.suspend();
+            window.globalAudioContext.close();
+        }
+        
+        // Clear all tracked audio
+        if (window.audioElements) {
+            window.audioElements.forEach(function(audio) {
+                audio.pause();
+                audio.src = '';
+            });
+            window.audioElements = [];
+        }
+        
+        // Block any new audio
+        window.audioBlocked = true;
+        
+    } catch (e) {
+        console.log('Audio stop error:', e);
+    }
+    
+    // Force exit fullscreen
+    try {
+        if (document.exitFullscreen) document.exitFullscreen();
+        if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+    } catch (e) {}
+    
+    // Show dialog with slight delay to ensure fullscreen exit completes
+    setTimeout(function() {
+        var shouldExit = confirm('Exit the AI assessment?');
+        if (shouldExit) {
+            window.history.back();
+        }
+    }, 300);
+}
