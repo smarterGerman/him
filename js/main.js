@@ -225,3 +225,70 @@ var Analytics = {
 };
 
 Analytics.init();
+// ===== SG1 VERIFICATION SCRIPT =====
+var SG1Verification = {
+    runQuickCheck: function() {
+        console.log('🔍 Running SG1 Verification...');
+        
+        var issues = [];
+        var warnings = [];
+        
+        // Check essential objects exist
+        if (typeof Config === 'undefined') {
+            issues.push('Config object not loaded');
+        }
+        
+        if (typeof State === 'undefined') {
+            issues.push('State object not loaded');
+        }
+        
+        if (typeof UI === 'undefined') {
+            issues.push('UI object not loaded');
+        }
+        
+        if (typeof DNAButton === 'undefined') {
+            issues.push('DNAButton object not loaded');
+        }
+        
+        if (typeof Conversation === 'undefined') {
+            issues.push('Conversation object not loaded');
+        }
+        
+        // Check DOM elements exist
+        var requiredElements = ['visualizer', 'progressBar', 'backgroundMusic', 'dnaTextButton', 'statusDisplay'];
+        
+        requiredElements.forEach(function(id) {
+            if (!document.getElementById(id)) {
+                issues.push('Missing DOM element: ' + id);
+            }
+        });
+        
+        // Report results
+        if (issues.length === 0 && warnings.length === 0) {
+            console.log('✅ SG1 Verification PASSED - All systems ready!');
+            return true;
+        } else {
+            if (issues.length > 0) {
+                console.error('❌ CRITICAL ISSUES:', issues);
+            }
+            if (warnings.length > 0) {
+                console.warn('⚠️ WARNINGS:', warnings);
+            }
+            return false;
+        }
+    }
+};
+
+// Auto-run verification when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        SG1Verification.runQuickCheck();
+    }, 2000);
+});
+
+// Add to debug utilities
+if (typeof window.SG1Debug !== 'undefined') {
+    window.SG1Debug.verify = SG1Verification.runQuickCheck;
+}
+
+console.log('🔧 SG1 Verification system loaded');
