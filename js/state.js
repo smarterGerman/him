@@ -286,56 +286,50 @@ var Controls = {
     },
 
     exitAssessment: function() {
-        if (confirm('Are you sure you want to exit the assessment?')) {
-            // Stop all audio first
-            AudioManager.stopAllAudio();
-            
-            // Exit fullscreen if active
-            try {
-                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    }
-                }
-            } catch (e) {
-                console.log('Fullscreen exit error:', e);
+    if (confirm('Are you sure you want to exit the assessment?')) {
+        // STOP ALL AUDIO - More aggressive approach
+        try {
+            // Stop all HTML5 audio elements (including background music)
+            var allAudio = document.querySelectorAll('audio');
+            for (var i = 0; i < allAudio.length; i++) {
+                allAudio[i].pause();
+                allAudio[i].currentTime = 0;
+                allAudio[i].src = '';
             }
             
-            // Remove the SG1 container entirely
-            var sg1Container = document.querySelector('.sg1-container');
-            if (sg1Container) {
-                sg1Container.remove();
+            // Stop Web Audio sources
+            if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
+                WebAudioHelper.currentSource.stop();
+                WebAudioHelper.currentSource = null;
             }
             
-            // Restore page scroll and visibility
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.height = '';
-            
-            // Clear any global audio elements
+            // Stop tracked audio elements
             if (window.audioElements) {
                 window.audioElements.forEach(function(audio) {
-                    try {
-                        audio.pause();
-                        audio.src = '';
-                    } catch (e) {}
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.src = '';
                 });
                 window.audioElements = [];
             }
             
-            // Make sure the underlying page is visible
-            var allElements = document.querySelectorAll('*:not(.sg1-container):not(.sg1-container *)');
-            allElements.forEach(function(el) {
-                if (el.style.display === 'none') {
-                    el.style.display = '';
-                }
-            });
+            // Stop global audio context
+            if (window.globalAudioContext) {
+                window.globalAudioContext.suspend();
+            }
+            
+            // Call existing AudioManager stop function
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.stopAllAudio();
+            }
+            
+        } catch (e) {
+            console.log('Audio stop error:', e);
         }
+        
+        // Navigate back to Teachable
+        window.history.back();
+    }
+}
     }
 };
