@@ -711,11 +711,6 @@ var Conversation = {
                 Conversation.showNextButton();
             });
         }
-        
-        // Show the UI for this question after a delay
-        setTimeout(function() {
-            Conversation.showNextButton();
-        }, Config.settings.timing.buttonDelay);
     },
 
     showNextButton: function() {
