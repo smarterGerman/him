@@ -15,6 +15,57 @@ var DNAButton = {
         }
     },
     
+    // Add this new function right after playConfirmationSound function
+setupTextAreaInput: function(inputId, counterId, maxLength) {
+    var input = UI.element(inputId);
+    var counter = UI.element(counterId);
+    
+    if (input && counter) {
+        // Clear any existing event listeners by replacing the element
+        var newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        input = newInput; // Update reference
+        
+        // Setup character counter
+        var updateCounter = function() {
+            var length = input.value.length;
+            counter.textContent = length + '/' + maxLength;
+            
+            // Update counter colors based on usage
+            counter.classList.remove('warning', 'danger');
+            if (length > maxLength * 0.9) {
+                counter.classList.add('danger');
+            } else if (length > maxLength * 0.75) {
+                counter.classList.add('warning');
+            }
+        };
+        
+        // Add event listeners
+        input.addEventListener('input', function() {
+            updateCounter();
+            // Auto-resize textarea
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+        
+        // Allow Ctrl+Enter or Shift+Enter to submit
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.shiftKey)) {
+                e.preventDefault();
+                var submitButton = input.parentNode.querySelector('.text-submit-button');
+                if (submitButton) submitButton.click();
+            }
+        });
+        
+        // Initialize counter and focus
+        updateCounter();
+        setTimeout(function() {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        }, 300);
+    }
+},
+
     showText: function(text, translation) {
         console.log('🔴 showText called with:', text, translation, 'Current step:', State.step);
         var visualizer = UI.element('visualizer');
@@ -69,82 +120,46 @@ var DNAButton = {
     },
 
     showWhyGermanInput: function() {
-        var visualizer = UI.element('visualizer');
-        var whyContainer = UI.element('whyGermanInputContainer');
+    var visualizer = UI.element('visualizer');
+    var whyContainer = UI.element('whyGermanInputContainer');
+    
+    if (whyContainer && visualizer) {
+        visualizer.classList.add('text-mode');
+        whyContainer.classList.add('visible');
+        this.currentMode = 'why-german-input';
         
-        if (whyContainer && visualizer) {
-            visualizer.classList.add('text-mode');
-            whyContainer.classList.add('visible');
-            this.currentMode = 'why-german-input';
-            
-            // Add proper keyboard event handling
-            var whyInput = UI.element('whyGermanInput');
-            if (whyInput) {
-                whyInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        DNAButton.handleWhyGermanSubmit();
-                    }
-                });
-                
-                setTimeout(function() {
-                    whyInput.focus();
-                }, 300);
-            }
-        }
-    },
+        // Setup character counter and better event handling
+        this.setupTextAreaInput('whyGermanInput', 'whyGermanCounter', 500);
+    }
+},
 
     showGoalInput: function() {
-        var visualizer = UI.element('visualizer');
-        var goalContainer = UI.element('goalInputContainer');
+    var visualizer = UI.element('visualizer');
+    var goalContainer = UI.element('goalInputContainer');
+    
+    if (goalContainer && visualizer) {
+        visualizer.classList.add('text-mode');
+        goalContainer.classList.add('visible');
+        this.currentMode = 'goal-input';
         
-        if (goalContainer && visualizer) {
-            visualizer.classList.add('text-mode');
-            goalContainer.classList.add('visible');
-            this.currentMode = 'goal-input';
-            
-            // Add proper keyboard event handling
-            var goalInput = UI.element('goalInput');
-            if (goalInput) {
-                goalInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        DNAButton.handleGoalSubmit();
-                    }
-                });
-                
-                setTimeout(function() {
-                    goalInput.focus();
-                }, 300);
-            }
-        }
-    },
+        // Setup character counter and better event handling
+        this.setupTextAreaInput('goalInput', 'goalCounter', 500);
+    }
+},
 
     showTimeInput: function() {
-        var visualizer = UI.element('visualizer');
-        var timeContainer = UI.element('timeInputContainer');
+    var visualizer = UI.element('visualizer');
+    var timeContainer = UI.element('timeInputContainer');
+    
+    if (timeContainer && visualizer) {
+        visualizer.classList.add('text-mode');
+        timeContainer.classList.add('visible');
+        this.currentMode = 'time-input';
         
-        if (timeContainer && visualizer) {
-            visualizer.classList.add('text-mode');
-            timeContainer.classList.add('visible');
-            this.currentMode = 'time-input';
-            
-            // Add proper keyboard event handling
-            var timeInput = UI.element('timeInput');
-            if (timeInput) {
-                timeInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        DNAButton.handleTimeSubmit();
-                    }
-                });
-                
-                setTimeout(function() {
-                    timeInput.focus();
-                }, 300);
-            }
-        }
-    },
+        // Setup character counter and better event handling
+        this.setupTextAreaInput('timeInput', 'timeCounter', 300);
+    }
+},
 
     showProbabilityChoices: function() {
         var visualizer = UI.element('visualizer');
@@ -181,30 +196,18 @@ var DNAButton = {
     },
 
     showMotherDescriptionInput: function() {
-        var visualizer = UI.element('visualizer');
-        var motherContainer = UI.element('motherDescriptionContainer');
+    var visualizer = UI.element('visualizer');
+    var motherContainer = UI.element('motherDescriptionContainer');
+    
+    if (motherContainer && visualizer) {
+        visualizer.classList.add('text-mode');
+        motherContainer.classList.add('visible');
+        this.currentMode = 'mother-description';
         
-        if (motherContainer && visualizer) {
-            visualizer.classList.add('text-mode');
-            motherContainer.classList.add('visible');
-            this.currentMode = 'mother-description';
-            
-            // Add proper keyboard event handling
-            var motherInput = UI.element('motherDescriptionInput');
-            if (motherInput) {
-                motherInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        DNAButton.handleMotherDescriptionSubmit();
-                    }
-                });
-                
-                setTimeout(function() {
-                    motherInput.focus();
-                }, 300);
-            }
-        }
-    },
+        // Setup character counter and better event handling
+        this.setupTextAreaInput('motherDescriptionInput', 'motherCounter', 500);
+    }
+},
     
     showDNA: function() {
         UI.hideAllInteractiveElements();
@@ -525,18 +528,18 @@ var DNAButton = {
             
             // Updated field names based on the actual Google Form
             switch(type) {
-                case 'why_german':
-                    fieldName = 'entry.1685277614'; // Why do you want to learn German?
-                    break;
-                case 'goal':
-                    fieldName = 'entry.1045781291'; // What's your goal?
-                    break;
-                case 'time_commitment':
-                    fieldName = 'entry.1065046570'; // How much time do you plan to spend?
-                    break;
-                case 'mother_description':
-                    fieldName = 'entry.1166974658'; // Describe your relationship to your mother
-                    break;
+    case 'why_german':
+        fieldName = 'entry.836554877';
+        break;
+    case 'goal':
+        fieldName = 'entry.1685277614';
+        break;
+    case 'time_commitment':
+        fieldName = 'entry.1810441905';
+        break;
+    case 'mother_description':
+        fieldName = 'entry.745882257';
+        break;
                 default:
                     fieldName = 'entry.1685277614';
             }

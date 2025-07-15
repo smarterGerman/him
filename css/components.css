@@ -276,6 +276,54 @@
     transform: translateY(-2px);
 }
 
+/* ===== ADDITIONAL STYLES FOR IMPROVED TEXT AREAS ===== */
+.text-area-field {
+    text-align: left;
+    border-radius: 15px;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.4;
+    padding: 15px 20px;
+}
+
+.text-area-field::placeholder {
+    line-height: 1.4;
+}
+
+/* Character counter */
+.input-counter {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-align: right;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    align-self: flex-end;
+}
+
+.input-counter.warning {
+    color: #ffd54f;
+}
+
+.input-counter.danger {
+    color: #ff6b6b;
+}
+
+/* Update container for better spacing */
+.text-input-container {
+    width: min(600px, 90vw);
+    align-items: stretch;
+    gap: 0;
+}
+
+/* Mobile adjustments for textareas */
+@media (max-width: 768px) {
+    .text-area-field {
+        font-size: 16px; /* Prevent zoom on iOS */
+        min-height: 100px;
+    }
+}
+
 /* ===== TIME/PROBABILITY CHOICES ===== */
 .time-probability-container {
     position: absolute;

@@ -137,10 +137,24 @@ if (Config.platform.isMobile) {
             }, { passive: false });
             
             document.body.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+    // Check if the touch is on a text input field
+    var target = e.target;
+    var isTextInput = target && (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' ||
+        target.closest('.text-input-container')
+    );
+    
+    // Don't prevent touch events on text inputs
+    if (isTextInput) {
+        return; // Allow normal text input behavior
+    }
+    
+    // Only prevent pull-to-refresh for other elements
+    if (e.touches.length === 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
             
             // Handle viewport changes (keyboard)
             var initialViewportHeight = window.innerHeight;
@@ -167,30 +181,43 @@ if (Config.platform.isMobile) {
         init: function() {
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
-                switch(e.key) {
-                    case ' ': // Spacebar
-                        e.preventDefault();
-                        var visibleButton = document.querySelector('.dna-text-button.visible');
-                        if (visibleButton) visibleButton.click();
-                        break;
-                        
-                    case 'Escape':
-                        if (document.fullscreenElement) {
-                            document.exitFullscreen();
-                        }
-                        break;
-                        
-                    case 'm':
-                    case 'M':
-                        SG1.toggleMusic();
-                        break;
-                        
-                    case 's':
-                    case 'S':
-                        Controls.skip();
-                        break;
-                }
-            });
+    // Check if we're currently in a text input field
+    var activeElement = document.activeElement;
+    var isTextInput = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA'
+    );
+    
+    // Don't intercept keys when user is typing in text fields
+    if (isTextInput) {
+        return; // Let normal text input behavior continue
+    }
+    
+    // Only apply shortcuts when NOT in text input
+    switch(e.key) {
+        case ' ': // Spacebar
+            e.preventDefault();
+            var visibleButton = document.querySelector('.dna-text-button.visible');
+            if (visibleButton) visibleButton.click();
+            break;
+            
+        case 'Escape':
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+            break;
+            
+        case 'm':
+        case 'M':
+            SG1.toggleMusic();
+            break;
+            
+        case 's':
+        case 'S':
+            Controls.skip();
+            break;
+    }
+});
         }
     };
     
