@@ -542,6 +542,58 @@ var DNAButton = {
         } catch (e) {
             console.log('❌ GOOGLE SHEET SUBMISSION ERROR:', e.message);
         }
+    },
+     getPersonalityProfile: function() {
+        var score = State.score;
+        var profiles = Config.personalityProfiles;
+        
+        var level = State.responses.goalLevel || 3;
+        var hoursPerWeek = State.responses.timeCommitment || 5;
+        var totalHours = level * 200;
+        var weeks = Math.ceil(totalHours / hoursPerWeek);
+        
+        var timeString = this.formatTimeEstimate(weeks);
+        
+        for (var i = 0; i < profiles.length; i++) {
+            var profile = profiles[i];
+            if (score >= profile.scoreRange[0] && score <= profile.scoreRange[1]) {
+                return {
+                    title: profile.title,
+                    description: profile.description + '\n\nIhr Deutschziel erreichen Sie in etwa ' + timeString + ' (' + totalHours + ' Stunden).'
+                };
+            }
+        }
+        
+        return profiles[2];
+    },
+
+    formatTimeEstimate: function(weeks) {
+        var years = Math.floor(weeks / 52);
+        var months = Math.floor((weeks % 52) / 4.33);
+        
+        if (years > 0) {
+            return years + (years === 1 ? ' Jahr' : ' Jahre');
+        } else if (months > 0) {
+            return months + (months === 1 ? ' Monat' : ' Monate');
+        } else {
+            return weeks + (weeks === 1 ? ' Woche' : ' Wochen');
+        }
+    },
+
+    showPersonalityProfile: function() {
+        var profile = this.getPersonalityProfile();
+        var visualizer = UI.element('visualizer');
+        var profileContainer = UI.element('profileContainer');
+        var profileTitle = UI.element('profileTitle');
+        var profileDescription = UI.element('profileDescription');
+        
+        if (profileContainer && visualizer && profileTitle && profileDescription) {
+            visualizer.classList.add('text-mode');
+            profileTitle.textContent = profile.title;
+            profileDescription.textContent = profile.description;
+            profileContainer.classList.add('visible');
+            this.currentMode = 'profile';
+        }
     }
 };
 
