@@ -56,8 +56,6 @@ window.SG1Debug = {
     // Show all UI elements (for testing)
     showAll: function() {
         DNAButton.showText('Test Button', 'Test Translation');
-        DNAButton.showAnswerChoices();
-        DNAButton.showTimeInput();
         DNAButton.showProbabilityChoices();
         console.log('All UI elements should now be visible');
     },
@@ -88,6 +86,29 @@ window.SG1Debug = {
     // Get configuration
     config: function() {
         return Config;
+    },
+    
+    // Show current mode for debugging
+    currentMode: function() {
+        return DNAButton.currentMode;
+    },
+    
+    // Force show specific UI
+    showUI: function(type) {
+        console.log('Forcing show UI:', type);
+        switch(type) {
+            case 'scale':
+                DNAButton.showScaleChoices();
+                break;
+            case 'mother':
+                DNAButton.showMotherDescriptionInput();
+                break;
+            case 'ai':
+                DNAButton.showAIChoices();
+                break;
+            default:
+                console.log('Available UI types: scale, mother, ai');
+        }
     }
 };
 
@@ -225,6 +246,7 @@ var Analytics = {
 };
 
 Analytics.init();
+
 // ===== SG1 VERIFICATION SCRIPT =====
 var SG1Verification = {
     runQuickCheck: function() {
@@ -260,6 +282,23 @@ var SG1Verification = {
         requiredElements.forEach(function(id) {
             if (!document.getElementById(id)) {
                 issues.push('Missing DOM element: ' + id);
+            }
+        });
+        
+        // Check specific conversation elements
+        var conversationElements = [
+            'whyGermanInputContainer',
+            'goalInputContainer', 
+            'timeInputContainer',
+            'probabilityChoicesContainer',
+            'scaleChoicesContainer',
+            'motherDescriptionContainer',
+            'aiChoicesContainer'
+        ];
+        
+        conversationElements.forEach(function(id) {
+            if (!document.getElementById(id)) {
+                warnings.push('Missing conversation element: ' + id);
             }
         });
         

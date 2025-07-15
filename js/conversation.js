@@ -68,17 +68,6 @@ var DNAButton = {
         }
     },
 
-    showAnswerChoices: function() {
-        var visualizer = UI.element('visualizer');
-        var choicesContainer = UI.element('answerChoicesContainer');
-        
-        if (choicesContainer && visualizer) {
-            visualizer.classList.add('text-mode');
-            choicesContainer.classList.add('visible');
-            this.currentMode = 'choices';
-        }
-    },
-
     showWhyGermanInput: function() {
         var visualizer = UI.element('visualizer');
         var whyContainer = UI.element('whyGermanInputContainer');
@@ -88,10 +77,20 @@ var DNAButton = {
             whyContainer.classList.add('visible');
             this.currentMode = 'why-german-input';
             
-            setTimeout(function() {
-                var whyInput = UI.element('whyGermanInput');
-                if (whyInput) whyInput.focus();
-            }, 300);
+            // Add proper keyboard event handling
+            var whyInput = UI.element('whyGermanInput');
+            if (whyInput) {
+                whyInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        DNAButton.handleWhyGermanSubmit();
+                    }
+                });
+                
+                setTimeout(function() {
+                    whyInput.focus();
+                }, 300);
+            }
         }
     },
 
@@ -104,10 +103,20 @@ var DNAButton = {
             goalContainer.classList.add('visible');
             this.currentMode = 'goal-input';
             
-            setTimeout(function() {
-                var goalInput = UI.element('goalInput');
-                if (goalInput) goalInput.focus();
-            }, 300);
+            // Add proper keyboard event handling
+            var goalInput = UI.element('goalInput');
+            if (goalInput) {
+                goalInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        DNAButton.handleGoalSubmit();
+                    }
+                });
+                
+                setTimeout(function() {
+                    goalInput.focus();
+                }, 300);
+            }
         }
     },
 
@@ -120,10 +129,20 @@ var DNAButton = {
             timeContainer.classList.add('visible');
             this.currentMode = 'time-input';
             
-            setTimeout(function() {
-                var timeInput = UI.element('timeInput');
-                if (timeInput) timeInput.focus();
-            }, 300);
+            // Add proper keyboard event handling
+            var timeInput = UI.element('timeInput');
+            if (timeInput) {
+                timeInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        DNAButton.handleTimeSubmit();
+                    }
+                });
+                
+                setTimeout(function() {
+                    timeInput.focus();
+                }, 300);
+            }
         }
     },
 
@@ -146,6 +165,7 @@ var DNAButton = {
             visualizer.classList.add('text-mode');
             scaleContainer.classList.add('visible');
             this.currentMode = 'scale';
+            console.log('✅ Showing German love scale for step:', State.step);
         }
     },
 
@@ -169,10 +189,20 @@ var DNAButton = {
             motherContainer.classList.add('visible');
             this.currentMode = 'mother-description';
             
-            setTimeout(function() {
-                var motherInput = UI.element('motherDescriptionInput');
-                if (motherInput) motherInput.focus();
-            }, 300);
+            // Add proper keyboard event handling
+            var motherInput = UI.element('motherDescriptionInput');
+            if (motherInput) {
+                motherInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        DNAButton.handleMotherDescriptionSubmit();
+                    }
+                });
+                
+                setTimeout(function() {
+                    motherInput.focus();
+                }, 300);
+            }
         }
     },
     
@@ -182,27 +212,27 @@ var DNAButton = {
     },
 
     showStatus: function(text, isError) {
-    var statusDisplay = UI.element('statusDisplay');
-    var visualizer = UI.element('visualizer');
-    
-    if (statusDisplay && visualizer) {
-        visualizer.classList.add('text-mode');
-        statusDisplay.textContent = text;
-        statusDisplay.classList.remove('error');
+        var statusDisplay = UI.element('statusDisplay');
+        var visualizer = UI.element('visualizer');
         
-        if (isError) {
-            statusDisplay.classList.add('error');
+        if (statusDisplay && visualizer) {
+            visualizer.classList.add('text-mode');
+            statusDisplay.textContent = text;
+            statusDisplay.classList.remove('error');
+            
+            if (isError) {
+                statusDisplay.classList.add('error');
+            }
+            
+            statusDisplay.classList.add('visible');
         }
-        
-        statusDisplay.classList.add('visible');
-    }
     },
 
     hideStatus: function() {
-    var statusDisplay = UI.element('statusDisplay');
-    if (statusDisplay) {
-        statusDisplay.classList.remove('visible', 'error');
-    }
+        var statusDisplay = UI.element('statusDisplay');
+        if (statusDisplay) {
+            statusDisplay.classList.remove('visible', 'error');
+        }
     },
     
     handleClick: function() {
@@ -216,21 +246,6 @@ var DNAButton = {
                 this.handleNaGut();
                 break;
         }
-    },
-
-    handleAnswerChoice: function(choiceIndex) {
-        if (this.currentMode !== 'choices') return;
-        
-        State.responses.firstQuestion = choiceIndex;
-        State.score += [3, 1, -2][choiceIndex];
-        
-        this.playConfirmationSound();
-        this.animateChoiceClick();
-        
-        setTimeout(function() {
-            DNAButton.showDNA();
-            Conversation.playThankYou();
-        }, 800);
     },
 
     handleWhyGermanSubmit: function() {
@@ -320,12 +335,15 @@ var DNAButton = {
     },
 
     handleScaleChoice: function(rating) {
+        console.log('🔵 Scale choice:', rating, 'for step:', State.step);
+        
         this.playConfirmationSound();
         this.animateChoiceClick();
         
         if (State.step === 5) {
             State.responses.germanLove = rating;
             State.score += Math.max(0, rating - 5);
+            console.log('✅ German love rating saved:', rating);
         }
         
         setTimeout(function() {
@@ -505,18 +523,19 @@ var DNAButton = {
             var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
             var fieldName;
             
+            // Updated field names based on the actual Google Form
             switch(type) {
                 case 'why_german':
-                    fieldName = 'entry.1234567890';
+                    fieldName = 'entry.1685277614'; // Why do you want to learn German?
                     break;
                 case 'goal':
-                    fieldName = 'entry.1685277614';
+                    fieldName = 'entry.1045781291'; // What's your goal?
                     break;
                 case 'time_commitment':
-                    fieldName = 'entry.987654321';
+                    fieldName = 'entry.1065046570'; // How much time do you plan to spend?
                     break;
                 case 'mother_description':
-                    fieldName = 'entry.745882257';
+                    fieldName = 'entry.1166974658'; // Describe your relationship to your mother
                     break;
                 default:
                     fieldName = 'entry.1685277614';
@@ -534,7 +553,7 @@ var DNAButton = {
                 },
                 body: params.toString()
             }).then(function() {
-                console.log('✅ SUBMITTED TO GOOGLE SHEET:', type);
+                console.log('✅ SUBMITTED TO GOOGLE SHEET:', type, '=', value);
             }).catch(function(e) {
                 console.log('❌ SUBMISSION ERROR:', e.message);
             });
@@ -639,15 +658,15 @@ var Conversation = {
         console.log('🔄 Moving to step:', State.step);
         
         // Handle AI sequence branching
-if (State.step === 8 && State.selectedAIType === 'male') {
-    this.startMaleAISequence();
-    return;
-} else if (State.step === 8 && State.selectedAIType === 'female') {
-    this.startFemaleAISequence();
-    return;
-} else if (State.step === 8 && State.selectedAIType === 'diverse') {
-    State.step = 10; // Skip to analysis step
-}
+        if (State.step === 8 && State.selectedAIType === 'male') {
+            this.startMaleAISequence();
+            return;
+        } else if (State.step === 8 && State.selectedAIType === 'female') {
+            this.startFemaleAISequence();
+            return;
+        } else if (State.step === 8 && State.selectedAIType === 'diverse') {
+            State.step = 10; // Skip to analysis step
+        }
         
         if (State.step >= 12) {
             this.completeCourse();
@@ -701,6 +720,7 @@ if (State.step === 8 && State.selectedAIType === 'male') {
 
     showNextButton: function() {
         setTimeout(function() {
+            console.log('📋 Showing UI for step:', State.step);
             switch(State.step) {
                 case 0:
                     DNAButton.showText('Bereit', 'Ready');
@@ -743,96 +763,96 @@ if (State.step === 8 && State.selectedAIType === 'male') {
     },
 
     startMaleAISequence: function() {
-    var self = this;
-    
-    setTimeout(function() {
-        DNAButton.showStatus('Installing Mansplainer Module...');
-    }, 500);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+        var self = this;
+        
         setTimeout(function() {
-            DNAButton.showStatus('Success');
-        }, 300);
-    }, 2500);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+            DNAButton.showStatus('Installing Mansplainer Module...');
+        }, 500);
+        
         setTimeout(function() {
-            DNAButton.showStatus('Charging ego: 0%');
-            var count = 0;
-            var interval = setInterval(function() {
-                count += Math.floor(Math.random() * 15) + 10;
-                if (count >= 200) {
-                    clearInterval(interval);
-                    DNAButton.showStatus('Ego fully charged: 200%');
-                } else {
-                    DNAButton.showStatus('Charging ego: ' + count + '%');
-                }
-            }, 150);
-        }, 300);
-    }, 4000);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Success');
+            }, 300);
+        }, 2500);
+        
         setTimeout(function() {
-            DNAButton.showStatus('Male AI fully activated');
-        }, 300);
-    }, 8000);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
-        DNAButton.showDNA();
-        State.step = 10;
-        self.moveToNextQuestion();
-    }, 10000);
-},
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Charging ego: 0%');
+                var count = 0;
+                var interval = setInterval(function() {
+                    count += Math.floor(Math.random() * 15) + 10;
+                    if (count >= 200) {
+                        clearInterval(interval);
+                        DNAButton.showStatus('Ego fully charged: 200%');
+                    } else {
+                        DNAButton.showStatus('Charging ego: ' + count + '%');
+                    }
+                }, 150);
+            }, 300);
+        }, 4000);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Male AI fully activated');
+            }, 300);
+        }, 8000);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            DNAButton.showDNA();
+            State.step = 10;
+            self.moveToNextQuestion();
+        }, 10000);
+    },
 
     startFemaleAISequence: function() {
-    var self = this;
-    
-    setTimeout(function() {
-        DNAButton.showStatus('Installing Empathy Protocols...');
-    }, 500);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+        var self = this;
+        
         setTimeout(function() {
-            DNAButton.showStatus('Success');
-        }, 300);
-    }, 2500);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+            DNAButton.showStatus('Installing Empathy Protocols...');
+        }, 500);
+        
         setTimeout(function() {
-            DNAButton.showStatus('Listening abilities: 100%');
-            var count = 100;
-            var interval = setInterval(function() {
-                count += Math.floor(Math.random() * 15) + 10;
-                if (count >= 300) {
-                    clearInterval(interval);
-                    DNAButton.showStatus('Listening abilities: 300%');
-                } else {
-                    DNAButton.showStatus('Listening abilities: ' + count + '%');
-                }
-            }, 150);
-        }, 300);
-    }, 4000);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Success');
+            }, 300);
+        }, 2500);
+        
         setTimeout(function() {
-            DNAButton.showStatus('Female AI fully activated');
-        }, 300);
-    }, 7000);
-    
-    setTimeout(function() {
-        DNAButton.hideStatus();
-        DNAButton.showDNA();
-        State.step = 10;
-        self.moveToNextQuestion();
-    }, 9000);
-},
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Listening abilities: 100%');
+                var count = 100;
+                var interval = setInterval(function() {
+                    count += Math.floor(Math.random() * 15) + 10;
+                    if (count >= 300) {
+                        clearInterval(interval);
+                        DNAButton.showStatus('Listening abilities: 300%');
+                    } else {
+                        DNAButton.showStatus('Listening abilities: ' + count + '%');
+                    }
+                }, 150);
+            }, 300);
+        }, 4000);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showStatus('Female AI fully activated');
+            }, 300);
+        }, 7000);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            DNAButton.showDNA();
+            State.step = 10;
+            self.moveToNextQuestion();
+        }, 9000);
+    },
 
     startFinalSequence: function() {
         // Final analysis and personality profile sequence

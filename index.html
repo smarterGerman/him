@@ -41,37 +41,21 @@
                 <!-- Status display for final sequence -->
                 <div class="status-display" id="statusDisplay"></div>
                 
-                <!-- Answer choices for question 1 -->
-                <div class="answer-choices-container" id="answerChoicesContainer">
-                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(0)">
-                        <span class="answer-text">Gute Frage, nächste Frage</span>
-                        <div class="answer-translation">Good question, next question</div>
-                    </div>
-                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(1)">
-                        <span class="answer-text">Keine Ahnung</span>
-                        <div class="answer-translation">No idea</div>
-                    </div>
-                    <div class="answer-choice" onclick="DNAButton.handleAnswerChoice(2)">
-                        <span class="answer-text">Das geht Dich gar nichts an</span>
-                        <div class="answer-translation">That's none of your business</div>
-                    </div>
-                </div>
-
                 <!-- Text input for why German question (Q1) -->
                 <div class="text-input-container" id="whyGermanInputContainer">
-                    <input type="text" class="text-input-field" id="whyGermanInput" placeholder="Why do you want to learn German?..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleWhyGermanSubmit()">
+                    <input type="text" class="text-input-field" id="whyGermanInput" placeholder="Why do you want to learn German?..." maxlength="200">
                     <button class="text-submit-button" onclick="DNAButton.handleWhyGermanSubmit()">Submit</button>
                 </div>
 
                 <!-- Text input for goal question -->
                 <div class="text-input-container" id="goalInputContainer">
-                    <input type="text" class="text-input-field" id="goalInput" placeholder="Type your goal here..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleGoalSubmit()">
+                    <input type="text" class="text-input-field" id="goalInput" placeholder="Type your goal here..." maxlength="200">
                     <button class="text-submit-button" onclick="DNAButton.handleGoalSubmit()">Submit</button>
                 </div>
 
                 <!-- Time commitment text input -->
                 <div class="text-input-container" id="timeInputContainer">
-                    <input type="text" class="text-input-field" id="timeInput" placeholder="How many hours per week can you study?..." maxlength="100" onkeypress="if(event.key==='Enter') DNAButton.handleTimeSubmit()">
+                    <input type="text" class="text-input-field" id="timeInput" placeholder="How many hours per week can you study?..." maxlength="100">
                     <button class="text-submit-button" onclick="DNAButton.handleTimeSubmit()">Submit</button>
                 </div>
 
@@ -82,7 +66,7 @@
                     <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
                 </div>
 
-                <!-- Scale 1-10 choices -->
+                <!-- Scale 1-10 choices for German love -->
                 <div class="time-probability-container" id="scaleChoicesContainer">
                     <div class="probability-choice" onclick="DNAButton.handleScaleChoice(1)">1</div>
                     <div class="probability-choice" onclick="DNAButton.handleScaleChoice(2)">2</div>
@@ -94,6 +78,12 @@
                     <div class="probability-choice" onclick="DNAButton.handleScaleChoice(8)">8</div>
                     <div class="probability-choice" onclick="DNAButton.handleScaleChoice(9)">9</div>
                     <div class="probability-choice" onclick="DNAButton.handleScaleChoice(10)">10</div>
+                </div>
+
+                <!-- Text input for mother description -->
+                <div class="text-input-container" id="motherDescriptionContainer">
+                    <input type="text" class="text-input-field" id="motherDescriptionInput" placeholder="Describe your relationship with your mother..." maxlength="200">
+                    <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
                 </div>
 
                 <!-- AI type choices -->
@@ -110,12 +100,6 @@
                         <span class="answer-text">Divers</span>
                         <div class="answer-translation">Diverse</div>
                     </div>
-                </div>
-
-                <!-- Text input for mother description -->
-                <div class="text-input-container" id="motherDescriptionContainer">
-                    <input type="text" class="text-input-field" id="motherDescriptionInput" placeholder="Describe your relationship with your mother..." maxlength="200" onkeypress="if(event.key==='Enter') DNAButton.handleMotherDescriptionSubmit()">
-                    <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
                 </div>
 
                 <!-- Psychological profile display -->

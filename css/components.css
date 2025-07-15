@@ -36,7 +36,7 @@
     pointer-events: none;
     transition: all 0.8s ease;
     cursor: pointer;
-    z-index: 10;
+    z-index: 100;
     white-space: nowrap;
     
     background: rgba(255, 255, 255, 0.1);
@@ -107,7 +107,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 1s ease;
-    z-index: 10;
+    z-index: 100;
     text-align: center;
     white-space: nowrap;
 }
@@ -134,7 +134,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.8s ease;
-    z-index: 10;
+    z-index: 100;
 }
 
 .answer-choices-container.visible {
@@ -217,7 +217,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.8s ease;
-    z-index: 10;
+    z-index: 100;
     width: min(500px, 90vw);
 }
 
@@ -289,7 +289,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.8s ease;
-    z-index: 10;
+    z-index: 100;
     flex-wrap: wrap;
     justify-content: center;
 }
@@ -309,7 +309,8 @@
     cursor: pointer;
     padding: 15px 25px;
     border-radius: 25px;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.4s ease;
     position: relative;
 }
@@ -371,7 +372,7 @@
         white-space: nowrap;
     }
 
-    #scaleChoicesContainer, #motherScaleChoicesContainer {
+    #scaleChoicesContainer {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
@@ -379,8 +380,7 @@
         justify-content: center;
     }
 
-    #scaleChoicesContainer .probability-choice,
-    #motherScaleChoicesContainer .probability-choice {
+    #scaleChoicesContainer .probability-choice {
         min-width: 35px;
         padding: 10px 8px;
         font-size: 14px;
@@ -397,7 +397,7 @@
         white-space: normal;
     }
 
-    #scaleChoicesContainer, #motherScaleChoicesContainer {
+    #scaleChoicesContainer {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 6px;
@@ -405,8 +405,7 @@
         justify-content: center;
     }
 
-    #scaleChoicesContainer .probability-choice,
-    #motherScaleChoicesContainer .probability-choice {
+    #scaleChoicesContainer .probability-choice {
         min-width: 30px;
         padding: 8px 6px;
         font-size: 12px;
@@ -416,7 +415,7 @@
 }
 
 @media (min-width: 769px) {
-    #scaleChoicesContainer, #motherScaleChoicesContainer {
+    #scaleChoicesContainer {
         flex-direction: row;
         flex-wrap: nowrap;
         gap: 12px;
@@ -424,8 +423,7 @@
         justify-content: center;
     }
 
-    #scaleChoicesContainer .probability-choice,
-    #motherScaleChoicesContainer .probability-choice {
+    #scaleChoicesContainer .probability-choice {
         min-width: 45px;
         padding: 15px 18px;
         display: flex;

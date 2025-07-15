@@ -195,7 +195,7 @@ var SG1 = {
         var isMobile = Config.platform.isMobile;
         
         // Unlock audio for mobile
-        var unlockAudio = AudioManager.createAudio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBjiI2OvKcyMFl2+z9N2aPAIbWr9yxmAXGFnj8MJzJQUYYbf2xGIYG1nq6MJzJQUYlGt19Mhvaz5gXFztw2kdA0qP2uzGeTYFG3a36Pn0YlFmdXTs8bHnzLqLh6uYfJBaRoZ1puLsxXEvCSdtytNdKAkzWLz6qHNxMEOw6MtbKhJLkM/d3QBVL9JKR5X2QQAwfOYTM8cVkPB29ppqOZN17+o1GAbSrAXvOK9qVsO2P2bfyXU5aOPYqE+TKYeKc1PEJd+7L2XKHOd6d1qTKZ2pXPHZq36DWdF4VJOhJr6l9YNkFJdFaLyJRjF7X1lGf61O2FO8gY0n');
+        var unlockAudio = AudioManager.createAudio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2+LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBjiI2OvKcyMFl2+z9N2aPAIbWr9yxmAXGFnj8MJzJQUYYbf2xGIYG1nq6MJzJQUYlGt19Mhvaz5gXFztw2kdA0qP2uzGeTYFG3a36Pn0YlFmdXTs8bHnzLqLh6uYfJBaRoZ1puLsxXEvCSdtytNdKAkzWLz6qHNxMEOw6MtbKhJLkM/d3QBVL9JKR5X2QQAwfOYTM8cVkPB29ppqOZN17+o1GAbSrAXvOK9qVsO2P2bfyXU5aOPYqE+TKYeKc1PEJd+7L2XKHOd6d1qTKZ2pXPHZq36DWdF4VJOhJr6l9YNkFJdFaLyJRjF7X1lGf61O2FO8gY0n');
         unlockAudio.volume = 0.01;
         
         unlockAudio.play().then(function() {

@@ -23,19 +23,19 @@ var State = {
     
     // === AUDIO FILES (from Config) ===
     get audioFiles() {
-    return typeof Config !== 'undefined' ? Config.audioFiles : {};
+        return typeof Config !== 'undefined' ? Config.audioFiles : {};
     },
     get thankYouAudio() {
-    return typeof Config !== 'undefined' ? Config.specialAudio.thankYou : '';
+        return typeof Config !== 'undefined' ? Config.specialAudio.thankYou : '';
     },
     get confirmationSound() {
-    return typeof Config !== 'undefined' ? Config.specialAudio.confirmation : '';
+        return typeof Config !== 'undefined' ? Config.specialAudio.confirmation : '';
     },
     get systemErrorAudio() {
-    return typeof Config !== 'undefined' ? Config.specialAudio.systemError : '';
+        return typeof Config !== 'undefined' ? Config.specialAudio.systemError : '';
     },
     get humanWakeupAudio() {
-    return typeof Config !== 'undefined' ? Config.specialAudio.humanWakeup : '';
+        return typeof Config !== 'undefined' ? Config.specialAudio.humanWakeup : '';
     },
     
     // === STATE MANAGEMENT METHODS ===
@@ -171,9 +171,10 @@ var UI = {
     
     // === BUTTON VISIBILITY HELPERS ===
     hideAllInteractiveElements: function() {
+        console.log('🧹 Hiding all interactive elements');
+        
         var containers = [
             'dnaTextButton',
-            'answerChoicesContainer', 
             'whyGermanInputContainer',
             'goalInputContainer',
             'timeInputContainer', 
@@ -181,7 +182,8 @@ var UI = {
             'scaleChoicesContainer',
             'aiChoicesContainer',
             'motherDescriptionContainer',
-            'profileContainer'
+            'profileContainer',
+            'statusDisplay'
         ];
         
         containers.forEach(function(id) {
@@ -190,6 +192,16 @@ var UI = {
                 element.classList.remove('visible');
                 element.style.opacity = '0';
                 element.style.pointerEvents = 'none';
+                element.style.transform = 'translate(-50%, -50%)';
+                
+                // Clear any event listeners for text inputs
+                if (element.querySelector('input')) {
+                    var input = element.querySelector('input');
+                    input.value = '';
+                    // Clone the input to remove all event listeners
+                    var newInput = input.cloneNode(true);
+                    input.parentNode.replaceChild(newInput, input);
+                }
             }
         });
         
@@ -198,13 +210,15 @@ var UI = {
         if (visualizer) {
             visualizer.classList.remove('text-mode');
         }
+        
+        console.log('✅ All interactive elements hidden');
     }
 };
 
 // === CONTROLS ===
 var Controls = {
     skip: function() {
-        console.log('Skip button clicked');
+        console.log('Skip button clicked for step:', State.step);
         
         // Stop all audio
         AudioManager.stopAllAudio();
@@ -222,15 +236,11 @@ var Controls = {
         // Hide current UI
         UI.hideAllInteractiveElements();
         
-        // Handle current step logic
+        // Handle current step logic with appropriate default values
         if (DNAButton.currentMode === 'text') {
             setTimeout(function() {
                 DNAButton.handleClick();
             }, 100);
-        } else if (DNAButton.currentMode === 'choices') {
-            DNAButton.handleAnswerChoice(0);
-        } else if (DNAButton.currentMode === 'time-input') {
-            DNAButton.handleTimeSubmit();
         } else if (DNAButton.currentMode === 'probability') {
             DNAButton.handleProbabilityChoice('medium');
         } else if (DNAButton.currentMode === 'scale') {
@@ -238,15 +248,26 @@ var Controls = {
         } else if (DNAButton.currentMode === 'ai') {
             DNAButton.handleAIChoice('diverse');
         } else if (DNAButton.currentMode === 'why-german-input') {
+            // Set default value and submit
+            var whyInput = UI.element('whyGermanInput');
+            if (whyInput) whyInput.value = 'Skipped';
             DNAButton.handleWhyGermanSubmit();
         } else if (DNAButton.currentMode === 'goal-input') {
+            var goalInput = UI.element('goalInput');
+            if (goalInput) goalInput.value = 'Skipped';
             DNAButton.handleGoalSubmit();
+        } else if (DNAButton.currentMode === 'time-input') {
+            var timeInput = UI.element('timeInput');
+            if (timeInput) timeInput.value = '5 hours';
+            DNAButton.handleTimeSubmit();
         } else if (DNAButton.currentMode === 'mother-description') {
+            var motherInput = UI.element('motherDescriptionInput');
+            if (motherInput) motherInput.value = 'Skipped';
             DNAButton.handleMotherDescriptionSubmit();
         } else if (DNAButton.currentMode === 'profile') {
             Conversation.dissolveAndTransition();
         } else {
-            // Default action
+            // Default action - advance to next step
             UI.setVisualizerState('active');
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
