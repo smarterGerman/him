@@ -18,9 +18,8 @@
         <div class="music-button" id="musicButton" onclick="SG1.toggleMusic()">MUSIC</div>
 
         <div class="pre-init-overlay overlay-base" id="preInitOverlay">
-            <div class="exit-button" onclick="Controls.exitAssessment(); event.stopPropagation();" 
-     onmousedown="event.stopPropagation();" 
-     title="Exit Assessment">×</div>
+            <div class="exit-button" onmousedown="Controls.exitAssessment(); return false;" 
+     onclick="return false;" title="Exit Assessment">×</div>
             <button class="pre-init-button" onclick="SG1.beginInitialization()">Initiate AI</button>
         </div>
 
