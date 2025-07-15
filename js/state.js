@@ -318,12 +318,24 @@ var Controls = {
 
     // New exit function with guaranteed audio stopping
     exitAssessment: function() {
-        console.log('🚪 Exit button clicked');
-        
-        // Always stop audio first, regardless of confirmation
-        this.stopAllAudio();
-        
-        // Exit fullscreen immediately
+    console.log('🚪 Exit button clicked');
+    
+    // IMMEDIATE audio stop - no delays
+    this.stopAllAudio();
+    
+    // Also force stop any audio that might restart
+    setTimeout(function() {
+        Controls.stopAllAudio();
+    }, 100);
+    
+    // Prevent any new audio from starting
+    if (typeof State !== 'undefined') {
+        State.isSpeaking = false;
+        State.audioUnlocked = false;
+    }
+    
+    // Exit fullscreen AFTER audio is stopped
+    setTimeout(function() {
         try {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
@@ -336,31 +348,33 @@ var Controls = {
             console.log('Fullscreen exit error:', e);
         }
         
-        // Confirm exit with user
-        var shouldExit = confirm('Exit the AI assessment?');
-        
-        if (shouldExit) {
-            // Final audio stop before navigation
-            this.stopAllAudio();
+        // Show confirmation after fullscreen exit
+        setTimeout(function() {
+            var shouldExit = confirm('Exit the AI assessment?');
             
-            // Multiple exit strategies
-            try {
-                // Try to go back in history
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    // If no history, try to close or redirect
-                    this.tryCloseOrRedirect();
+            if (shouldExit) {
+                // Final audio stop before navigation
+                Controls.stopAllAudio();
+                
+                // Navigate away
+                try {
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        Controls.tryCloseOrRedirect();
+                    }
+                } catch (e) {
+                    console.log('Navigation error:', e);
+                    Controls.tryCloseOrRedirect();
                 }
-            } catch (e) {
-                console.log('Navigation error:', e);
-                this.tryCloseOrRedirect();
+            } else {
+                // User cancelled - but keep audio stopped
+                console.log('Exit cancelled - audio remains stopped');
             }
-        } else {
-            // User cancelled - restart audio if needed
-            this.handleExitCancelled();
-        }
-    },
+        }, 200);
+        
+    }, 200);
+},
     
     // Handle when user cancels exit
     handleExitCancelled: function() {
