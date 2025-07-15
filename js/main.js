@@ -361,9 +361,53 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function handleImmediateExit() {
-    console.log('🚨 IMMEDIATE EXIT - Nuclear option');
+    console.log('🚨 EXIT HANDLER - Detecting click type');
     
-    // Stop ALL audio with brute force
+    // Check if we're in fullscreen mode
+    var isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+    
+    if (isFullscreen) {
+        // FIRST CLICK: We're in fullscreen, this will exit fullscreen
+        console.log('🔄 FIRST CLICK - Exiting fullscreen, preparing for second click');
+        
+        // Set a flag for the next click
+        window.exitButtonClicked = true;
+        
+        // Exit fullscreen (browser handles this)
+        try {
+            if (document.exitFullscreen) document.exitFullscreen();
+            if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        } catch (e) {}
+        
+        // Wait briefly, then show instruction
+        setTimeout(function() {
+            console.log('💡 Showing click-again instruction');
+            var statusDisplay = document.getElementById('statusDisplay');
+            if (statusDisplay) {
+                statusDisplay.textContent = 'Click × again to exit';
+                statusDisplay.classList.add('visible');
+                statusDisplay.style.opacity = '0.8';
+                statusDisplay.style.fontSize = '16px';
+                
+                // Hide instruction after 3 seconds
+                setTimeout(function() {
+                    statusDisplay.classList.remove('visible');
+                }, 3000);
+            }
+        }, 500);
+        
+        return; // Don't proceed with exit logic yet
+    }
+    
+    // SECOND CLICK: We're not in fullscreen, or first click if never was fullscreen
+    if (!isFullscreen && window.exitButtonClicked) {
+        console.log('🚨 SECOND CLICK - Nuclear audio stop + exit');
+    } else {
+        console.log('🚨 SINGLE CLICK - Not in fullscreen, direct exit');
+    }
+    
+    // NUCLEAR OPTION - Stop everything immediately
     try {
         // Stop all HTML5 audio
         document.querySelectorAll('audio').forEach(function(audio) {
@@ -392,18 +436,23 @@ function handleImmediateExit() {
         // Block any new audio
         window.audioBlocked = true;
         
+        // Kill conversation system
+        if (typeof State !== 'undefined') {
+            State.isSpeaking = false;
+            State.inFinalSequence = true;
+            State.audioUnlocked = false;
+        }
+        
+        console.log('✅ NUCLEAR audio stop completed');
+        
     } catch (e) {
         console.log('Audio stop error:', e);
     }
     
-    // Force exit fullscreen
-    try {
-        if (document.exitFullscreen) document.exitFullscreen();
-        if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-    } catch (e) {}
+    // Clear the flag
+    window.exitButtonClicked = false;
     
-    // Show dialog with slight delay to ensure fullscreen exit completes
+    // Show confirmation dialog
     setTimeout(function() {
         var shouldExit = confirm('Exit the AI assessment?');
         if (shouldExit) {
