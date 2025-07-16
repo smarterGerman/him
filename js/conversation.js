@@ -1195,47 +1195,143 @@ var Conversation = {
         }
     },
 
-    // === SIMPLE COURSE COMPLETION (LIKE ORIGINAL HTML) ===
+    // === PARENT URL DETECTION FOR LEVEL =====
+    detectLevelFromParentURL: function() {
+        console.log('🔍 Attempting to detect level from parent URL...');
+        
+        try {
+            // Get parent URL (iframe parent)
+            var parentUrl = '';
+            
+            // Try different methods to get parent URL
+            if (window.parent !== window) {
+                try {
+                    parentUrl = window.parent.location.href;
+                    console.log('✅ Got parent URL directly:', parentUrl);
+                } catch (e) {
+                    // Cross-origin - try document.referrer
+                    parentUrl = document.referrer;
+                    console.log('✅ Got parent URL from referrer:', parentUrl);
+                }
+            }
+            
+            if (!parentUrl) {
+                console.log('❌ Could not get parent URL');
+                return null;
+            }
+            
+            // Convert to lowercase for matching
+            var urlLower = parentUrl.toLowerCase();
+            
+            // Check for level indicators in the URL
+            // Look for patterns like: a1-beginners, a2-elementary, etc.
+            if (urlLower.includes('a1-beginner') || urlLower.includes('a1_beginner')) {
+                return 'A1';
+            } else if (urlLower.includes('a2-elementary') || urlLower.includes('a2_elementary')) {
+                return 'A2';
+            } else if (urlLower.includes('b1-intermediate') || urlLower.includes('b1_intermediate')) {
+                return 'B1';
+            } else if (urlLower.includes('b2-upper') || urlLower.includes('b2_upper')) {
+                return 'B2';
+            } else if (urlLower.includes('c1-advanced') || urlLower.includes('c1_advanced')) {
+                return 'C1';
+            }
+            
+            // Alternative: Look for just the level codes
+            if (urlLower.includes('/a1/') || urlLower.includes('-a1-')) {
+                return 'A1';
+            } else if (urlLower.includes('/a2/') || urlLower.includes('-a2-')) {
+                return 'A2';
+            } else if (urlLower.includes('/b1/') || urlLower.includes('-b1-')) {
+                return 'B1';
+            } else if (urlLower.includes('/b2/') || urlLower.includes('-b2-')) {
+                return 'B2';
+            } else if (urlLower.includes('/c1/') || urlLower.includes('-c1-')) {
+                return 'C1';
+            }
+            
+            console.log('⚠️ No level pattern found in URL:', parentUrl);
+            return null;
+            
+        } catch (e) {
+            console.log('❌ Error detecting level from parent URL:', e);
+            return null;
+        }
+    },
+
+    // === COURSE COMPLETION WITH PARENT URL DETECTION ===
     completeCourse: function() {
         console.log('🎉 Course completed! Attempting transition...');
         
+        // Define next lecture URLs for each level
+        var nextLectureUrls = {
+            'A1': '/lectures/49317891',
+            'A2': '/lectures/60771293',
+            'B1': '/lectures/60771639',
+            'B2': '/lectures/60771936',
+            'C1': '/lectures/36642764'
+        };
+        
         setTimeout(function() {
-            // SIMPLE: Look for any button with completion text (like original)
-            var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+            var detectedLevel = null;
+            
+            // Method 1: Try to detect from parent URL (iframe)
+            detectedLevel = Conversation.detectLevelFromParentURL();
+            
+            if (detectedLevel && nextLectureUrls[detectedLevel]) {
+                console.log('✅ Detected level from parent URL:', detectedLevel);
+                console.log('✅ Redirecting to next lecture:', nextLectureUrls[detectedLevel]);
+                window.location.href = nextLectureUrls[detectedLevel];
+                return;
+            }
+            
+            // Method 2: Check for data-sg1-level attribute
+            var levelElement = document.querySelector('[data-sg1-level]');
+            if (levelElement) {
+                detectedLevel = levelElement.getAttribute('data-sg1-level');
+                console.log('✅ Detected level from attribute:', detectedLevel);
+                
+                if (nextLectureUrls[detectedLevel]) {
+                    console.log('✅ Redirecting to next lecture:', nextLectureUrls[detectedLevel]);
+                    window.location.href = nextLectureUrls[detectedLevel];
+                    return;
+                }
+            }
+            
+            // Method 3: Scan page title for level
+            var pageTitle = document.title || '';
+            var titleLower = pageTitle.toLowerCase();
+            
+            for (var levelKey in nextLectureUrls) {
+                if (titleLower.indexOf(levelKey.toLowerCase()) !== -1) {
+                    console.log('✅ Detected level from title:', levelKey);
+                    console.log('✅ Redirecting to next lecture:', nextLectureUrls[levelKey]);
+                    window.location.href = nextLectureUrls[levelKey];
+                    return;
+                }
+            }
+            
+            // Method 4: Look for any completion button (fallback)
+            var buttons = document.querySelectorAll('button, .btn, [role="button"], .lecture-button, .next-button');
             for (var i = 0; i < buttons.length; i++) {
                 var btn = buttons[i];
                 var text = btn.textContent.toLowerCase();
-                if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                if (text.indexOf('complete') !== -1 || 
+                    text.indexOf('continue') !== -1 || 
+                    text.indexOf('next') !== -1 ||
+                    text.indexOf('weiter') !== -1) {
                     console.log('✅ Found completion button:', text);
                     btn.click();
                     return;
                 }
             }
             
-            // FALLBACK: Simple URL increment (updated for your domain)
-            console.log('🔄 No button found, trying URL increment...');
-            try {
-                var currentUrl = window.location.href;
-                if (currentUrl.includes('/lectures/')) {
-                    var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
-                        var nextNum = parseInt(lectureNum) + 1;
-                        return '/lectures/' + nextNum;
-                    });
-                    
-                    if (newUrl !== currentUrl) {
-                        console.log('✅ Redirecting to:', newUrl);
-                        window.location.href = newUrl;
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.log('❌ Navigation failed:', e.message);
-            }
+            // Final fallback
+            console.log('❌ Could not detect level or find completion method');
+            console.log('Available levels:', Object.keys(nextLectureUrls).join(', '));
+            console.log('Parent URL detection:', Conversation.detectLevelFromParentURL());
             
-            // If all else fails, just log and let user continue manually
-            console.log('🤷‍♂️ Could not auto-advance, user can continue manually');
-            
-        }, 2000); // Just 2 seconds like original
+        }, 2000); // 2 seconds delay
     },
 
     startQ1: function() {
