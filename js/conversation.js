@@ -277,17 +277,18 @@ var DNAButton = {
 
     // === CONSISTENT INPUT HANDLERS (USING STATE METHODS) ===
     handleWhyGermanSubmit: function() {
+        var self = this;
         var whyInput = UI.element('whyGermanInput');
         var whyValue = whyInput ? whyInput.value.trim() : '';
         
-        this.playConfirmationSound();
+        self.playConfirmationSound();
         
         if (whyValue) {
             State.saveResponse('whyGerman', whyValue);
-            this.submitToGoogleForm(whyValue, 'why_german');
+            self.submitToGoogleForm(whyValue, 'why_german');
         }
         
-        this.animateInputContainerOut('whyGermanInputContainer');
+        self.animateInputContainerOut('whyGermanInputContainer');
         
         setTimeout(function() {
             DNAButton.showDNA();
@@ -296,17 +297,18 @@ var DNAButton = {
     },
 
     handleGoalSubmit: function() {
+        var self = this;
         var goalInput = UI.element('goalInput');
         var goalValue = goalInput ? goalInput.value.trim() : '';
         
-        this.playConfirmationSound();
+        self.playConfirmationSound();
         
         if (goalValue) {
-            this.scoreGoal(goalValue);
-            this.submitToGoogleForm(goalValue, 'goal');
+            self.scoreGoal(goalValue);
+            self.submitToGoogleForm(goalValue, 'goal');
         }
         
-        this.animateInputContainerOut('goalInputContainer');
+        self.animateInputContainerOut('goalInputContainer');
         
         setTimeout(function() {
             DNAButton.showDNA();
@@ -315,16 +317,17 @@ var DNAButton = {
     },
 
     handleTimeSubmit: function() {
+        var self = this;
         var timeInput = UI.element('timeInput');
         var timeValue = timeInput ? timeInput.value.trim() : '';
         
-        this.playConfirmationSound();
+        self.playConfirmationSound();
         
         if (timeValue) {
-            var hours = this.parseTimeCommitment(timeValue);
+            var hours = self.parseTimeCommitment(timeValue);
             State.saveResponse('timeCommitment', hours);
             State.saveResponse('timeText', timeValue);
-            this.submitToGoogleForm(timeValue, 'time_commitment');
+            self.submitToGoogleForm(timeValue, 'time_commitment');
             
             // Add score based on time commitment
             if (hours >= 15) State.addScore(5);
@@ -332,7 +335,7 @@ var DNAButton = {
             else State.addScore(1);
         }
         
-        this.animateInputContainerOut('timeInputContainer');
+        self.animateInputContainerOut('timeInputContainer');
         
         setTimeout(function() {
             DNAButton.showDNA();
@@ -341,7 +344,8 @@ var DNAButton = {
     },
 
     handleProbabilityChoice: function(level) {
-        if (this.currentMode !== 'probability') return;
+        var self = this;
+        if (self.currentMode !== 'probability') return;
         
         State.saveResponse('goalLikelihood', level);
         
@@ -349,8 +353,8 @@ var DNAButton = {
         var scoreMap = { 'low': -1, 'medium': 2, 'high': 4 };
         State.addScore(scoreMap[level] || 0);
         
-        this.playConfirmationSound();
-        this.animateChoiceClick();
+        self.playConfirmationSound();
+        self.animateChoiceClick();
         
         if (level === 'low') {
             setTimeout(function() {
@@ -367,10 +371,11 @@ var DNAButton = {
     },
 
     handleScaleChoice: function(rating) {
+        var self = this;
         console.log('🔵 Scale choice:', rating, 'for step:', State.step);
         
-        this.playConfirmationSound();
-        this.animateChoiceClick();
+        self.playConfirmationSound();
+        self.animateChoiceClick();
         
         if (State.step === 5) {
             State.saveResponse('germanLove', rating);
@@ -385,8 +390,9 @@ var DNAButton = {
     },
 
     handleAIChoice: function(aiType) {
-        this.playConfirmationSound();
-        this.animateChoiceClick();
+        var self = this;
+        self.playConfirmationSound();
+        self.animateChoiceClick();
         
         State.saveResponse('aiChoice', aiType);
         
@@ -403,17 +409,18 @@ var DNAButton = {
     },
 
     handleMotherDescriptionSubmit: function() {
+        var self = this;
         var motherInput = UI.element('motherDescriptionInput');
         var motherValue = motherInput ? motherInput.value.trim() : '';
         
-        this.playConfirmationSound();
+        self.playConfirmationSound();
         
         if (motherValue) {
-            this.scoreMotherDescription(motherValue);
-            this.submitToGoogleForm(motherValue, 'mother_description');
+            self.scoreMotherDescription(motherValue);
+            self.submitToGoogleForm(motherValue, 'mother_description');
         }
         
-        this.animateInputContainerOut('motherDescriptionContainer');
+        self.animateInputContainerOut('motherDescriptionContainer');
         
         setTimeout(function() {
             DNAButton.showDNA();
@@ -422,7 +429,8 @@ var DNAButton = {
     },
     
     handleBereit: function() {
-        this.playConfirmationSound();
+        var self = this;
+        self.playConfirmationSound();
         
         var textButton = UI.element('dnaTextButton');
         if (textButton) {
@@ -440,7 +448,8 @@ var DNAButton = {
     },
     
     handleNaGut: function() {
-        this.playConfirmationSound();
+        var self = this;
+        self.playConfirmationSound();
         
         var textButton = UI.element('dnaTextButton');
         if (textButton) {
@@ -503,8 +512,9 @@ var DNAButton = {
     },
 
     scoreGoal: function(goal) {
-        var analysis = this.analyzeGoalSentiment(goal);
-        var level = this.estimateTargetLevel(goal, analysis);
+        var self = this;
+        var analysis = self.analyzeGoalSentiment(goal);
+        var level = self.estimateTargetLevel(goal, analysis);
         
         var score = analysis.ambition + analysis.confidence + analysis.urgency + analysis.specificity;
         
@@ -553,7 +563,8 @@ var DNAButton = {
     },
 
     scoreMotherDescription: function(description) {
-        var analysis = this.analyzeMotherSentiment(description);
+        var self = this;
+        var analysis = self.analyzeMotherSentiment(description);
         var score = analysis.relationship + analysis.emotional + analysis.communication + analysis.humor;
         
         // Use consistent state methods
@@ -685,7 +696,8 @@ var DNAButton = {
     },
 
     showPersonalityProfile: function() {
-        var profile = this.getPersonalityProfile();
+        var self = this;
+        var profile = self.getPersonalityProfile();
         var visualizer = UI.element('visualizer');
         var profileContainer = UI.element('profileContainer');
         var profileTitle = UI.element('profileTitle');
@@ -696,7 +708,7 @@ var DNAButton = {
             profileTitle.textContent = profile.title;
             profileDescription.textContent = profile.description;
             profileContainer.classList.add('visible');
-            this.currentMode = 'profile';
+            self.currentMode = 'profile';
             
             // Auto-dissolve after showing profile for 7 seconds
             setTimeout(function() {
@@ -870,8 +882,9 @@ var Conversation = {
 
     // === FIXED AI SEQUENCE HANDLERS ===
     startMaleAISequence: function() {
+        var self = this;
         console.log('🔊 Starting Male AI sequence');
-        this.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
+        self.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
             // FIXED: Jump to step 11 after male sequence, skipping other AI audios
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
@@ -881,8 +894,9 @@ var Conversation = {
     },
 
     startFemaleAISequence: function() {
+        var self = this;
         console.log('🔊 Starting Female AI sequence');
-        this.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
+        self.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
             // FIXED: Jump to step 11 after female sequence, skipping other AI audios
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
@@ -892,8 +906,9 @@ var Conversation = {
     },
 
     startDiverseAISequence: function() {
+        var self = this;
         console.log('🔊 Starting Diverse AI sequence');
-        this.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
+        self.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
             // FIXED: Jump to step 11 after diverse sequence
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
@@ -925,11 +940,18 @@ var Conversation = {
             if (onComplete) onComplete();
         };
         
-        this.playStepAudio(audioUrl, handleComplete);
+        self.playStepAudio(audioUrl, handleComplete);
     },
 
     startFinalSequence: function() {
         var self = this;
+        
+        // Prevent multiple executions
+        if (State.inFinalSequence) {
+            console.log('⚠️ Final sequence already running, skipping...');
+            return;
+        }
+        State.inFinalSequence = true;
         
         setTimeout(function() {
             DNAButton.showStatus('Analysing German language...');
@@ -978,6 +1000,14 @@ var Conversation = {
     },
 
     playSystemErrorAudio: function() {
+        var self = this;
+        // Prevent multiple plays
+        if (self._systemErrorPlaying) {
+            console.log('⚠️ System error audio already playing, skipping...');
+            return;
+        }
+        self._systemErrorPlaying = true;
+        
         console.log('🔊 Attempting to play system error audio...');
         
         var audio = AudioManager.createAudio(State.systemErrorAudio);
@@ -1009,10 +1039,12 @@ var Conversation = {
         
         audio.onended = function() {
             console.log('✅ System error audio completed');
+            self._systemErrorPlaying = false;
         };
         
         audio.onerror = function(e) {
             console.log('❌ System error audio failed:', e);
+            self._systemErrorPlaying = false;
         };
         
         var playPromise = audio.play();
@@ -1021,6 +1053,7 @@ var Conversation = {
                 console.log('✅ System error audio started playing');
             }).catch(function(e) {
                 console.log('❌ System error audio play failed:', e.message);
+                self._systemErrorPlaying = false;
                 
                 if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
                     console.log('🔄 Trying WebAudio fallback...');
@@ -1028,19 +1061,30 @@ var Conversation = {
                         State.systemErrorAudio,
                         function() {
                             console.log('✅ System error audio completed via WebAudio');
+                            self._systemErrorPlaying = false;
                         },
                         function(e) {
                             console.log('❌ System error audio WebAudio failed:', e.message);
+                            self._systemErrorPlaying = false;
                         }
                     );
                 }
             });
         } else {
             console.log('❌ Audio play promise not supported');
+            self._systemErrorPlaying = false;
         }
     },
 
     playHumanWakeupAudio: function() {
+        var self = this;
+        // Prevent multiple plays
+        if (self._humanWakeupPlaying) {
+            console.log('⚠️ Human wakeup audio already playing, skipping...');
+            return;
+        }
+        self._humanWakeupPlaying = true;
+        
         console.log('🔊 Attempting to play human wakeup audio...');
         
         var audio = AudioManager.createAudio(State.humanWakeupAudio);
@@ -1075,6 +1119,7 @@ var Conversation = {
         
         audio.onended = function() {
             console.log('✅ Human wakeup audio completed');
+            self._humanWakeupPlaying = false;
             // Restore music volume gradually
             if (music && SG1.musicEnabled) {
                 var targetVolume = Config.settings.audioVolume.background;
@@ -1096,6 +1141,7 @@ var Conversation = {
         
         audio.onerror = function(e) {
             console.log('❌ Human wakeup audio failed:', e);
+            self._humanWakeupPlaying = false;
         };
         
         var playPromise = audio.play();
@@ -1104,6 +1150,7 @@ var Conversation = {
                 console.log('✅ Human wakeup audio started playing');
             }).catch(function(e) {
                 console.log('❌ Human wakeup audio play failed:', e.message);
+                self._humanWakeupPlaying = false;
                 
                 if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
                     console.log('🔄 Trying WebAudio fallback for human wakeup...');
@@ -1111,15 +1158,18 @@ var Conversation = {
                         State.humanWakeupAudio,
                         function() {
                             console.log('✅ Human wakeup audio completed via WebAudio');
+                            self._humanWakeupPlaying = false;
                         },
                         function(e) {
                             console.log('❌ Human wakeup audio WebAudio failed:', e.message);
+                            self._humanWakeupPlaying = false;
                         }
                     );
                 }
             });
         } else {
             console.log('❌ Audio play promise not supported for human wakeup');
+            self._humanWakeupPlaying = false;
         }
     },
 
@@ -1147,16 +1197,32 @@ var Conversation = {
     },
 
     dissolveAndTransition: function() {
+        var self = this;
+        // Prevent multiple executions
+        if (self._transitionInProgress) {
+            console.log('⚠️ Transition already in progress, skipping...');
+            return;
+        }
+        self._transitionInProgress = true;
+        
         var dissolveOverlay = UI.element('dissolveOverlay');
         
         if (dissolveOverlay) {
             dissolveOverlay.classList.add('active');
+            console.log('🌫️ Dissolve overlay activated');
+            
+            // Set a maximum time for the transition
+            setTimeout(function() {
+                console.log('🚨 Transition timeout reached, forcing completion...');
+                Conversation.completeCourse();
+            }, 10000); // 10 second maximum
             
             setTimeout(function() {
                 Conversation.completeCourse();
             }, 3000);
         } else {
             // Fallback if no dissolve overlay
+            console.log('⚠️ No dissolve overlay found, proceeding directly...');
             setTimeout(function() {
                 Conversation.completeCourse();
             }, 1000);
@@ -1164,7 +1230,21 @@ var Conversation = {
     },
 
     completeCourse: function() {
+        var self = this;
+        // Prevent multiple executions
+        if (self._completionInProgress) {
+            console.log('⚠️ Course completion already in progress, skipping...');
+            return;
+        }
+        self._completionInProgress = true;
+        
         console.log('🎉 Course completed! Attempting Teachable transition...');
+        
+        // Set a hard timeout to ensure we always clean up
+        setTimeout(function() {
+            console.log('🚨 Hard timeout reached, forcing cleanup...');
+            self.forceCleanup();
+        }, 15000); // 15 second hard limit
         
         setTimeout(function() {
             // Method 1: Look for Teachable completion buttons (UPDATED for specific structure)
@@ -1207,6 +1287,11 @@ var Conversation = {
                     
                     console.log('🎯 Clicking target:', clickTarget.tagName, clickTarget.className);
                     clickTarget.click();
+                    
+                    // Clean up after successful click
+                    setTimeout(function() {
+                        self.forceCleanup();
+                    }, 2000);
                     return;
                 }
                 
@@ -1223,6 +1308,11 @@ var Conversation = {
                     
                     console.log('✅ Found completion button:', text || classes);
                     btn.click();
+                    
+                    // Clean up after successful click
+                    setTimeout(function() {
+                        self.forceCleanup();
+                    }, 2000);
                     return;
                 }
             }
@@ -1264,12 +1354,22 @@ var Conversation = {
                                 while (clickableParent && clickableParent !== document.body) {
                                     if (clickableParent.onclick || clickableParent.tagName === 'BUTTON' || clickableParent.tagName === 'A') {
                                         clickableParent.click();
+                                        
+                                        // Clean up after successful click
+                                        setTimeout(function() {
+                                            self.forceCleanup();
+                                        }, 2000);
                                         return;
                                     }
                                     clickableParent = clickableParent.parentElement;
                                 }
                             } else {
                                 element.click();
+                                
+                                // Clean up after successful click
+                                setTimeout(function() {
+                                    self.forceCleanup();
+                                }, 2000);
                                 return;
                             }
                         }
@@ -1328,28 +1428,53 @@ var Conversation = {
                     console.log('❌ Navigation attempt failed:', e.message);
                 }
                 
-                // Method 5: Final fallback - close SG1 overlay
+                // Method 5: Final cleanup
                 console.log('🔄 All methods failed, cleaning up SG1...');
+                self.forceCleanup();
                 
-                try {
-                    var sg1Container = document.querySelector('.sg1-container');
-                    if (sg1Container) {
-                        sg1Container.style.transition = 'opacity 1s ease-out';
-                        sg1Container.style.opacity = '0';
-                        
-                        setTimeout(function() {
-                            sg1Container.style.display = 'none';
-                            document.body.style.overflow = 'auto';
-                            document.documentElement.style.overflow = 'auto';
-                            console.log('✅ SG1 container hidden, user can continue manually');
-                        }, 1000);
-                    }
-                } catch (e) {
-                    console.log('❌ Cleanup failed:', e.message);
-                }
             }, 2000);
             
         }, 1000); // Give dissolve animation time to complete
+    },
+
+    forceCleanup: function() {
+        var self = this;
+        console.log('🧹 Force cleanup initiated...');
+        
+        try {
+            // Remove dissolve overlay
+            var dissolveOverlay = UI.element('dissolveOverlay');
+            if (dissolveOverlay) {
+                dissolveOverlay.classList.remove('active');
+                dissolveOverlay.style.opacity = '0';
+                console.log('✅ Dissolve overlay removed');
+            }
+            
+            // Hide SG1 container
+            var sg1Container = document.querySelector('.sg1-container');
+            if (sg1Container) {
+                sg1Container.style.transition = 'opacity 1s ease-out';
+                sg1Container.style.opacity = '0';
+                
+                setTimeout(function() {
+                    sg1Container.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    document.documentElement.style.overflow = 'auto';
+                    console.log('✅ SG1 container hidden, user can continue manually');
+                }, 1000);
+            }
+            
+            // Reset flags
+            self._transitionInProgress = false;
+            self._completionInProgress = false;
+            self._systemErrorPlaying = false;
+            self._humanWakeupPlaying = false;
+            
+            console.log('✅ Force cleanup completed');
+            
+        } catch (e) {
+            console.log('❌ Cleanup failed:', e.message);
+        }
     },
 
     startQ1: function() {
