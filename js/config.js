@@ -43,7 +43,7 @@ var Config = {
             responseDelay: 200,            // ms delay for UI responsiveness
             thankYouDelay: 800,            // ms to wait before playing thank you
             nextQuestionDelay: 1000,       // ms to wait before moving to next question
-            finalSequenceDelay: 4000       // ADDED: 4 seconds before final sequence
+            finalSequenceDelay: 7000       // ADDED: 7 seconds before final sequence
         },
         external: {
             unblockCourseUrl: 'https://smartergerman.com/courses/unblock-your-german/'
