@@ -37,6 +37,15 @@ var State = {
     get humanWakeupAudio() {
         return typeof Config !== 'undefined' ? Config.specialAudio.humanWakeup : '';
     },
+    get aiTypeMaleAudio() {
+        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeMale : '';
+    },
+    get aiTypeFemaleAudio() {
+        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeFemale : '';
+    },
+    get aiTypeDiverseAudio() {
+        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeDiverse : '';
+    },
     
     // === STATE MANAGEMENT METHODS ===
     

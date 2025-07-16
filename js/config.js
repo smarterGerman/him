@@ -10,7 +10,7 @@ var Config = {
         4: 'https://uploads.teachablecdn.com/attachments/95e986d1bd1f427db03b976b4f60f0a7.mp3',  // Probability
         5: 'https://uploads.teachablecdn.com/attachments/64ab0d397cb140dd86458e0b42ea494e.mp3',  // German Love
         6: 'https://uploads.teachablecdn.com/attachments/3241a2f7d8e447469e9d3e038afdbf07.mp3',  // Mother
-        7: 'https://uploads.teachablecdn.com/attachments/60c3a446d2b24be38dc14fe88be58f53.mp3',  // AI Type
+        7: 'https://uploads.teachablecdn.com/attachments/1c56f997a626423dabf739a56f01b3ee.mp3',  // AI Type (UPDATED)
         8: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',  // Processing
         9: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3',  // Continuation
         10: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3', // Analysis
@@ -23,7 +23,11 @@ var Config = {
         confirmation: 'https://uploads.teachablecdn.com/attachments/ebf39ab0ba784db195ca54196bae8784.mp3',
         systemError: 'https://uploads.teachablecdn.com/attachments/595285714e734e99bc63b49e3e70a1e4.mp3',
         humanWakeup: 'https://uploads.teachablecdn.com/attachments/cec6086e76134866a3e151ba70ab4651.mp3',
-        backgroundMusic: 'https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3'
+        backgroundMusic: 'https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3',
+        // AI Type specific audio (NEW)
+        aiTypeMale: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',
+        aiTypeFemale: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',
+        aiTypeDiverse: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3'
     },
     
     // Application settings
@@ -91,7 +95,7 @@ var Config = {
             7: {
                 'male': 'male_sequence',     // Triggers male AI installation
                 'female': 'female_sequence', // Triggers female AI installation
-                'diverse': 'skip_to_10'      // Skips directly to analysis
+                'diverse': 'diverse_sequence' // Triggers diverse AI audio (CORRECTED)
             }
         }
     },

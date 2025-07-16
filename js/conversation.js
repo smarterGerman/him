@@ -668,7 +668,8 @@ var Conversation = {
             this.startFemaleAISequence();
             return;
         } else if (State.step === 8 && State.selectedAIType === 'diverse') {
-            State.step = 10; // Skip to analysis step
+            this.startDiverseAISequence();
+            return;
         }
         
         if (State.step >= 12) {
@@ -764,93 +765,181 @@ var Conversation = {
     startMaleAISequence: function() {
         var self = this;
         
-        setTimeout(function() {
-            DNAButton.showStatus('Installing Mansplainer Module...');
-        }, 500);
+        // Play male AI audio directly
+        State.isSpeaking = true;
+        UI.setVisualizerState('speaking');
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Success');
-            }, 300);
-        }, 2500);
+        var audioUrl = State.aiTypeMaleAudio;
+        console.log('🔊 Playing male AI audio:', audioUrl);
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Charging ego: 0%');
-                var count = 0;
-                var interval = setInterval(function() {
-                    count += Math.floor(Math.random() * 15) + 10;
-                    if (count >= 200) {
-                        clearInterval(interval);
-                        DNAButton.showStatus('Ego fully charged: 200%');
-                    } else {
-                        DNAButton.showStatus('Charging ego: ' + count + '%');
-                    }
-                }, 150);
-            }, 300);
-        }, 4000);
-        
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Male AI fully activated');
-            }, 300);
-        }, 8000);
-        
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            DNAButton.showDNA();
-            State.step = 10;
-            self.moveToNextQuestion();
-        }, 10000);
+        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+            WebAudioHelper.play(
+                audioUrl,
+                function() {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    // Continue to next step after audio ends
+                    setTimeout(function() {
+                        State.step = 10; // Move to step 11 (analysis)
+                        self.moveToNextQuestion();
+                    }, 1000);
+                },
+                function(e) {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    setTimeout(function() {
+                        State.step = 10;
+                        self.moveToNextQuestion();
+                    }, 1000);
+                }
+            );
+        } else {
+            var audio = AudioManager.createAudio(audioUrl);
+            audio.onended = function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10; // Move to step 11 (analysis)
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.onerror = function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.play().catch(function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            });
+        }
     },
 
     startFemaleAISequence: function() {
         var self = this;
         
-        setTimeout(function() {
-            DNAButton.showStatus('Installing Empathy Protocols...');
-        }, 500);
+        // Play female AI audio directly
+        State.isSpeaking = true;
+        UI.setVisualizerState('speaking');
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Success');
-            }, 300);
-        }, 2500);
+        var audioUrl = State.aiTypeFemaleAudio;
+        console.log('🔊 Playing female AI audio:', audioUrl);
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Listening abilities: 100%');
-                var count = 100;
-                var interval = setInterval(function() {
-                    count += Math.floor(Math.random() * 15) + 10;
-                    if (count >= 300) {
-                        clearInterval(interval);
-                        DNAButton.showStatus('Listening abilities: 300%');
-                    } else {
-                        DNAButton.showStatus('Listening abilities: ' + count + '%');
-                    }
-                }, 150);
-            }, 300);
-        }, 4000);
+        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+            WebAudioHelper.play(
+                audioUrl,
+                function() {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    // Continue to next step after audio ends
+                    setTimeout(function() {
+                        State.step = 10; // Move to step 11 (analysis)
+                        self.moveToNextQuestion();
+                    }, 1000);
+                },
+                function(e) {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    setTimeout(function() {
+                        State.step = 10;
+                        self.moveToNextQuestion();
+                    }, 1000);
+                }
+            );
+        } else {
+            var audio = AudioManager.createAudio(audioUrl);
+            audio.onended = function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10; // Move to step 11 (analysis)
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.onerror = function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.play().catch(function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            });
+        }
+    },
+
+    startDiverseAISequence: function() {
+        var self = this;
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            setTimeout(function() {
-                DNAButton.showStatus('Female AI fully activated');
-            }, 300);
-        }, 7000);
+        // Play diverse AI audio directly
+        State.isSpeaking = true;
+        UI.setVisualizerState('speaking');
         
-        setTimeout(function() {
-            DNAButton.hideStatus();
-            DNAButton.showDNA();
-            State.step = 10;
-            self.moveToNextQuestion();
-        }, 9000);
+        var audioUrl = State.aiTypeDiverseAudio;
+        console.log('🔊 Playing diverse AI audio:', audioUrl);
+        
+        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+            WebAudioHelper.play(
+                audioUrl,
+                function() {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    // Continue to next step after audio ends
+                    setTimeout(function() {
+                        State.step = 10; // Move to step 11 (analysis)
+                        self.moveToNextQuestion();
+                    }, 1000);
+                },
+                function(e) {
+                    State.isSpeaking = false;
+                    UI.setVisualizerState('active');
+                    setTimeout(function() {
+                        State.step = 10;
+                        self.moveToNextQuestion();
+                    }, 1000);
+                }
+            );
+        } else {
+            var audio = AudioManager.createAudio(audioUrl);
+            audio.onended = function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10; // Move to step 11 (analysis)
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.onerror = function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            };
+            audio.play().catch(function(e) {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                setTimeout(function() {
+                    State.step = 10;
+                    self.moveToNextQuestion();
+                }, 1000);
+            });
+        }
     },
 
     startFinalSequence: function() {
