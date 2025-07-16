@@ -16,6 +16,10 @@ var State = {
     motherInterruptTimer: null,        // Auto-interrupt for mother question
     holdingTimer: null,                // Hold-to-speak button timer
     
+    // === INITIALIZATION TIMERS ===
+    initTimers: [],                    // Track all initialization timers
+    isInitializing: false,             // Track if we're still in init sequence
+    
     // === USER SELECTIONS ===
     selectedAIType: null,              // 'male', 'female', or 'diverse'
     
@@ -82,6 +86,23 @@ var State = {
             clearTimeout(this.holdingTimer);
             this.holdingTimer = null;
         }
+        // Clear initialization timers too
+        this.clearInitTimers();
+    },
+    
+    // Add initialization timer
+    addInitTimer: function(timerId) {
+        this.initTimers.push(timerId);
+    },
+    
+    // Clear all initialization timers
+    clearInitTimers: function() {
+        console.log('🧹 Clearing', this.initTimers.length, 'initialization timers');
+        this.initTimers.forEach(function(timerId) {
+            clearTimeout(timerId);
+        });
+        this.initTimers = [];
+        this.isInitializing = false;
     },
     
     // Move to next step (CONSISTENT METHOD)
@@ -481,9 +502,47 @@ var Controls = {
     // === IMPROVED SKIP FUNCTION ===
     skip: function() {
         console.log('⏭️ Skip button clicked for step:', State.step);
+        console.log('   Is initializing:', State.isInitializing);
         
         // Stop all audio immediately
         this.stopAllAudio();
+        
+        // NEW: Handle skip during initialization
+        if (State.isInitializing) {
+            console.log('🚀 Skipping initialization sequence');
+            
+            // Clear all initialization timers
+            State.clearInitTimers();
+            
+            // Hide initialization UI immediately
+            UI.hideElement('initOverlay');
+            var logo = document.querySelector('.init-logo');
+            if (logo) {
+                logo.style.animation = 'none';
+                logo.style.opacity = '0';
+            }
+            
+            // Show visualizer immediately
+            UI.showElement('visualizer');
+            var visualizer = UI.element('visualizer');
+            if (visualizer) {
+                visualizer.style.opacity = '1';
+                visualizer.style.transition = 'none';
+            }
+            
+            // Jump directly to step 1 (skip welcome)
+            State.step = 0;
+            State.hasSkippedToStep0 = true;
+            State.enableSkipMode();
+            
+            // Show first button immediately
+            setTimeout(function() {
+                DNAButton.showText('Bereit', 'Ready');
+                State.disableSkipMode();
+            }, 500);
+            
+            return;
+        }
         
         // Enable skip mode to prevent unwanted audio
         State.enableSkipMode();

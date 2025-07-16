@@ -259,6 +259,9 @@ var SG1 = {
         var logo = document.querySelector('.init-logo');
         var status = UI.element('statusText');
         
+        // Mark that we're initializing
+        State.isInitializing = true;
+        
         if (status) status.textContent = 'Audio system ready. Loading voice...';
         
         if (logo) {
@@ -266,50 +269,64 @@ var SG1 = {
             logo.style.animation = 'none';
             logo.style.transform = 'translate(-50%, -50%) scale(0.8)';
             
-            setTimeout(function() {
+            var timer1 = setTimeout(function() {
+                if (!State.isInitializing) return; // Skip if no longer initializing
+                
                 if (status) {
                     status.textContent = 'Voice system online. Starting sequence...';
-                    setTimeout(function() {
+                    var timer2 = setTimeout(function() {
+                        if (!State.isInitializing) return;
                         status.style.transition = 'opacity 1s ease-out';
                         status.style.opacity = '0';
                     }, 2000);
+                    State.addInitTimer(timer2);
                 }
                 
                 logo.style.animation = 'sg1LogoFade 16s ease-in-out forwards';
                 
-                setTimeout(function() {
+                var timer3 = setTimeout(function() {
+                    if (!State.isInitializing) return;
                     if (logo.style.opacity === '0') {
                         logo.style.opacity = '1';
                         logo.style.transform = 'translate(-50%, -50%) scale(1)';
                         
-                        setTimeout(function() {
+                        var timer4 = setTimeout(function() {
+                            if (!State.isInitializing) return;
                             logo.style.opacity = '0';
                         }, 10000);
+                        State.addInitTimer(timer4);
                     }
                 }, 3000);
+                State.addInitTimer(timer3);
                 
             }, 1000);
+            State.addInitTimer(timer1);
         }
         
-        setTimeout(function() {
+        var timer5 = setTimeout(function() {
+            if (!State.isInitializing) return;
             if (status) status.textContent = 'Loading neural interface...';
             
-            setTimeout(function() {
+            var timer6 = setTimeout(function() {
+                if (!State.isInitializing) return;
                 UI.showElement('visualizer');
                 
                 var visualizer = UI.element('visualizer');
                 if (visualizer) {
                     visualizer.style.opacity = '0';
                     visualizer.style.transition = 'opacity 4s ease-in';
-                    setTimeout(function() {
+                    var timer7 = setTimeout(function() {
+                        if (!State.isInitializing) return;
                         visualizer.style.opacity = '1';
                     }, 100);
+                    State.addInitTimer(timer7);
                 }
                 
                 // Handle mobile audio initialization
                 var isMobile = Config.platform.isMobile;
                 if (isMobile && !State.mobileAudioStarted) {
-                    setTimeout(function() {
+                    var timer8 = setTimeout(function() {
+                        if (!State.isInitializing) return;
                         var mobileVoiceAudio = new Audio(State.audioFiles[0]);
                         mobileVoiceAudio.volume = Config.settings.audioVolume.speech;
                         
@@ -324,25 +341,35 @@ var SG1 = {
                                 mobileVoiceAudio.onended = function() {
                                     State.isSpeaking = false;
                                     UI.setVisualizerState('active');
-                                    setTimeout(function() { 
+                                    var timer9 = setTimeout(function() { 
+                                        if (!State.isInitializing) return;
                                         DNAButton.showText('Bereit', 'Ready'); 
                                     }, 1000);
+                                    State.addInitTimer(timer9);
                                 };
                             }).catch(function(e) {});
                         }
                     }, 4100);
+                    State.addInitTimer(timer8);
                 }
             }, 1000);
+            State.addInitTimer(timer6);
         }, 15000);
+        State.addInitTimer(timer5);
 
-        setTimeout(function() {
+        var timer10 = setTimeout(function() {
+            if (!State.isInitializing) return;
             if (status) status.textContent = 'Ready to begin...';
             UI.hideElement('initOverlay');
             
-            setTimeout(function() {
+            var timer11 = setTimeout(function() {
+                if (!State.isInitializing) return;
+                State.isInitializing = false; // Mark initialization as complete
                 Conversation.startQ1();
             }, 500);
+            State.addInitTimer(timer11);
         }, 18000);
+        State.addInitTimer(timer10);
     },
 
     init: function() {
