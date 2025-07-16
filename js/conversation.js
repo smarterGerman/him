@@ -3,6 +3,7 @@
 var DNAButton = {
     currentMode: 'dna',
     
+    // === AUDIO FEEDBACK ===
     playConfirmationSound: function() {
         try {
             var confirmAudio = AudioManager.createAudio(State.confirmationSound);
@@ -15,12 +16,16 @@ var DNAButton = {
         }
     },
     
-    // Add this new function right after playConfirmationSound function
-setupTextAreaInput: function(inputId, counterId, maxLength) {
-    var input = UI.element(inputId);
-    var counter = UI.element(counterId);
-    
-    if (input && counter) {
+    // === ENHANCED TEXT AREA SETUP ===
+    setupTextAreaInput: function(inputId, counterId, maxLength) {
+        var input = UI.element(inputId);
+        var counter = UI.element(counterId);
+        
+        if (!input || !counter) {
+            console.warn('setupTextAreaInput: Missing elements', inputId, counterId);
+            return false;
+        }
+        
         // Clear any existing event listeners by replacing the element
         var newInput = input.cloneNode(true);
         input.parentNode.replaceChild(newInput, input);
@@ -63,49 +68,54 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             input.focus();
             input.setSelectionRange(input.value.length, input.value.length);
         }, 300);
-    }
-},
+        
+        return true;
+    },
 
+    // === UI DISPLAY METHODS ===
     showText: function(text, translation) {
         console.log('🔴 showText called with:', text, translation, 'Current step:', State.step);
         var visualizer = UI.element('visualizer');
         var textButton = UI.element('dnaTextButton');
         
-        if (textButton && visualizer) {
-            // Clear any existing content first
-            textButton.style.transition = 'all 0.3s ease';
-            textButton.style.opacity = '0';
-            textButton.style.transform = 'translate(-50%, -50%)';
-            textButton.innerHTML = '';
+        if (!textButton || !visualizer) {
+            console.error('❌ showText failed - missing elements:', !!textButton, !!visualizer);
+            return false;
+        }
+        
+        // Clear any existing content first
+        textButton.style.transition = 'all 0.3s ease';
+        textButton.style.opacity = '0';
+        textButton.style.transform = 'translate(-50%, -50%)';
+        textButton.innerHTML = '';
+        
+        setTimeout(function() {
+            var contentSpan = document.createElement('span');
+            contentSpan.className = 'dna-text-content';
+            contentSpan.textContent = text;
+            textButton.appendChild(contentSpan);
+            
+            if (translation) {
+                var translationSpan = document.createElement('span');
+                translationSpan.className = 'dna-text-translation';
+                translationSpan.textContent = translation;
+                textButton.appendChild(translationSpan);
+            }
+            
+            visualizer.classList.add('text-mode');
+            textButton.style.transition = 'all 0.8s ease';
             
             setTimeout(function() {
-                var contentSpan = document.createElement('span');
-                contentSpan.className = 'dna-text-content';
-                contentSpan.textContent = text;
-                textButton.appendChild(contentSpan);
-                
-                if (translation) {
-                    var translationSpan = document.createElement('span');
-                    translationSpan.className = 'dna-text-translation';
-                    translationSpan.textContent = translation;
-                    textButton.appendChild(translationSpan);
-                }
-                
-                visualizer.classList.add('text-mode');
-                textButton.style.transition = 'all 0.8s ease';
-                
-                setTimeout(function() {
-                    textButton.classList.add('visible');
-                    textButton.style.opacity = '1';
-                    textButton.style.pointerEvents = 'all';
-                    console.log('✅ Text button should now be visible:', text);
-                }, 100);
-                
-                this.currentMode = 'text';
-            }.bind(this), 300);
-        } else {
-            console.log('❌ showText failed - missing elements:', !!textButton, !!visualizer);
-        }
+                textButton.classList.add('visible');
+                textButton.style.opacity = '1';
+                textButton.style.pointerEvents = 'all';
+                console.log('✅ Text button now visible:', text);
+            }, 100);
+            
+            DNAButton.currentMode = 'text';
+        }, 300);
+        
+        return true;
     },
 
     hideText: function() {
@@ -116,50 +126,53 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             visualizer.classList.remove('text-mode');
             textButton.classList.remove('visible');
             this.currentMode = 'dna';
+            return true;
         }
+        return false;
     },
 
     showWhyGermanInput: function() {
-    var visualizer = UI.element('visualizer');
-    var whyContainer = UI.element('whyGermanInputContainer');
-    
-    if (whyContainer && visualizer) {
-        visualizer.classList.add('text-mode');
-        whyContainer.classList.add('visible');
-        this.currentMode = 'why-german-input';
+        var visualizer = UI.element('visualizer');
+        var whyContainer = UI.element('whyGermanInputContainer');
         
-        // Setup character counter and better event handling
-        this.setupTextAreaInput('whyGermanInput', 'whyGermanCounter', 500);
-    }
-},
+        if (whyContainer && visualizer) {
+            visualizer.classList.add('text-mode');
+            whyContainer.classList.add('visible');
+            this.currentMode = 'why-german-input';
+            
+            // Setup character counter and better event handling
+            return this.setupTextAreaInput('whyGermanInput', 'whyGermanCounter', 500);
+        }
+        return false;
+    },
 
     showGoalInput: function() {
-    var visualizer = UI.element('visualizer');
-    var goalContainer = UI.element('goalInputContainer');
-    
-    if (goalContainer && visualizer) {
-        visualizer.classList.add('text-mode');
-        goalContainer.classList.add('visible');
-        this.currentMode = 'goal-input';
+        var visualizer = UI.element('visualizer');
+        var goalContainer = UI.element('goalInputContainer');
         
-        // Setup character counter and better event handling
-        this.setupTextAreaInput('goalInput', 'goalCounter', 500);
-    }
-},
+        if (goalContainer && visualizer) {
+            visualizer.classList.add('text-mode');
+            goalContainer.classList.add('visible');
+            this.currentMode = 'goal-input';
+            
+            return this.setupTextAreaInput('goalInput', 'goalCounter', 500);
+        }
+        return false;
+    },
 
     showTimeInput: function() {
-    var visualizer = UI.element('visualizer');
-    var timeContainer = UI.element('timeInputContainer');
-    
-    if (timeContainer && visualizer) {
-        visualizer.classList.add('text-mode');
-        timeContainer.classList.add('visible');
-        this.currentMode = 'time-input';
+        var visualizer = UI.element('visualizer');
+        var timeContainer = UI.element('timeInputContainer');
         
-        // Setup character counter and better event handling
-        this.setupTextAreaInput('timeInput', 'timeCounter', 300);
-    }
-},
+        if (timeContainer && visualizer) {
+            visualizer.classList.add('text-mode');
+            timeContainer.classList.add('visible');
+            this.currentMode = 'time-input';
+            
+            return this.setupTextAreaInput('timeInput', 'timeCounter', 300);
+        }
+        return false;
+    },
 
     showProbabilityChoices: function() {
         var visualizer = UI.element('visualizer');
@@ -169,7 +182,9 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             visualizer.classList.add('text-mode');
             probContainer.classList.add('visible');
             this.currentMode = 'probability';
+            return true;
         }
+        return false;
     },
 
     showScaleChoices: function() {
@@ -181,7 +196,9 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             scaleContainer.classList.add('visible');
             this.currentMode = 'scale';
             console.log('✅ Showing German love scale for step:', State.step);
+            return true;
         }
+        return false;
     },
 
     showAIChoices: function() {
@@ -192,22 +209,24 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             visualizer.classList.add('text-mode');
             aiContainer.classList.add('visible');
             this.currentMode = 'ai';
+            return true;
         }
+        return false;
     },
 
     showMotherDescriptionInput: function() {
-    var visualizer = UI.element('visualizer');
-    var motherContainer = UI.element('motherDescriptionContainer');
-    
-    if (motherContainer && visualizer) {
-        visualizer.classList.add('text-mode');
-        motherContainer.classList.add('visible');
-        this.currentMode = 'mother-description';
+        var visualizer = UI.element('visualizer');
+        var motherContainer = UI.element('motherDescriptionContainer');
         
-        // Setup character counter and better event handling
-        this.setupTextAreaInput('motherDescriptionInput', 'motherCounter', 500);
-    }
-},
+        if (motherContainer && visualizer) {
+            visualizer.classList.add('text-mode');
+            motherContainer.classList.add('visible');
+            this.currentMode = 'mother-description';
+            
+            return this.setupTextAreaInput('motherDescriptionInput', 'motherCounter', 500);
+        }
+        return false;
+    },
     
     showDNA: function() {
         UI.hideAllInteractiveElements();
@@ -228,16 +247,21 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             }
             
             statusDisplay.classList.add('visible');
+            return true;
         }
+        return false;
     },
 
     hideStatus: function() {
         var statusDisplay = UI.element('statusDisplay');
         if (statusDisplay) {
             statusDisplay.classList.remove('visible', 'error');
+            return true;
         }
+        return false;
     },
     
+    // === EVENT HANDLERS ===
     handleClick: function() {
         if (this.currentMode !== 'text') return;
         
@@ -251,6 +275,7 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         }
     },
 
+    // === CONSISTENT INPUT HANDLERS (USING STATE METHODS) ===
     handleWhyGermanSubmit: function() {
         var whyInput = UI.element('whyGermanInput');
         var whyValue = whyInput ? whyInput.value.trim() : '';
@@ -258,7 +283,7 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         this.playConfirmationSound();
         
         if (whyValue) {
-            State.responses.whyGerman = whyValue;
+            State.saveResponse('whyGerman', whyValue); // CONSISTENT METHOD
             this.submitToGoogleForm(whyValue, 'why_german');
         }
         
@@ -297,13 +322,14 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         
         if (timeValue) {
             var hours = this.parseTimeCommitment(timeValue);
-            State.responses.timeCommitment = hours;
-            State.responses.timeText = timeValue;
+            State.saveResponse('timeCommitment', hours); // CONSISTENT METHOD
+            State.saveResponse('timeText', timeValue); // CONSISTENT METHOD
             this.submitToGoogleForm(timeValue, 'time_commitment');
             
-            if (hours >= 15) State.score += 5;
-            else if (hours >= 5) State.score += 3;
-            else State.score += 1;
+            // Add score based on time commitment
+            if (hours >= 15) State.addScore(5); // CONSISTENT METHOD
+            else if (hours >= 5) State.addScore(3); // CONSISTENT METHOD
+            else State.addScore(1); // CONSISTENT METHOD
         }
         
         this.animateInputContainerOut('timeInputContainer');
@@ -317,8 +343,11 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
     handleProbabilityChoice: function(level) {
         if (this.currentMode !== 'probability') return;
         
-        State.responses.goalLikelihood = level;
-        State.score += level === 'low' ? -1 : level === 'medium' ? 2 : 4;
+        State.saveResponse('goalLikelihood', level); // CONSISTENT METHOD
+        
+        // Add score based on confidence level
+        var scoreMap = { 'low': -1, 'medium': 2, 'high': 4 };
+        State.addScore(scoreMap[level] || 0); // CONSISTENT METHOD
         
         this.playConfirmationSound();
         this.animateChoiceClick();
@@ -344,8 +373,8 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         this.animateChoiceClick();
         
         if (State.step === 5) {
-            State.responses.germanLove = rating;
-            State.score += Math.max(0, rating - 5);
+            State.saveResponse('germanLove', rating); // CONSISTENT METHOD
+            State.addScore(Math.max(0, rating - 5)); // CONSISTENT METHOD
             console.log('✅ German love rating saved:', rating);
         }
         
@@ -359,8 +388,12 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         this.playConfirmationSound();
         this.animateChoiceClick();
         
-        State.responses.aiChoice = aiType;
-        State.score += aiType === 'diverse' ? 3 : aiType === 'female' ? 2 : 1;
+        State.saveResponse('aiChoice', aiType); // CONSISTENT METHOD
+        
+        // Add score based on AI type choice
+        var scoreMap = { 'diverse': 3, 'female': 2, 'male': 1 };
+        State.addScore(scoreMap[aiType] || 0); // CONSISTENT METHOD
+        
         State.selectedAIType = aiType;
         
         setTimeout(function() {
@@ -424,7 +457,7 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         }, 800);
     },
 
-    // Helper functions
+    // === ANIMATION HELPERS ===
     animateChoiceClick: function() {
         var containers = ['answerChoicesContainer', 'timeInputContainer', 'probabilityChoicesContainer', 'scaleChoicesContainer', 'aiChoicesContainer'];
         containers.forEach(function(id) {
@@ -444,6 +477,7 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         }
     },
 
+    // === PARSING AND ANALYSIS HELPERS ===
     parseTimeCommitment: function(text) {
         var cleanText = text.toLowerCase();
         var numbers = cleanText.match(/\d+/g);
@@ -471,11 +505,12 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
         
         var score = analysis.ambition + analysis.confidence + analysis.urgency + analysis.specificity;
         
-        State.responses.goal = score;
-        State.responses.goalLevel = level;
-        State.responses.goalText = goal;
-        State.responses.goalAnalysis = analysis;
-        State.score += score;
+        // Use consistent state methods
+        State.saveResponse('goal', score);
+        State.saveResponse('goalLevel', level);
+        State.saveResponse('goalText', goal);
+        State.saveResponse('goalAnalysis', analysis);
+        State.addScore(score);
     },
 
     analyzeGoalSentiment: function(text) {
@@ -488,61 +523,91 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             context: 'general'
         };
         
-        // Analyze ambition, confidence, urgency, specificity
-        // (Implementation details from original code)
+        // Basic sentiment analysis - can be enhanced
+        if (cleanText.includes('fluent') || cleanText.includes('advanced')) analysis.ambition += 2;
+        if (cleanText.includes('basic') || cleanText.includes('beginner')) analysis.ambition += 1;
+        if (cleanText.includes('will') || cleanText.includes('going to')) analysis.confidence += 2;
+        if (cleanText.includes('might') || cleanText.includes('maybe')) analysis.confidence += 1;
+        if (cleanText.includes('month') || cleanText.includes('week')) analysis.urgency += 2;
+        if (cleanText.includes('year') || cleanText.includes('eventually')) analysis.urgency += 1;
+        if (cleanText.length > 50) analysis.specificity += 2;
+        else if (cleanText.length > 20) analysis.specificity += 1;
         
         return analysis;
     },
 
     estimateTargetLevel: function(text, analysis) {
-        // Estimate CEFR level based on goal description
-        // (Implementation details from original code)
-        return 3; // Default to B1
+        var cleanText = text.toLowerCase();
+        
+        if (cleanText.includes('fluent') || cleanText.includes('c1') || cleanText.includes('c2')) return 5;
+        if (cleanText.includes('advanced') || cleanText.includes('b2')) return 4;
+        if (cleanText.includes('intermediate') || cleanText.includes('b1')) return 3;
+        if (cleanText.includes('pre-intermediate') || cleanText.includes('a2')) return 2;
+        if (cleanText.includes('beginner') || cleanText.includes('a1')) return 1;
+        
+        // Default to B1 based on analysis
+        return 3;
     },
 
     scoreMotherDescription: function(description) {
         var analysis = this.analyzeMotherSentiment(description);
         var score = analysis.relationship + analysis.emotional + analysis.communication + analysis.humor;
         
-        State.responses.motherDescription = score;
-        State.responses.motherAnalysis = analysis;
-        State.score += score;
+        // Use consistent state methods
+        State.saveResponse('motherDescription', score);
+        State.saveResponse('motherAnalysis', analysis);
+        State.addScore(score);
     },
 
     analyzeMotherSentiment: function(text) {
-        // Analyze mother relationship for personality profile
-        // (Implementation details from original code)
-        return {
-            relationship: 2,
+        var cleanText = text.toLowerCase();
+        
+        // Basic sentiment analysis for mother relationship
+        var analysis = {
+            relationship: 1,
             emotional: 1,
-            communication: 2,
+            communication: 1,
             humor: 1,
             type: 'normal'
         };
+        
+        // Positive indicators
+        if (cleanText.includes('love') || cleanText.includes('great') || cleanText.includes('wonderful')) {
+            analysis.relationship += 1;
+            analysis.emotional += 1;
+        }
+        
+        // Communication indicators
+        if (cleanText.includes('talk') || cleanText.includes('listen') || cleanText.includes('understand')) {
+            analysis.communication += 1;
+        }
+        
+        // Humor indicators
+        if (cleanText.includes('funny') || cleanText.includes('laugh') || cleanText.includes('joke')) {
+            analysis.humor += 1;
+        }
+        
+        // Complexity indicators
+        if (cleanText.includes('complicated') || cleanText.includes('difficult')) {
+            analysis.type = 'complex';
+        }
+        
+        return analysis;
     },
 
+    // === GOOGLE FORM SUBMISSION ===
     submitToGoogleForm: function(value, type) {
         try {
             var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
-            var fieldName;
             
-            // Updated field names based on the actual Google Form
-            switch(type) {
-    case 'why_german':
-        fieldName = 'entry.836554877';
-        break;
-    case 'goal':
-        fieldName = 'entry.1685277614';
-        break;
-    case 'time_commitment':
-        fieldName = 'entry.1810441905';
-        break;
-    case 'mother_description':
-        fieldName = 'entry.745882257';
-        break;
-                default:
-                    fieldName = 'entry.1685277614';
-            }
+            var fieldMap = {
+                'why_german': 'entry.836554877',
+                'goal': 'entry.1685277614',
+                'time_commitment': 'entry.1810441905',
+                'mother_description': 'entry.745882257'
+            };
+            
+            var fieldName = fieldMap[type] || 'entry.1685277614';
             
             var params = new URLSearchParams();
             params.append(fieldName, value);
@@ -565,7 +630,9 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             console.log('❌ GOOGLE SHEET SUBMISSION ERROR:', e.message);
         }
     },
-     getPersonalityProfile: function() {
+
+    // === PERSONALITY PROFILE GENERATION ===
+    getPersonalityProfile: function() {
         var score = State.score;
         var profiles = Config.personalityProfiles;
         
@@ -586,7 +653,7 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             }
         }
         
-        return profiles[2];
+        return profiles[2]; // Default to realist
     },
 
     formatTimeEstimate: function(weeks) {
@@ -615,7 +682,9 @@ setupTextAreaInput: function(inputId, counterId, maxLength) {
             profileDescription.textContent = profile.description;
             profileContainer.classList.add('visible');
             this.currentMode = 'profile';
+            return true;
         }
+        return false;
     }
 };
 
@@ -657,7 +726,8 @@ var Conversation = {
     },
 
     moveToNextQuestion: function() {
-        State.step++;
+        // USE CONSISTENT STATE METHOD
+        State.nextStep(); // This handles both step increment and progress update
         console.log('🔄 Moving to step:', State.step);
         
         // Handle AI sequence branching
@@ -672,12 +742,10 @@ var Conversation = {
             return;
         }
         
-        if (State.step >= 12) {
+        if (State.isComplete()) {
             this.completeCourse();
             return;
         }
-        
-        UI.updateProgress((State.step + 1) * (100/12));
         
         State.isSpeaking = true;
         UI.setVisualizerState('speaking');
@@ -691,6 +759,7 @@ var Conversation = {
                 function() {
                     State.isSpeaking = false;
                     UI.setVisualizerState('active');
+                    Conversation.showNextButton();
                 },
                 function(e) {
                     State.isSpeaking = false;
@@ -698,13 +767,13 @@ var Conversation = {
                     Conversation.showNextButton();
                 }
             );
-       } else {
-    var audio = AudioManager.createAudio(audioUrl);
-    audio.onended = function() {
-        State.isSpeaking = false;
-        UI.setVisualizerState('active');
-        Conversation.showNextButton();
-    };
+        } else {
+            var audio = AudioManager.createAudio(audioUrl);
+            audio.onended = function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                Conversation.showNextButton();
+            };
             audio.onerror = function(e) {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
@@ -762,188 +831,58 @@ var Conversation = {
         }, Config.settings.timing.responseDelay);
     },
 
+    // === AI SEQUENCE HANDLERS ===
     startMaleAISequence: function() {
-        var self = this;
-        
-        // Play male AI audio directly
-        State.isSpeaking = true;
-        UI.setVisualizerState('speaking');
-        
-        var audioUrl = State.aiTypeMaleAudio;
-        console.log('🔊 Playing male AI audio:', audioUrl);
-        
-        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-            WebAudioHelper.play(
-                audioUrl,
-                function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    // Continue to next step after audio ends
-                    setTimeout(function() {
-                        State.step = 10; // Move to step 11 (analysis)
-                        self.moveToNextQuestion();
-                    }, 1000);
-                },
-                function(e) {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        State.step = 10;
-                        self.moveToNextQuestion();
-                    }, 1000);
-                }
-            );
-        } else {
-            var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10; // Move to step 11 (analysis)
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.onerror = function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.play().catch(function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            });
-        }
+        this.playAISequenceAudio(State.aiTypeMaleAudio, 'male');
     },
 
     startFemaleAISequence: function() {
-        var self = this;
-        
-        // Play female AI audio directly
-        State.isSpeaking = true;
-        UI.setVisualizerState('speaking');
-        
-        var audioUrl = State.aiTypeFemaleAudio;
-        console.log('🔊 Playing female AI audio:', audioUrl);
-        
-        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-            WebAudioHelper.play(
-                audioUrl,
-                function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    // Continue to next step after audio ends
-                    setTimeout(function() {
-                        State.step = 10; // Move to step 11 (analysis)
-                        self.moveToNextQuestion();
-                    }, 1000);
-                },
-                function(e) {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        State.step = 10;
-                        self.moveToNextQuestion();
-                    }, 1000);
-                }
-            );
-        } else {
-            var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10; // Move to step 11 (analysis)
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.onerror = function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.play().catch(function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            });
-        }
+        this.playAISequenceAudio(State.aiTypeFemaleAudio, 'female');
     },
 
     startDiverseAISequence: function() {
+        this.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse');
+    },
+
+    // === UNIFIED AI SEQUENCE AUDIO HANDLER ===
+    playAISequenceAudio: function(audioUrl, aiType) {
         var self = this;
         
-        // Play diverse AI audio directly
         State.isSpeaking = true;
         UI.setVisualizerState('speaking');
         
-        var audioUrl = State.aiTypeDiverseAudio;
-        console.log('🔊 Playing diverse AI audio:', audioUrl);
+        console.log('🔊 Playing', aiType, 'AI audio:', audioUrl);
+        
+        var onComplete = function() {
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            setTimeout(function() {
+                State.step = 10; // Move to step 11 (analysis)
+                self.moveToNextQuestion();
+            }, 1000);
+        };
+
+        var onError = function(e) {
+            console.warn('AI sequence audio error:', e);
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            setTimeout(function() {
+                State.step = 10;
+                self.moveToNextQuestion();
+            }, 1000);
+        };
         
         if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-            WebAudioHelper.play(
-                audioUrl,
-                function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    // Continue to next step after audio ends
-                    setTimeout(function() {
-                        State.step = 10; // Move to step 11 (analysis)
-                        self.moveToNextQuestion();
-                    }, 1000);
-                },
-                function(e) {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    setTimeout(function() {
-                        State.step = 10;
-                        self.moveToNextQuestion();
-                    }, 1000);
-                }
-            );
+            WebAudioHelper.play(audioUrl, onComplete, onError);
         } else {
             var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10; // Move to step 11 (analysis)
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.onerror = function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            };
-            audio.play().catch(function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                setTimeout(function() {
-                    State.step = 10;
-                    self.moveToNextQuestion();
-                }, 1000);
-            });
+            audio.onended = onComplete;
+            audio.onerror = onError;
+            audio.play().catch(onError);
         }
     },
 
     startFinalSequence: function() {
-        // Final analysis and personality profile sequence
         console.log('Starting final sequence');
         
         setTimeout(function() {
@@ -973,7 +912,7 @@ var Conversation = {
         if (isMobile && State.mobileAudioStarted) return;
         
         UI.setVisualizerState('active');
-        UI.updateProgress(5);
+        State.updateProgress(); // Use consistent method
         State.step = 0;
         
         var url = State.audioFiles[0];

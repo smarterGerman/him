@@ -64,6 +64,11 @@ var State = {
         this.score = 0;
         
         // Clear timers
+        this.clearTimers();
+    },
+    
+    // Clear all timers
+    clearTimers: function() {
         if (this.motherInterruptTimer) {
             clearTimeout(this.motherInterruptTimer);
             this.motherInterruptTimer = null;
@@ -74,32 +79,41 @@ var State = {
         }
     },
     
-    // Move to next step
+    // Move to next step (CONSISTENT METHOD)
     nextStep: function() {
         this.step++;
         this.updateProgress();
+        return this.step;
     },
     
-    // Update progress bar
+    // Update progress bar (CONSISTENT METHOD)
     updateProgress: function() {
-        var percentage = ((this.step + 1) / Config.settings.totalSteps) * 100;
-        UI.updateProgress(percentage);
+        if (typeof Config !== 'undefined') {
+            var percentage = ((this.step + 1) / Config.settings.totalSteps) * 100;
+            UI.updateProgress(percentage);
+            return percentage;
+        }
+        return 0;
     },
     
-    // Save user response
+    // Save user response (CONSISTENT METHOD)
     saveResponse: function(key, value) {
         this.responses[key] = value;
-        console.log('Saved response:', key, '=', value);
+        console.log('✅ Response saved:', key, '=', value);
+        return this.responses[key];
     },
     
-    // Add to score
+    // Add to score (CONSISTENT METHOD) 
     addScore: function(points) {
         this.score += points;
-        console.log('Score updated:', this.score, '(+' + points + ')');
+        console.log('✅ Score updated:', this.score, '(+' + points + ')');
+        return this.score;
     },
     
     // Get current step configuration
     getCurrentStepConfig: function() {
+        if (typeof Config === 'undefined') return null;
+        
         return {
             ui: Config.conversationFlow.stepUI[this.step],
             audio: this.audioFiles[this.step],
@@ -110,12 +124,15 @@ var State = {
     
     // Check if step is automatic progression
     isAutoStep: function(step) {
+        if (typeof Config === 'undefined') return false;
+        
         var stepNum = step !== undefined ? step : this.step;
         return Config.conversationFlow.stepUI[stepNum] === 'auto';
     },
     
     // Check if course is complete
     isComplete: function() {
+        if (typeof Config === 'undefined') return false;
         return this.step >= Config.settings.totalSteps;
     },
     
@@ -129,16 +146,21 @@ var State = {
             selectedAIType: this.selectedAIType,
             responses: Object.keys(this.responses),
             score: this.score,
-            platform: Config.platform
+            platform: typeof Config !== 'undefined' ? Config.platform : 'unknown'
         };
     }
 };
 
 // === UI CONTROLLER ===
 var UI = {
-    // === ELEMENT UTILITIES ===
+    // === ELEMENT UTILITIES (CONSISTENT METHOD) ===
     element: function(id) { 
-        return document.getElementById(id); 
+        try {
+            return document.getElementById(id);
+        } catch (e) {
+            console.error('UI.element error for id:', id, e);
+            return null;
+        }
     },
     
     // === VISIBILITY MANAGEMENT ===
@@ -151,7 +173,9 @@ var UI = {
             if (id === 'visualizer') {
                 element.style.opacity = '1';
             }
+            return true;
         }
+        return false;
     },
     
     hideElement: function(id) { 
@@ -159,26 +183,32 @@ var UI = {
         if (element) {
             element.classList.remove('active', 'visible');
             element.classList.add('hidden');
+            return true;
         }
+        return false;
     },
     
     // === DNA VISUALIZER CONTROL ===
     setVisualizerState: function(state) { 
-    var visualizer = this.element('visualizer');
-    if (visualizer) {
-        // Remove only animation state classes, keep text-mode
-        visualizer.classList.remove('speaking', 'listening', 'active');
-        // Add new state
-        visualizer.classList.add('active', state);
-    }
-},
+        var visualizer = this.element('visualizer');
+        if (visualizer) {
+            // Remove only animation state classes, keep text-mode
+            visualizer.classList.remove('speaking', 'listening', 'active');
+            // Add new state
+            visualizer.classList.add('active', state);
+            return true;
+        }
+        return false;
+    },
     
     // === PROGRESS BAR ===
     updateProgress: function(percentage) {
         var bar = this.element('progressBar');
         if (bar) {
-            bar.style.width = percentage + '%';
+            bar.style.width = Math.max(0, Math.min(100, percentage)) + '%';
+            return true;
         }
+        return false;
     },
     
     // === BUTTON VISIBILITY HELPERS ===
@@ -198,6 +228,8 @@ var UI = {
             'statusDisplay'
         ];
         
+        var hiddenCount = 0;
+        
         containers.forEach(function(id) {
             var element = UI.element(id);
             if (element) {
@@ -207,13 +239,18 @@ var UI = {
                 element.style.transform = 'translate(-50%, -50%)';
                 
                 // Clear any event listeners for text inputs
-                if (element.querySelector('input')) {
-                    var input = element.querySelector('input');
+                var input = element.querySelector('input, textarea');
+                if (input) {
                     input.value = '';
                     // Clone the input to remove all event listeners
-                    var newInput = input.cloneNode(true);
-                    input.parentNode.replaceChild(newInput, input);
+                    try {
+                        var newInput = input.cloneNode(true);
+                        input.parentNode.replaceChild(newInput, input);
+                    } catch (e) {
+                        console.warn('Could not clean input for:', id);
+                    }
                 }
+                hiddenCount++;
             }
         });
         
@@ -223,14 +260,18 @@ var UI = {
             visualizer.classList.remove('text-mode');
         }
         
-        console.log('✅ All interactive elements hidden');
+        console.log('✅ Hidden', hiddenCount, 'interactive elements');
+        return hiddenCount;
     }
 };
 
+// === ENHANCED CONTROLS OBJECT ===
 var Controls = {
-    // Comprehensive audio stopping function
+    // === COMPREHENSIVE AUDIO STOPPING ===
     stopAllAudio: function() {
-        console.log('🛑 STOPPING ALL AUDIO - Exit button clicked');
+        console.log('🛑 STOPPING ALL AUDIO - Comprehensive approach');
+        
+        var stoppedCount = 0;
         
         try {
             // Method 1: Stop all HTML5 audio elements
@@ -243,14 +284,13 @@ var Controls = {
                     allAudio[i].currentTime = 0;
                     allAudio[i].volume = 0;
                     allAudio[i].muted = true;
-                    // Don't clear src immediately as it might cause errors
-                    console.log('Stopped audio element ' + i);
+                    stoppedCount++;
                 } catch (e) {
-                    console.log('Error stopping audio element ' + i + ':', e);
+                    console.warn('Error stopping audio element ' + i + ':', e);
                 }
             }
         } catch (e) {
-            console.log('Error stopping HTML5 audio:', e);
+            console.error('Error stopping HTML5 audio:', e);
         }
 
         try {
@@ -261,28 +301,26 @@ var Controls = {
                 console.log('Stopped WebAudio source');
             }
         } catch (e) {
-            console.log('Error stopping WebAudio:', e);
+            console.warn('Error stopping WebAudio:', e);
         }
 
         try {
             // Method 3: Stop tracked audio elements
             if (window.audioElements && Array.isArray(window.audioElements)) {
-                console.log('Stopping ' + window.audioElements.length + ' tracked audio elements');
                 window.audioElements.forEach(function(audio, index) {
                     try {
                         audio.pause();
                         audio.currentTime = 0;
                         audio.volume = 0;
                         audio.muted = true;
-                        console.log('Stopped tracked audio ' + index);
                     } catch (e) {
-                        console.log('Error stopping tracked audio ' + index + ':', e);
+                        console.warn('Error stopping tracked audio ' + index + ':', e);
                     }
                 });
                 window.audioElements = [];
             }
         } catch (e) {
-            console.log('Error stopping tracked audio:', e);
+            console.warn('Error stopping tracked audio:', e);
         }
 
         try {
@@ -291,11 +329,11 @@ var Controls = {
                 window.globalAudioContext.suspend().then(function() {
                     console.log('Audio context suspended');
                 }).catch(function(e) {
-                    console.log('Error suspending audio context:', e);
+                    console.warn('Error suspending audio context:', e);
                 });
             }
         } catch (e) {
-            console.log('Error with audio context:', e);
+            console.warn('Error with audio context:', e);
         }
 
         try {
@@ -305,127 +343,79 @@ var Controls = {
                 console.log('Called AudioManager.stopAllAudio()');
             }
         } catch (e) {
-            console.log('Error calling AudioManager:', e);
+            console.warn('Error calling AudioManager:', e);
         }
 
-        // Method 6: Clear any timers that might restart audio
+        // Method 6: Clear timers and update state
         try {
             if (typeof State !== 'undefined') {
                 State.isSpeaking = false;
-                if (State.motherInterruptTimer) {
-                    clearTimeout(State.motherInterruptTimer);
-                    State.motherInterruptTimer = null;
-                }
-                if (State.holdingTimer) {
-                    clearTimeout(State.holdingTimer);
-                    State.holdingTimer = null;
-                }
+                State.clearTimers();
             }
         } catch (e) {
-            console.log('Error clearing timers:', e);
+            console.warn('Error clearing state/timers:', e);
         }
 
-        console.log('✅ Audio stopping sequence completed');
+        console.log('✅ Audio stopping completed. Stopped:', stoppedCount, 'elements');
+        return stoppedCount;
     },
 
-    // New exit function with guaranteed audio stopping
+    // === CLEAN EXIT HANDLING ===
     exitAssessment: function() {
-    console.log('🚪 Exit button clicked - AGGRESSIVE STOP');
-    
-    // NUCLEAR OPTION - Stop everything immediately
-    var self = this;
-    
-    // Stop audio with multiple methods simultaneously
-    try {
-        // Method 1: Immediate HTML5 audio stop
-        var allAudio = document.querySelectorAll('audio');
-        for (var i = 0; i < allAudio.length; i++) {
-            allAudio[i].pause();
-            allAudio[i].currentTime = 0;
-            allAudio[i].volume = 0;
-            allAudio[i].muted = true;
-            allAudio[i].src = '';
-        }
+        console.log('🚪 Exit assessment - Clean approach');
         
-        // Method 2: Stop WebAudio immediately
-        if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
-            WebAudioHelper.currentSource.stop();
-            WebAudioHelper.currentSource = null;
-        }
+        // Stop all audio immediately
+        this.stopAllAudio();
         
-        // Method 3: Suspend audio context immediately
-        if (window.globalAudioContext) {
-            window.globalAudioContext.suspend();
-        }
-        
-        // Method 4: Clear tracked audio
-        if (window.audioElements) {
-            window.audioElements.forEach(function(audio) {
-                try {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.volume = 0;
-                    audio.muted = true;
-                    audio.src = '';
-                } catch(e) {}
-            });
-            window.audioElements = [];
-        }
-        
-        // Method 5: Block any new audio
+        // Block any new audio
         if (typeof State !== 'undefined') {
             State.isSpeaking = false;
             State.audioUnlocked = false;
-            State.inFinalSequence = true; // Block conversation flow
+            State.inFinalSequence = true;
         }
         
-        console.log('✅ NUCLEAR audio stop completed');
+        // Force exit fullscreen without waiting
+        try {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        } catch (e) {
+            console.warn('Fullscreen exit error:', e);
+        }
         
-    } catch (e) {
-        console.log('Audio stop error:', e);
-    }
+        // Show confirmation dialog
+        setTimeout(function() {
+            var shouldExit = confirm('Exit the AI assessment?');
+            
+            if (shouldExit) {
+                Controls.performExit();
+            } else {
+                Controls.handleExitCancelled();
+            }
+        }, 100);
+    },
     
-    // Prevent any event bubbling that might cause fullscreen issues
-    if (window.event) {
-        window.event.stopPropagation();
-        window.event.preventDefault();
-    }
-    
-    // Force exit fullscreen without waiting
-    try {
-        document.exitFullscreen?.();
-        document.webkitExitFullscreen?.();
-        document.mozCancelFullScreen?.();
-    } catch (e) {}
-    
-    // Show dialog immediately
-    setTimeout(function() {
-        var shouldExit = confirm('Exit the AI assessment?');
-        
-        if (shouldExit) {
-            // Navigate away
+    // === PERFORM ACTUAL EXIT ===
+    performExit: function() {
+        try {
+            window.history.back();
+        } catch (e) {
             try {
-                window.history.back();
-            } catch (e) {
-                try {
-                    window.close();
-                } catch (e2) {
-                    window.location.href = 'about:blank';
-                }
+                window.close();
+            } catch (e2) {
+                window.location.href = 'about:blank';
             }
         }
-        // If cancelled, audio stays stopped (which is what we want)
-    }, 100);
-},
+    },
     
-    // Handle when user cancels exit
+    // === HANDLE CANCELLED EXIT ===
     handleExitCancelled: function() {
         console.log('Exit cancelled by user');
         
         // If background music should be playing, restart it
         try {
             if (typeof SG1 !== 'undefined' && SG1.musicEnabled) {
-                var music = document.getElementById('backgroundMusic');
+                var music = UI.element('backgroundMusic');
                 if (music) {
                     music.volume = 0.3;
                     music.muted = false;
@@ -435,105 +425,91 @@ var Controls = {
                 }
             }
         } catch (e) {
-            console.log('Error restarting audio:', e);
-        }
-    },
-    
-    // Fallback exit methods
-    tryCloseOrRedirect: function() {
-        try {
-            // Try to close the window (works if opened via JavaScript)
-            window.close();
-            
-            // If still here after 500ms, try redirect
-            setTimeout(function() {
-                try {
-                    // Redirect to a safe page
-                    window.location.href = 'about:blank';
-                } catch (e) {
-                    // Last resort - reload page
-                    window.location.reload();
-                }
-            }, 500);
-            
-        } catch (e) {
-            console.log('Final exit attempt failed:', e);
+            console.warn('Error restarting audio:', e);
         }
     },
 
+    // === SMART SKIP FUNCTION ===
     skip: function() {
         console.log('Skip button clicked for step:', State.step);
         
         // Stop all audio
         this.stopAllAudio();
         
-        // Clear timers
-        if (State.motherInterruptTimer) {
-            clearTimeout(State.motherInterruptTimer);
-            State.motherInterruptTimer = null;
-        }
-        
-        // Reset speaking state
+        // Reset state
         State.isSpeaking = false;
-        if (typeof UI !== 'undefined') {
-            UI.setVisualizerState('active');
-            UI.hideAllInteractiveElements();
+        UI.setVisualizerState('active');
+        UI.hideAllInteractiveElements();
+        
+        // Handle current step with appropriate defaults
+        this.handleSkipForCurrentStep();
+    },
+    
+    // === HANDLE SKIP FOR CURRENT STEP ===
+    handleSkipForCurrentStep: function() {
+        if (typeof DNAButton === 'undefined') {
+            console.warn('DNAButton not available for skip');
+            return;
         }
         
-        // Handle current step logic with appropriate default values
-        if (typeof DNAButton !== 'undefined') {
-            if (DNAButton.currentMode === 'text') {
-                setTimeout(function() {
-                    DNAButton.handleClick();
-                }, 100);
-            } else if (DNAButton.currentMode === 'probability') {
+        var mode = DNAButton.currentMode;
+        
+        switch (mode) {
+            case 'text':
+                setTimeout(function() { DNAButton.handleClick(); }, 100);
+                break;
+            case 'probability':
                 DNAButton.handleProbabilityChoice('medium');
-            } else if (DNAButton.currentMode === 'scale') {
+                break;
+            case 'scale':
                 DNAButton.handleScaleChoice(5);
-            } else if (DNAButton.currentMode === 'ai') {
+                break;
+            case 'ai':
                 DNAButton.handleAIChoice('diverse');
-            } else if (DNAButton.currentMode === 'why-german-input') {
-                var whyInput = document.getElementById('whyGermanInput');
-                if (whyInput) whyInput.value = 'Skipped';
-                DNAButton.handleWhyGermanSubmit();
-            } else if (DNAButton.currentMode === 'goal-input') {
-                var goalInput = document.getElementById('goalInput');
-                if (goalInput) goalInput.value = 'Skipped';
-                DNAButton.handleGoalSubmit();
-            } else if (DNAButton.currentMode === 'time-input') {
-                var timeInput = document.getElementById('timeInput');
-                if (timeInput) timeInput.value = '5 hours';
-                DNAButton.handleTimeSubmit();
-            } else if (DNAButton.currentMode === 'mother-description') {
-                var motherInput = document.getElementById('motherDescriptionInput');
-                if (motherInput) motherInput.value = 'Skipped';
-                DNAButton.handleMotherDescriptionSubmit();
-            } else if (DNAButton.currentMode === 'profile') {
+                break;
+            case 'why-german-input':
+                this.skipTextInput('whyGermanInput', 'Skipped', DNAButton.handleWhyGermanSubmit);
+                break;
+            case 'goal-input':
+                this.skipTextInput('goalInput', 'Skipped', DNAButton.handleGoalSubmit);
+                break;
+            case 'time-input':
+                this.skipTextInput('timeInput', '5 hours', DNAButton.handleTimeSubmit);
+                break;
+            case 'mother-description':
+                this.skipTextInput('motherDescriptionInput', 'Skipped', DNAButton.handleMotherDescriptionSubmit);
+                break;
+            case 'profile':
                 if (typeof Conversation !== 'undefined') {
                     Conversation.dissolveAndTransition();
                 }
-            } else {
+                break;
+            default:
                 // Default action - advance to next step
-                if (typeof UI !== 'undefined') {
-                    UI.setVisualizerState('active');
-                }
                 setTimeout(function() {
                     if (typeof Conversation !== 'undefined') {
                         Conversation.moveToNextQuestion();
                     }
                 }, 300);
-            }
+        }
+    },
+    
+    // === HELPER FOR SKIPPING TEXT INPUTS ===
+    skipTextInput: function(inputId, defaultValue, submitHandler) {
+        var input = UI.element(inputId);
+        if (input) {
+            input.value = defaultValue;
+        }
+        if (typeof submitHandler === 'function') {
+            submitHandler.call(DNAButton);
         }
     },
 
+    // === QUIT FUNCTION ===
     quit: function() {
         if (confirm('Are you sure you want to quit the assessment?')) {
             this.stopAllAudio();
-            try {
-                window.history.back();
-            } catch (e) {
-                this.tryCloseOrRedirect();
-            }
+            this.performExit();
         }
     }
 };
