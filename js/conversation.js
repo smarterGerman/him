@@ -447,7 +447,6 @@ var DNAButton = {
         }, 800);
     },
     
-    // === FIXED: NO DELAY AFTER NA GUT - DELAY HAPPENS IN STEP 10 ===
     handleNaGut: function() {
         var self = this;
         self.playConfirmationSound();
@@ -464,7 +463,7 @@ var DNAButton = {
             setTimeout(function() {
                 // Start final sequence immediately - the 7-second delay already happened in step 10
                 Conversation.startFinalSequence();
-            }, Config.settings.timing.finalSequenceDelay); // Now only 200ms
+            }, 200);
         }, 800);
     },
 
@@ -717,7 +716,7 @@ var DNAButton = {
     }
 };
 
-// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCES =====
+// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCES & AUDIO RACE CONDITIONS =====
 var Conversation = {
     playThankYou: function() {
         State.isSpeaking = true;
@@ -831,6 +830,7 @@ var Conversation = {
         }
     },
 
+    // FIXED: Remove race conditions - steps 8, 9, 11 no longer auto-schedule moveToNextQuestion()
     showNextButton: function() {
         setTimeout(function() {
             console.log('📋 Showing UI for step:', State.step);
@@ -860,25 +860,22 @@ var Conversation = {
                     DNAButton.showAIChoices();
                     break;
                 case 8:
-                    // Auto-progression step (AI confirmation audio already handled)
-                    setTimeout(function() {
-                        Conversation.moveToNextQuestion();
-                    }, 2000);
+                    // FIXED: Removed auto-progression - handled by AI sequences
                     break;
                 case 9:
-                    // Play analysis audio ("I'll calculate etc.")
+                    // FIXED: Only play analysis audio, don't schedule moveToNextQuestion()
                     console.log('🔊 Step 9: Playing analysis audio');
                     Conversation.playAnalysisAudio();
                     break;
                 case 10:
-                    // 7 second delay before "Another gifted one"
+                    // FIXED: 7 second delay before "Another gifted one"
                     console.log('⏰ Step 10: 7 second delay before "Another gifted one"');
                     setTimeout(function() {
                         Conversation.moveToNextQuestion();
                     }, 7000);
                     break;
                 case 11:
-                    // Play "Another gifted one" audio, then show "Na gut" button
+                    // FIXED: Only play "Another gifted one" audio, don't schedule moveToNextQuestion()
                     console.log('🔊 Step 11: Playing "Another gifted one" audio');
                     Conversation.playAnotherGiftedOneAudio();
                     break;
@@ -888,14 +885,15 @@ var Conversation = {
         }, Config.settings.timing.responseDelay);
     },
 
-    // === FIXED AI SEQUENCE HANDLERS - ONLY PLAY CONFIRMATION ===
+    // === FIXED AI SEQUENCE HANDLERS - Direct control with proper progression ===
     startMaleAISequence: function() {
         var self = this;
         console.log('🔊 Starting Male AI confirmation - playing audio file 8');
         self.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
-            // Continue to step 9 (analysis audio)
+            // FIXED: Direct control - no race conditions
+            State.nextStep(); // Move to step 9
             setTimeout(function() {
-                Conversation.moveToNextQuestion();
+                Conversation.playAnalysisAudio(); // Step 9 audio
             }, 1000);
         });
     },
@@ -904,21 +902,22 @@ var Conversation = {
         var self = this;
         console.log('🔊 Starting Female AI confirmation - playing audio file 9');
         self.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
-            // Continue to step 9 (analysis audio)
+            // FIXED: Direct control - no race conditions
+            State.nextStep(); // Move to step 9
             setTimeout(function() {
-                Conversation.moveToNextQuestion();
+                Conversation.playAnalysisAudio(); // Step 9 audio
             }, 1000);
         });
     },
 
-    // === FIXED: DIVERSE AI SEQUENCE NOW USES CORRECT AUDIO ===
     startDiverseAISequence: function() {
         var self = this;
         console.log('🔊 Starting Diverse AI confirmation - playing audio file 10:', State.aiTypeDiverseAudio);
         self.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
-            // Continue to step 9 (analysis audio)
+            // FIXED: Direct control - no race conditions
+            State.nextStep(); // Move to step 9
             setTimeout(function() {
-                Conversation.moveToNextQuestion();
+                Conversation.playAnalysisAudio(); // Step 9 audio
             }, 1000);
         });
     },
@@ -949,7 +948,7 @@ var Conversation = {
         self.playStepAudio(audioUrl, handleComplete);
     },
 
-    // === NEW: ANALYSIS AUDIO HANDLER ===
+    // === FIXED: Analysis audio handler with proper step progression ===
     playAnalysisAudio: function() {
         var self = this;
         
@@ -962,8 +961,16 @@ var Conversation = {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
             console.log('🔄 Analysis audio complete, moving to step 10');
+            
+            // FIXED: Direct step control
+            State.nextStep(); // Move to step 10
             setTimeout(function() {
-                Conversation.moveToNextQuestion();
+                // Step 10: 7 second delay
+                console.log('⏰ Step 10: 7 second delay before "Another gifted one"');
+                setTimeout(function() {
+                    State.nextStep(); // Move to step 11
+                    Conversation.playAnotherGiftedOneAudio();
+                }, 7000);
             }, 1000);
         };
 
@@ -971,15 +978,13 @@ var Conversation = {
             console.warn('Analysis audio error:', e);
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            setTimeout(function() {
-                Conversation.moveToNextQuestion();
-            }, 1000);
+            handleComplete(); // Continue flow even on error
         };
         
         self.playStepAudio(State.analysingInputAudio, handleComplete);
     },
 
-    // === NEW: "ANOTHER GIFTED ONE" AUDIO HANDLER ===
+    // === FIXED: "Another gifted one" audio handler ===
     playAnotherGiftedOneAudio: function() {
         var self = this;
         
@@ -1001,15 +1006,13 @@ var Conversation = {
             console.warn('"Another gifted one" audio error:', e);
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            setTimeout(function() {
-                DNAButton.showText('Na gut', 'Oh well');
-            }, 1000);
+            handleComplete(); // Continue flow even on error
         };
         
         self.playStepAudio(State.audioFiles[11], handleComplete);
     },
 
-    // === FIXED: COMPLETE FINAL SEQUENCE WITH PROPER PROFILE DISPLAY ===
+    // === FINAL SEQUENCE WITH PROPER PROFILE DISPLAY ===
     startFinalSequence: function() {
         var self = this;
         
@@ -1290,17 +1293,25 @@ var Conversation = {
             dissolveOverlay.classList.add('active');
             console.log('🌫️ Dissolve overlay activated');
             
-            // Set a maximum time for the transition
+            // Try Teachable completion during dissolve
             setTimeout(function() {
-                console.log('🚨 Transition timeout reached, forcing completion...');
-                Conversation.completeCourse();
-            }, 10000); // 10 second maximum
+                // Use same priority chain as completeCourse()
+                var primaryButton = document.querySelector('.lecture_complete_button.nav-btn.complete');
+                
+                if (primaryButton && primaryButton.offsetParent !== null) {
+                    console.log('✅ Found completion button during dissolve!');
+                    primaryButton.click();
+                    return;
+                }
+                
+                // Continue to completeCourse if no button found
+                setTimeout(function() {
+                    Conversation.completeCourse();
+                }, 2000);
+                
+            }, 1000);
             
-            setTimeout(function() {
-                Conversation.completeCourse();
-            }, 3000);
         } else {
-            // Fallback if no dissolve overlay
             console.log('⚠️ No dissolve overlay found, proceeding directly...');
             setTimeout(function() {
                 Conversation.completeCourse();
@@ -1308,6 +1319,7 @@ var Conversation = {
         }
     },
 
+    // === FIXED: Teachable Transition with correct priority chain ===
     completeCourse: function() {
         var self = this;
         // Prevent multiple executions
@@ -1326,30 +1338,65 @@ var Conversation = {
         }, 15000); // 15 second hard limit
         
         setTimeout(function() {
-            // Method 1: Look for Teachable completion buttons (UPDATED for specific structure)
+            // === PRIORITY CHAIN FOR TEACHABLE COMPLETION ===
+            
+            // 1. PRIMARY: Exact Teachable completion button with all three classes
+            var primarySelector = '.lecture_complete_button.nav-btn.complete';
+            var primaryButton = document.querySelector(primarySelector);
+            
+            if (primaryButton && primaryButton.offsetParent !== null) {
+                console.log('✅ Found PRIMARY Teachable completion button!');
+                primaryButton.click();
+                setTimeout(function() { self.forceCleanup(); }, 2000);
+                return;
+            }
+            
+            // 2. FALLBACK: Individual class combinations
+            var fallbackSelectors = [
+                'button.lecture_complete_button',
+                '.nav-btn.complete',
+                'button.nav-btn',
+                '.lecture_complete_button'
+            ];
+            
+            for (var i = 0; i < fallbackSelectors.length; i++) {
+                var selector = fallbackSelectors[i];
+                var button = document.querySelector(selector);
+                
+                if (button && button.offsetParent !== null) {
+                    console.log('✅ Found FALLBACK completion button:', selector);
+                    button.click();
+                    setTimeout(function() { self.forceCleanup(); }, 2000);
+                    return;
+                }
+            }
+            
+            // 3. GENERIC: Text-based search (old method as last resort)
+            console.log('🔄 Trying generic text-based button search...');
             var buttons = document.querySelectorAll('button, .btn, [role="button"], a[href*="lectures"], .lecture-complete, .next-lecture, .continue-btn, span.nav-text, .nav-text');
             
-            console.log('🔍 Found', buttons.length, 'potential buttons');
-            
-            for (var i = 0; i < buttons.length; i++) {
-                var btn = buttons[i];
+            for (var j = 0; j < buttons.length; j++) {
+                var btn = buttons[j];
                 var text = btn.textContent.toLowerCase().trim();
                 var classes = btn.className.toLowerCase();
-                var href = btn.href || '';
                 
-                console.log('🔍 Checking element:', btn.tagName, '| Text:', text, '| Classes:', classes);
-                
-                // SPECIFIC CHECK for Teachable "Complete and Continue" button
                 if (text === 'complete and continue' || 
                     classes.indexOf('nav-text') !== -1 ||
-                    text.indexOf('complete and continue') !== -1) {
+                    text.indexOf('complete and continue') !== -1 ||
+                    text.includes('complete') || 
+                    text.includes('continue') || 
+                    text.includes('next') ||
+                    text.includes('mark complete') ||
+                    text.includes('mark as complete') ||
+                    classes.includes('complete') ||
+                    classes.includes('continue') ||
+                    classes.includes('next')) {
                     
-                    console.log('✅ Found Teachable Complete and Continue button!');
+                    console.log('✅ Found generic completion button:', text || classes);
                     
-                    // Click the span or its parent clickable element
+                    // Handle span elements specially
                     var clickTarget = btn;
                     if (btn.tagName === 'SPAN') {
-                        // Look for clickable parent (button, a, div with onclick, etc.)
                         var parent = btn.parentElement;
                         while (parent && parent !== document.body) {
                             if (parent.onclick || 
@@ -1364,156 +1411,37 @@ var Conversation = {
                         }
                     }
                     
-                    console.log('🎯 Clicking target:', clickTarget.tagName, clickTarget.className);
                     clickTarget.click();
-                    
-                    // Clean up after successful click
-                    setTimeout(function() {
-                        self.forceCleanup();
-                    }, 2000);
-                    return;
-                }
-                
-                // Check for other common Teachable completion patterns
-                if (text.indexOf('complete') !== -1 || 
-                    text.indexOf('continue') !== -1 || 
-                    text.indexOf('next') !== -1 ||
-                    text.indexOf('mark complete') !== -1 ||
-                    text.indexOf('mark as complete') !== -1 ||
-                    classes.indexOf('complete') !== -1 ||
-                    classes.indexOf('continue') !== -1 ||
-                    classes.indexOf('next') !== -1 ||
-                    href.includes('lectures/')) {
-                    
-                    console.log('✅ Found completion button:', text || classes);
-                    btn.click();
-                    
-                    // Clean up after successful click
-                    setTimeout(function() {
-                        self.forceCleanup();
-                    }, 2000);
+                    setTimeout(function() { self.forceCleanup(); }, 2000);
                     return;
                 }
             }
             
-            // Method 2: Look for Teachable-specific completion mechanisms
-            console.log('🔄 Method 1 failed, trying Teachable-specific selectors...');
-            
-            var teachableSelectors = [
-                'span.nav-text',
-                '.nav-text',
-                '.lecture-attachment-complete-button',
-                '.lecture-complete-button', 
-                '.complete-button',
-                '.next-lecture-button',
-                '.lecture-sidebar .btn',
-                '[data-lecture-id] .btn',
-                '.lecture-content .btn',
-                '.course-player .btn',
-                '[onclick*="complete"]',
-                '[onclick*="continue"]'
-            ];
-            
-            for (var j = 0; j < teachableSelectors.length; j++) {
-                var selector = teachableSelectors[j];
-                var elements = document.querySelectorAll(selector);
-                
-                for (var k = 0; k < elements.length; k++) {
-                    var element = elements[k];
-                    if (element.offsetParent !== null) { // Check if visible
-                        var elementText = element.textContent.toLowerCase().trim();
-                        console.log('🔍 Found element with selector', selector + ':', elementText);
-                        
-                        if (elementText.includes('complete') || elementText.includes('continue')) {
-                            console.log('✅ Found Teachable element:', selector, elementText);
-                            
-                            // Handle span elements specially
-                            if (element.tagName === 'SPAN') {
-                                var clickableParent = element.parentElement;
-                                while (clickableParent && clickableParent !== document.body) {
-                                    if (clickableParent.onclick || clickableParent.tagName === 'BUTTON' || clickableParent.tagName === 'A') {
-                                        clickableParent.click();
-                                        
-                                        // Clean up after successful click
-                                        setTimeout(function() {
-                                            self.forceCleanup();
-                                        }, 2000);
-                                        return;
-                                    }
-                                    clickableParent = clickableParent.parentElement;
-                                }
-                            } else {
-                                element.click();
-                                
-                                // Clean up after successful click
-                                setTimeout(function() {
-                                    self.forceCleanup();
-                                }, 2000);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Method 3: Try to trigger Teachable completion programmatically
-            console.log('🔄 Method 2 failed, trying programmatic completion...');
-            
+            // 4. LAST RESORT: URL increment
+            console.log('🔄 All methods failed, trying URL navigation...');
             try {
-                // Trigger common Teachable events
-                var completionEvents = ['lecture:complete', 'course:progress', 'teachable:complete'];
-                
-                completionEvents.forEach(function(eventName) {
-                    var event = new CustomEvent(eventName, {
-                        detail: { 
-                            source: 'SG1', 
-                            completed: true,
-                            progress: 100 
-                        },
-                        bubbles: true,
-                        cancelable: true
+                var currentUrl = window.location.href;
+                if (currentUrl.includes('/lectures/')) {
+                    var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
+                        var nextNum = parseInt(lectureNum) + 1;
+                        return '/lectures/' + nextNum;
                     });
-                    document.dispatchEvent(event);
-                    window.dispatchEvent(event);
-                });
-                
-                console.log('✅ Triggered Teachable completion events');
+                    
+                    if (newUrl !== currentUrl) {
+                        console.log('✅ Redirecting to:', newUrl);
+                        window.location.href = newUrl;
+                        return;
+                    }
+                }
             } catch (e) {
-                console.log('❌ Event dispatch failed:', e.message);
+                console.log('❌ Navigation failed:', e.message);
             }
             
-            // Method 4: Direct URL navigation to next lecture
-            console.log('🔄 Method 3 completed, trying URL navigation...');
+            // Final cleanup if all methods fail
+            console.log('🧹 All methods failed, cleaning up...');
+            self.forceCleanup();
             
-            setTimeout(function() {
-                try {
-                    var currentUrl = window.location.href;
-                    console.log('🔄 Current URL:', currentUrl);
-                    
-                    if (currentUrl.includes('/lectures/')) {
-                        var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
-                            var nextNum = parseInt(lectureNum) + 1;
-                            console.log('🔄 Navigating to next lecture:', nextNum);
-                            return '/lectures/' + nextNum;
-                        });
-                        
-                        if (newUrl !== currentUrl) {
-                            console.log('✅ Redirecting to:', newUrl);
-                            window.location.href = newUrl;
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log('❌ Navigation attempt failed:', e.message);
-                }
-                
-                // Method 5: Final cleanup
-                console.log('🔄 All methods failed, cleaning up SG1...');
-                self.forceCleanup();
-                
-            }, 2000);
-            
-        }, 1000); // Give dissolve animation time to complete
+        }, 1000);
     },
 
     forceCleanup: function() {
