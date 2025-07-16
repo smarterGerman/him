@@ -283,56 +283,61 @@ var UI = {
     
     // === BUTTON VISIBILITY HELPERS ===
     hideAllInteractiveElements: function() {
-        console.log('🧹 Hiding all interactive elements');
-        
-        var containers = [
-            'dnaTextButton',
-            'whyGermanInputContainer',
-            'goalInputContainer',
-            'timeInputContainer', 
-            'probabilityChoicesContainer',
-            'scaleChoicesContainer',
-            'aiChoicesContainer',
-            'motherDescriptionContainer',
-            'profileContainer',
-            'statusDisplay'
-        ];
-        
-        var hiddenCount = 0;
-        
-        containers.forEach(function(id) {
-            var element = UI.element(id);
-            if (element) {
-                element.classList.remove('visible');
-                element.style.opacity = '0';
-                element.style.pointerEvents = 'none';
-                element.style.transform = 'translate(-50%, -50%)';
-                
-                // Clear any event listeners for text inputs
-                var input = element.querySelector('input, textarea');
-                if (input) {
-                    input.value = '';
-                    // Clone the input to remove all event listeners
-                    try {
-                        var newInput = input.cloneNode(true);
-                        input.parentNode.replaceChild(newInput, input);
-                    } catch (e) {
-                        console.warn('Could not clean input for:', id);
-                    }
+    console.log('🧹 Hiding all interactive elements');
+    
+    var containers = [
+        'dnaTextButton',
+        'whyGermanInputContainer',
+        'goalInputContainer',
+        'timeInputContainer', 
+        'probabilityChoicesContainer',
+        'scaleChoicesContainer',
+        'aiChoicesContainer',
+        'motherDescriptionContainer',
+        'profileContainer',
+        'statusDisplay'
+    ];
+    
+    var hiddenCount = 0;
+    
+    containers.forEach(function(id) {
+        var element = UI.element(id);
+        if (element) {
+            element.classList.remove('visible');
+            element.style.opacity = '0';
+            element.style.pointerEvents = 'none';
+            element.style.transform = 'translate(-50%, -50%)';
+            
+            // Clear any event listeners for text inputs
+            var input = element.querySelector('input, textarea');
+            if (input) {
+                input.value = '';
+                // Clone the input to remove all event listeners
+                try {
+                    var newInput = input.cloneNode(true);
+                    input.parentNode.replaceChild(newInput, input);
+                } catch (e) {
+                    console.warn('Could not clean input for:', id);
                 }
-                hiddenCount++;
             }
-        });
-        
-        // Remove text mode from visualizer
-        var visualizer = this.element('visualizer');
-        if (visualizer) {
-            visualizer.classList.remove('text-mode');
+            hiddenCount++;
         }
-        
-        console.log('✅ Hidden', hiddenCount, 'interactive elements');
-        return hiddenCount;
+    });
+    
+    // IMPORTANT: Remove text mode from visualizer to show DNA again
+    var visualizer = this.element('visualizer');
+    if (visualizer) {
+        visualizer.classList.remove('text-mode');
+        // Ensure DNA strands are visible
+        var strands = visualizer.querySelectorAll('.dna-strand');
+        strands.forEach(function(strand) {
+            strand.style.opacity = '1';
+        });
     }
+    
+    console.log('✅ Hidden', hiddenCount, 'interactive elements');
+    return hiddenCount;
+}
 };
 
 // === ENHANCED CONTROLS OBJECT - FIXED SKIP FUNCTIONALITY ===
@@ -500,49 +505,59 @@ var Controls = {
     },
 
     // === IMPROVED SKIP FUNCTION ===
-    skip: function() {
-        console.log('⏭️ Skip button clicked for step:', State.step);
-        console.log('   Is initializing:', State.isInitializing);
+skip: function() {
+    console.log('⏭️ Skip button clicked for step:', State.step);
+    console.log('   Is initializing:', State.isInitializing);
+    
+    // Stop all audio immediately
+    this.stopAllAudio();
+    
+    // NEW: Handle skip during initialization
+    if (State.isInitializing) {
+        console.log('🚀 Skipping initialization sequence');
         
-        // Stop all audio immediately
-        this.stopAllAudio();
+        // Clear all initialization timers
+        State.clearInitTimers();
         
-        // NEW: Handle skip during initialization
-        if (State.isInitializing) {
-            console.log('🚀 Skipping initialization sequence');
-            
-            // Clear all initialization timers
-            State.clearInitTimers();
-            
-            // Hide initialization UI immediately
-            UI.hideElement('initOverlay');
-            var logo = document.querySelector('.init-logo');
-            if (logo) {
-                logo.style.animation = 'none';
-                logo.style.opacity = '0';
-            }
-            
-            // Show visualizer immediately
-            UI.showElement('visualizer');
-            var visualizer = UI.element('visualizer');
-            if (visualizer) {
-                visualizer.style.opacity = '1';
-                visualizer.style.transition = 'none';
-            }
-            
-            // Jump directly to step 1 (skip welcome)
-            State.step = 0;
-            State.hasSkippedToStep0 = true;
-            State.enableSkipMode();
-            
-            // Show first button immediately
-            setTimeout(function() {
-                DNAButton.showText('Bereit', 'Ready');
-                State.disableSkipMode();
-            }, 500);
-            
-            return;
+        // Hide initialization UI immediately
+        UI.hideElement('initOverlay');
+        
+        // ADDED: Force stop logo animation
+        var logo = document.querySelector('.init-logo');
+        if (logo) {
+            logo.style.animation = 'none';
+            logo.style.opacity = '0';
+            logo.style.display = 'none';
         }
+        
+        // ADDED: Hide status text
+        var statusText = UI.element('statusText');
+        if (statusText) {
+            statusText.style.display = 'none';
+        }
+        
+        // Show visualizer immediately
+        UI.showElement('visualizer');
+        var visualizer = UI.element('visualizer');
+        if (visualizer) {
+            visualizer.style.opacity = '1';
+            visualizer.style.transition = 'none';
+        }
+        
+        // Jump directly to step 1 (skip welcome)
+        State.step = 0;
+        State.hasSkippedToStep0 = true;
+        State.enableSkipMode();
+        State.isInitializing = false; // ADDED: Mark initialization as complete
+        
+        // Show first button immediately
+        setTimeout(function() {
+            DNAButton.showText('Bereit', 'Ready');
+            State.disableSkipMode();
+        }, 500);
+        
+        return;
+    }
         
         // Enable skip mode to prevent unwanted audio
         State.enableSkipMode();

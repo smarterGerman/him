@@ -229,9 +229,16 @@ var DNAButton = {
     },
     
     showDNA: function() {
-        UI.hideAllInteractiveElements();
-        this.currentMode = 'dna';
-    },
+    UI.hideAllInteractiveElements();
+    
+    // ADDED: Ensure visualizer is not in text-mode
+    var visualizer = UI.element('visualizer');
+    if (visualizer) {
+        visualizer.classList.remove('text-mode');
+    }
+    
+    this.currentMode = 'dna';
+},
 
     showStatus: function(text, isError) {
         var statusDisplay = UI.element('statusDisplay');
@@ -1060,9 +1067,13 @@ playAnotherGiftedOneAudio: function() {
     
     console.log('🔊 Playing "Another gifted one" audio:', State.audioFiles[11]);
     
-    // Add male voice class BEFORE setting speaking state
+    // IMPORTANT: Remove text-mode FIRST before adding voice effects
     var visualizer = UI.element('visualizer');
     if (visualizer) {
+        // Remove text-mode to make DNA visible again
+        visualizer.classList.remove('text-mode');
+        
+        // Add transition effect
         visualizer.classList.add('voice-transition');
         
         setTimeout(function() {
