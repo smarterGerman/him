@@ -1262,6 +1262,8 @@ var Conversation = {
     // === COURSE COMPLETION WITH PARENT URL DETECTION ===
     completeCourse: function() {
         console.log('🎉 Course completed! Attempting transition...');
+        console.log('📍 Current URL:', window.location.href);
+        console.log('📍 In iframe?', window.parent !== window);
         
         // Define next lecture URLs for each level
         var nextLectureUrls = {
@@ -1275,61 +1277,108 @@ var Conversation = {
         setTimeout(function() {
             var detectedLevel = null;
             
+            console.log('🔍 Method 1: Checking parent URL...');
             // Method 1: Try to detect from parent URL (iframe)
             detectedLevel = Conversation.detectLevelFromParentURL();
+            console.log('   Result:', detectedLevel || 'Not detected');
             
             if (detectedLevel && nextLectureUrls[detectedLevel]) {
-                console.log('✅ Detected level from parent URL:', detectedLevel);
-                console.log('✅ Redirecting to next lecture:', nextLectureUrls[detectedLevel]);
-                window.location.href = nextLectureUrls[detectedLevel];
+                console.log('✅ SUCCESS! Level from parent URL:', detectedLevel);
+                console.log('✅ Redirecting to:', nextLectureUrls[detectedLevel]);
+                console.log('🚀 NAVIGATING NOW...');
+                window.top.location.href = nextLectureUrls[detectedLevel]; // Use window.top for iframe navigation
                 return;
             }
             
+            console.log('🔍 Method 2: Checking data-sg1-level attribute...');
             // Method 2: Check for data-sg1-level attribute
             var levelElement = document.querySelector('[data-sg1-level]');
+            console.log('   Found element:', !!levelElement);
+            
             if (levelElement) {
                 detectedLevel = levelElement.getAttribute('data-sg1-level');
-                console.log('✅ Detected level from attribute:', detectedLevel);
+                console.log('   Level value:', detectedLevel);
                 
                 if (nextLectureUrls[detectedLevel]) {
-                    console.log('✅ Redirecting to next lecture:', nextLectureUrls[detectedLevel]);
-                    window.location.href = nextLectureUrls[detectedLevel];
+                    console.log('✅ SUCCESS! Level from attribute:', detectedLevel);
+                    console.log('✅ Redirecting to:', nextLectureUrls[detectedLevel]);
+                    console.log('🚀 NAVIGATING NOW...');
+                    window.top.location.href = nextLectureUrls[detectedLevel];
                     return;
                 }
             }
             
+            console.log('🔍 Method 3: Checking page title...');
             // Method 3: Scan page title for level
             var pageTitle = document.title || '';
             var titleLower = pageTitle.toLowerCase();
+            console.log('   Page title:', pageTitle);
             
             for (var levelKey in nextLectureUrls) {
                 if (titleLower.indexOf(levelKey.toLowerCase()) !== -1) {
-                    console.log('✅ Detected level from title:', levelKey);
-                    console.log('✅ Redirecting to next lecture:', nextLectureUrls[levelKey]);
-                    window.location.href = nextLectureUrls[levelKey];
+                    console.log('✅ SUCCESS! Level from title:', levelKey);
+                    console.log('✅ Redirecting to:', nextLectureUrls[levelKey]);
+                    console.log('🚀 NAVIGATING NOW...');
+                    window.top.location.href = nextLectureUrls[levelKey];
                     return;
                 }
             }
             
+            console.log('🔍 Method 4: Looking for completion buttons...');
             // Method 4: Look for any completion button (fallback)
-            var buttons = document.querySelectorAll('button, .btn, [role="button"], .lecture-button, .next-button');
+            var buttons = document.querySelectorAll('button, .btn, [role="button"], .lecture-button, .next-button, .complete-and-continue');
+            console.log('   Found buttons:', buttons.length);
+            
             for (var i = 0; i < buttons.length; i++) {
                 var btn = buttons[i];
                 var text = btn.textContent.toLowerCase();
+                console.log('   Button ' + i + ':', text.substring(0, 50));
+                
                 if (text.indexOf('complete') !== -1 || 
                     text.indexOf('continue') !== -1 || 
                     text.indexOf('next') !== -1 ||
                     text.indexOf('weiter') !== -1) {
-                    console.log('✅ Found completion button:', text);
+                    console.log('✅ SUCCESS! Found completion button:', text);
+                    console.log('🚀 CLICKING BUTTON...');
                     btn.click();
                     return;
                 }
             }
             
-            // Final fallback
-            console.log('❌ Could not detect level or find completion method');
-            console.log('Available levels:', Object.keys(nextLectureUrls).join(', '));
-            console.log('Parent URL detection:', Conversation.detectLevelFromParentURL());
+            // Try one more aggressive approach - scan parent window
+            console.log('🔍 Method 5: Scanning parent window for buttons...');
+            try {
+                if (window.parent !== window) {
+                    var parentButtons = window.parent.document.querySelectorAll('button, .btn, [role="button"], .complete-and-continue');
+                    console.log('   Found parent buttons:', parentButtons.length);
+                    
+                    for (var j = 0; j < parentButtons.length; j++) {
+                        var pBtn = parentButtons[j];
+                        var pText = pBtn.textContent.toLowerCase();
+                        
+                        if (pText.indexOf('complete') !== -1 || pText.indexOf('continue') !== -1) {
+                            console.log('✅ SUCCESS! Found parent button:', pText);
+                            console.log('🚀 CLICKING PARENT BUTTON...');
+                            pBtn.click();
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('   Could not access parent window (cross-origin)');
+            }
+            
+            // FINAL: Just force navigation to A1 as emergency fallback
+            console.log('❌ ALL METHODS FAILED!');
+            console.log('🚨 EMERGENCY: Forcing navigation to A1 next lecture...');
+            console.log('Debug info:');
+            console.log('  - Current URL:', window.location.href);
+            console.log('  - Parent URL detection:', Conversation.detectLevelFromParentURL());
+            console.log('  - Available levels:', Object.keys(nextLectureUrls).join(', '));
+            
+            // Force navigate to A1 as last resort
+            console.log('🚀 FORCING NAVIGATION TO A1...');
+            window.top.location.href = nextLectureUrls['A1'];
             
         }, 2000); // 2 seconds delay
     },
