@@ -1,4 +1,4 @@
-// ===== APPLICATION STATE MANAGEMENT =====
+// ===== APPLICATION STATE MANAGEMENT - UPDATED =====
 
 var State = {
     // === CONVERSATION FLOW ===
@@ -44,7 +44,8 @@ var State = {
         return typeof Config !== 'undefined' ? Config.audioFiles[9] : '';
     },
     get aiTypeDiverseAudio() {
-        return typeof Config !== 'undefined' ? Config.audioFiles[10] : '';
+        // UPDATED: Now references the special diverse AI audio
+        return typeof Config !== 'undefined' ? Config.specialAudio.diverseAI : '';
     },
     get analysingInputAudio() {
         return typeof Config !== 'undefined' ? Config.specialAudio.analysingInput : '';

@@ -1,4 +1,4 @@
-// ===== CONVERSATION FLOW & UI LOGIC =====
+// ===== CONVERSATION FLOW & UI LOGIC - COMPLETE FIX =====
 
 var DNAButton = {
     currentMode: 'dna',
@@ -452,8 +452,9 @@ var DNAButton = {
         setTimeout(function() {
             DNAButton.showDNA();
             setTimeout(function() {
-                Conversation.startFinalSequence();
-            }, 200);
+                // FIXED: Show personality profile after step 11
+                DNAButton.showPersonalityProfile();
+            }, 1000);
         }, 800);
     },
 
@@ -682,13 +683,19 @@ var DNAButton = {
             profileDescription.textContent = profile.description;
             profileContainer.classList.add('visible');
             this.currentMode = 'profile';
+            
+            // FIXED: Auto-dissolve after showing profile for 7 seconds
+            setTimeout(function() {
+                Conversation.startFinalSequence();
+            }, 7000);
+            
             return true;
         }
         return false;
     }
 };
 
-// ===== CONVERSATION CONTROLLER =====
+// ===== CONVERSATION CONTROLLER - COMPLETE FIX =====
 var Conversation = {
     playThankYou: function() {
         State.isSpeaking = true;
@@ -726,11 +733,10 @@ var Conversation = {
     },
 
     moveToNextQuestion: function() {
-        // USE CONSISTENT STATE METHOD
         State.nextStep(); // This handles both step increment and progress update
         console.log('🔄 Moving to step:', State.step);
         
-        // Handle AI sequence branching
+        // FIXED: Handle AI sequence branching - ALL AI types play their audio
         if (State.step === 8 && State.selectedAIType === 'male') {
             this.startMaleAISequence();
             return;
@@ -738,7 +744,7 @@ var Conversation = {
             this.startFemaleAISequence();
             return;
         } else if (State.step === 8 && State.selectedAIType === 'diverse') {
-            this.startDiverseAISequence();
+            this.startDiverseAISequence(); // FIXED: Diverse now plays its own audio
             return;
         }
         
@@ -818,6 +824,7 @@ var Conversation = {
                 case 8:
                 case 9:
                 case 10:
+                    // Auto-progression steps
                     setTimeout(function() {
                         Conversation.moveToNextQuestion();
                     }, 2000);
@@ -831,16 +838,20 @@ var Conversation = {
         }, Config.settings.timing.responseDelay);
     },
 
-    // === AI SEQUENCE HANDLERS ===
+    // === AI SEQUENCE HANDLERS - ALL FIXED ===
     startMaleAISequence: function() {
+        console.log('🔊 Starting Male AI sequence');
         this.playAISequenceAudio(State.aiTypeMaleAudio, 'male');
     },
 
     startFemaleAISequence: function() {
+        console.log('🔊 Starting Female AI sequence');
         this.playAISequenceAudio(State.aiTypeFemaleAudio, 'female');
     },
 
     startDiverseAISequence: function() {
+        console.log('🔊 Starting Diverse AI sequence');
+        // FIXED: Use the diverse AI audio from config
         this.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse');
     },
 
@@ -851,14 +862,15 @@ var Conversation = {
         State.isSpeaking = true;
         UI.setVisualizerState('speaking');
         
-        console.log('🔊 Playing', aiType, 'AI audio:', audioUrl);
+        console.log('🔊 Playing', aiType, 'AI sequence audio:', audioUrl);
         
         var onComplete = function() {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
             setTimeout(function() {
-                State.step = 10; // Move to step 11 (analysis)
-                self.moveToNextQuestion();
+                // FIXED: Continue to step 9 after AI sequence
+                console.log('🔄', aiType, 'AI sequence complete - continuing to step 9');
+                self.moveToNextQuestion(); // This will go to step 9
             }, 1000);
         };
 
@@ -867,8 +879,7 @@ var Conversation = {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
             setTimeout(function() {
-                State.step = 10;
-                self.moveToNextQuestion();
+                self.moveToNextQuestion(); // Continue to step 9 even on error
             }, 1000);
         };
         
@@ -883,11 +894,11 @@ var Conversation = {
     },
 
     startFinalSequence: function() {
-        console.log('Starting final sequence');
+        console.log('🎬 Starting final dissolve sequence');
         
         setTimeout(function() {
             Conversation.dissolveAndTransition();
-        }, 5000);
+        }, 1000);
     },
 
     dissolveAndTransition: function() {
@@ -899,12 +910,22 @@ var Conversation = {
             setTimeout(function() {
                 Conversation.completeCourse();
             }, 3000);
+        } else {
+            // Fallback if no dissolve overlay
+            setTimeout(function() {
+                Conversation.completeCourse();
+            }, 1000);
         }
     },
 
     completeCourse: function() {
-        console.log('Course completed!');
+        console.log('🎉 Course completed!');
         // Handle course completion - could redirect or trigger external completion
+        try {
+            window.history.back();
+        } catch (e) {
+            console.log('Could not navigate back:', e);
+        }
     },
 
     startQ1: function() {
