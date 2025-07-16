@@ -144,16 +144,17 @@
 
 .answer-choice {
     color: rgba(255, 255, 255, 0.95);
-    font-size: clamp(16px, 4vw, 18px);
+    font-size: clamp(20px, 5vw, 28px); /* Updated to match dna-text-button */
     font-family: 'Helvetica Neue', Arial, sans-serif;
     font-weight: 200;
     letter-spacing: 1px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     cursor: pointer;
-    padding: 15px 30px;
+    padding: 15px 30px; /* Same padding as dna-text-button */
     border-radius: 25px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1); /* Updated to match dna-text-button */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Updated to match dna-text-button */
+    backdrop-filter: blur(10px);
     transition: all 0.4s ease;
     text-align: center;
     min-width: 350px;
@@ -164,9 +165,10 @@
 }
 
 .answer-choice:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px); /* Same hover effect as dna-text-button */
     color: rgba(255, 255, 255, 1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .answer-text {
@@ -178,7 +180,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 14px;
+    font-size: clamp(20px, 5vw, 28px); /* Same font size */
     opacity: 0;
     font-style: italic;
     transition: opacity 0.3s ease;
@@ -281,7 +283,7 @@
     text-align: left;
     border-radius: 15px;
     resize: vertical;
-    min-height: 80px;
+    min-height: 60px; /* Reduced from 80px */
     line-height: 1.4;
     padding: 15px 20px;
 }
@@ -324,21 +326,21 @@
     }
 }
 
-/* ===== TIME/PROBABILITY CHOICES ===== */
+/* ===== TIME/PROBABILITY CHOICES - UPDATED FOR HORIZONTAL LAYOUT ===== */
 .time-probability-container {
     position: absolute;
     top: 50%; 
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
-    flex-direction: row;
+    flex-direction: row; /* Changed from column to row */
     align-items: center;
     gap: 20px;
     opacity: 0;
     pointer-events: none;
     transition: all 0.8s ease;
     z-index: 100;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* Keep items in one row */
     justify-content: center;
 }
 
@@ -347,26 +349,35 @@
     pointer-events: all;
 }
 
+/* Special styling for horizontal probability choices */
+.horizontal-choices {
+    gap: 30px; /* More space between horizontal buttons */
+}
+
 .time-choice, .probability-choice {
     color: rgba(255, 255, 255, 0.95);
-    font-size: clamp(16px, 4vw, 20px);
+    font-size: clamp(20px, 5vw, 28px); /* Same as dna-text-button */
     font-family: 'Helvetica Neue', Arial, sans-serif;
     font-weight: 200;
     letter-spacing: 1px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     cursor: pointer;
-    padding: 15px 25px;
+    padding: 15px 30px; /* Same padding as dna-text-button */
     border-radius: 25px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1); /* Same background as dna-text-button */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Same border as dna-text-button */
+    backdrop-filter: blur(10px);
     transition: all 0.4s ease;
     position: relative;
+    min-width: 120px; /* Consistent minimum width */
+    text-align: center;
 }
 
 .time-choice:hover, .probability-choice:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px); /* Same hover effect as dna-text-button */
     color: rgba(255, 255, 255, 1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .choice-text {
@@ -378,7 +389,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16px;
+    font-size: clamp(20px, 5vw, 28px); /* Same font size */
     opacity: 0;
     font-style: italic;
     transition: opacity 0.3s ease;
@@ -387,11 +398,13 @@
     color: rgba(255, 255, 255, 0.95);
 }
 
-.time-choice:hover .choice-text {
+.time-choice:hover .choice-text,
+.probability-choice:hover .choice-text {
     opacity: 0;
 }
 
-.time-choice:hover .choice-translation {
+.time-choice:hover .choice-translation,
+.probability-choice:hover .choice-translation {
     opacity: 1;
 }
 
@@ -400,9 +413,24 @@
     .answer-choice {
         min-width: 320px;
         max-width: 90vw;
-        font-size: 16px;
+        font-size: clamp(16px, 4vw, 20px);
         padding: 18px 25px;
         white-space: normal;
+    }
+
+    .horizontal-choices {
+        gap: 15px; /* Less space on mobile */
+    }
+    
+    .probability-choice {
+        min-width: 90px; /* Smaller on mobile */
+        padding: 12px 20px;
+        font-size: clamp(16px, 4vw, 20px);
+    }
+    
+    .choice-translation,
+    .answer-translation {
+        font-size: clamp(16px, 4vw, 20px);
     }
 
     .time-probability-container {
@@ -436,6 +464,11 @@
         flex: 0 0 auto;
         text-align: center;
     }
+
+    .text-area-field {
+        min-height: 80px; /* Slightly bigger on mobile for touch */
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
 }
 
 @media (max-width: 480px) {
@@ -443,6 +476,15 @@
         min-width: 280px;
         font-size: 15px;
         white-space: normal;
+    }
+
+    .horizontal-choices {
+        gap: 10px;
+    }
+    
+    .probability-choice {
+        min-width: 80px;
+        padding: 10px 15px;
     }
 
     #scaleChoicesContainer {

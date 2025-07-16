@@ -1037,11 +1037,6 @@ var Conversation = {
             DNAButton.hideStatus();
             
             setTimeout(function() {
-                console.log('🎵 Playing system error audio now...');
-                self.playSystemErrorAudio();
-            }, 100);
-            
-            setTimeout(function() {
                 DNAButton.showStatus('Subject surpassing AI capabilities', true);
             }, 500);
         }, 8000);
@@ -1079,77 +1074,7 @@ var Conversation = {
         }, 13000);
     },
 
-    playSystemErrorAudio: function() {
-        var audio = AudioManager.createAudio(State.systemErrorAudio);
-        audio.volume = Config.settings.audioVolume.effects;
-        
-        // Start fading out background music
-        var music = UI.element('backgroundMusic');
-        if (music && SG1.musicEnabled && music.volume > 0) {
-            var fadeSteps = 15;
-            var fadeInterval = 150;
-            var volumeStep = music.volume / fadeSteps;
-            
-            var fadeOut = setInterval(function() {
-                if (music.volume > volumeStep) {
-                    music.volume = Math.max(0, music.volume - volumeStep);
-                } else {
-                    music.volume = 0.1;
-                    clearInterval(fadeOut);
-                }
-            }, fadeInterval);
-        }
-        
-        audio.play().catch(function(e) {
-            console.log('System error audio failed:', e.message);
-        });
-    },
-
-    playHumanWakeupAudio: function() {
-        var audio = AudioManager.createAudio(State.humanWakeupAudio);
-        audio.volume = Config.settings.audioVolume.effects;
-        
-        // Fade out background music completely
-        var music = UI.element('backgroundMusic');
-        if (music && SG1.musicEnabled && music.volume > 0) {
-            var fadeSteps = 20;
-            var fadeInterval = 100;
-            var volumeStep = music.volume / fadeSteps;
-            
-            var fadeOut = setInterval(function() {
-                if (music.volume > volumeStep) {
-                    music.volume = Math.max(0, music.volume - volumeStep);
-                } else {
-                    music.volume = 0;
-                    clearInterval(fadeOut);
-                }
-            }, fadeInterval);
-        }
-        
-        audio.onended = function() {
-            // Restore music volume gradually
-            if (music && SG1.musicEnabled) {
-                var targetVolume = Config.settings.audioVolume.background;
-                var restoreSteps = 10;
-                var restoreInterval = 150;
-                var restoreVolumeStep = targetVolume / restoreSteps;
-                
-                var fadeIn = setInterval(function() {
-                    if (music.volume < targetVolume - restoreVolumeStep) {
-                        music.volume = Math.min(targetVolume, music.volume + restoreVolumeStep);
-                    } else {
-                        music.volume = targetVolume;
-                        clearInterval(fadeIn);
-                    }
-                }, restoreInterval);
-            }
-        };
-        
-        audio.play().catch(function(e) {
-            console.log('Human wakeup audio failed:', e.message);
-        });
-    },
-
+    // ===== UPDATED COMPLEXITY COUNTER WITH ERROR AUDIO =====
     showComplexityCounter: function() {
         var statusDisplay = UI.element('statusDisplay');
         var visualizer = UI.element('visualizer');
@@ -1166,11 +1091,68 @@ var Conversation = {
                     clearInterval(interval);
                     statusDisplay.textContent = 'Complexity: ERROR';
                     statusDisplay.classList.add('error');
+                    
+                    // Play error audio when ERROR appears
+                    Conversation.playSystemErrorAudioWithFade();
                 } else {
                     statusDisplay.textContent = 'Complexity: ' + count + '%';
                 }
             }, 200);
         }
+    },
+
+    // ===== NEW FUNCTION: PLAY ERROR AUDIO WITH BACKGROUND MUSIC FADE =====
+    playSystemErrorAudioWithFade: function() {
+        console.log('🎵 Playing system error audio with background music fade...');
+        
+        var music = UI.element('backgroundMusic');
+        var errorAudio = AudioManager.createAudio(State.systemErrorAudio);
+        errorAudio.volume = Config.settings.audioVolume.effects;
+        
+        // Start fading out background music immediately
+        if (music && SG1.musicEnabled && music.volume > 0) {
+            var fadeSteps = 20;
+            var fadeInterval = 100;
+            var startVolume = music.volume;
+            var volumeStep = startVolume / fadeSteps;
+            
+            var fadeOut = setInterval(function() {
+                if (music.volume > volumeStep) {
+                    music.volume = Math.max(0, music.volume - volumeStep);
+                } else {
+                    music.volume = 0;
+                    music.pause(); // Stop the music completely after fade
+                    clearInterval(fadeOut);
+                    console.log('✅ Background music faded out and stopped');
+                }
+            }, fadeInterval);
+        }
+        
+        // Play the error audio
+        errorAudio.play().catch(function(e) {
+            console.log('System error audio failed:', e.message);
+        });
+    },
+
+    playSystemErrorAudio: function() {
+        // This function is now just a fallback - the main logic is in playSystemErrorAudioWithFade
+        var audio = AudioManager.createAudio(State.systemErrorAudio);
+        audio.volume = Config.settings.audioVolume.effects;
+        audio.play().catch(function(e) {
+            console.log('System error audio failed:', e.message);
+        });
+    },
+
+    // ===== UPDATED HUMAN WAKEUP AUDIO (no music restore since it's stopped) =====
+    playHumanWakeupAudio: function() {
+        var audio = AudioManager.createAudio(State.humanWakeupAudio);
+        audio.volume = Config.settings.audioVolume.effects;
+        
+        audio.play().catch(function(e) {
+            console.log('Human wakeup audio failed:', e.message);
+        });
+        
+        // No music restoration since we've stopped it after error audio
     },
 
     // === SIMPLIFIED TRANSITION (LIKE ORIGINAL HTML) ===

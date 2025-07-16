@@ -42,12 +42,11 @@
                 <!-- Status display for final sequence -->
                 <div class="status-display" id="statusDisplay"></div>
                 
-                <!-- Text input for why German question (Q1) -->
                 <!-- Text input for why German question (Q1) - IMPROVED -->
 <div class="text-input-container" id="whyGermanInputContainer">
     <textarea class="text-input-field text-area-field" id="whyGermanInput" 
               placeholder="Why do you want to learn German? Share your motivation, goals, or reasons..." 
-              rows="4" maxlength="500"></textarea>
+              rows="2" maxlength="500"></textarea>
     <div class="input-counter" id="whyGermanCounter">0/500</div>
     <button class="text-submit-button" onclick="DNAButton.handleWhyGermanSubmit()">Submit</button>
 </div>
@@ -56,7 +55,7 @@
 <div class="text-input-container" id="goalInputContainer">
     <textarea class="text-input-field text-area-field" id="goalInput" 
               placeholder="What's your goal? Where do you want to be with your German after what amount of time? Be specific..." 
-              rows="4" maxlength="500"></textarea>
+              rows="2" maxlength="500"></textarea>
     <div class="input-counter" id="goalCounter">0/500</div>
     <button class="text-submit-button" onclick="DNAButton.handleGoalSubmit()">Submit</button>
 </div>
@@ -65,16 +64,25 @@
 <div class="text-input-container" id="timeInputContainer">
     <textarea class="text-input-field text-area-field" id="timeInput" 
               placeholder="How much time do you plan to spend on your German? Hours per week, daily practice, etc..." 
-              rows="3" maxlength="300"></textarea>
+              rows="2" maxlength="300"></textarea>
     <div class="input-counter" id="timeCounter">0/300</div>
     <button class="text-submit-button" onclick="DNAButton.handleTimeSubmit()">Submit</button>
 </div>
 
                 <!-- Probability choices -->
-                <div class="time-probability-container" id="probabilityChoicesContainer">
-                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">&lt;50%</div>
-                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">80%</div>
-                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">100%</div>
+                <div class="time-probability-container horizontal-choices" id="probabilityChoicesContainer">
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('low')">
+                        <span class="choice-text">&lt;50%</span>
+                        <span class="choice-translation">Less than 50%</span>
+                    </div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('medium')">
+                        <span class="choice-text">80%</span>
+                        <span class="choice-translation">Eighty percent</span>
+                    </div>
+                    <div class="probability-choice" onclick="DNAButton.handleProbabilityChoice('high')">
+                        <span class="choice-text">100%</span>
+                        <span class="choice-translation">Definitely</span>
+                    </div>
                 </div>
 
                 <!-- Scale 1-10 choices for German love -->
@@ -95,7 +103,7 @@
 <div class="text-input-container" id="motherDescriptionContainer">
     <textarea class="text-input-field text-area-field" id="motherDescriptionInput" 
               placeholder="How would you describe your relationship with your mother? This helps us understand your communication style..." 
-              rows="4" maxlength="500"></textarea>
+              rows="2" maxlength="500"></textarea>
     <div class="input-counter" id="motherCounter">0/500</div>
     <button class="text-submit-button" onclick="DNAButton.handleMotherDescriptionSubmit()">Submit</button>
 </div>
