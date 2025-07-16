@@ -38,13 +38,16 @@ var State = {
         return typeof Config !== 'undefined' ? Config.specialAudio.humanWakeup : '';
     },
     get aiTypeMaleAudio() {
-        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeMale : '';
+        return typeof Config !== 'undefined' ? Config.audioFiles[8] : '';
     },
     get aiTypeFemaleAudio() {
-        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeFemale : '';
+        return typeof Config !== 'undefined' ? Config.audioFiles[9] : '';
     },
     get aiTypeDiverseAudio() {
-        return typeof Config !== 'undefined' ? Config.specialAudio.aiTypeDiverse : '';
+        return typeof Config !== 'undefined' ? Config.audioFiles[10] : '';
+    },
+    get analysingInputAudio() {
+        return typeof Config !== 'undefined' ? Config.specialAudio.analysingInput : '';
     },
     
     // === STATE MANAGEMENT METHODS ===
