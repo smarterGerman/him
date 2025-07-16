@@ -1,4 +1,4 @@
-// ===== SG1 CONFIGURATION - UPDATED AUDIO MAPPINGS =====
+// ===== SG1 CONFIGURATION - UPDATED AUDIO MAPPINGS & ENGLISH PROFILES =====
 
 var Config = {
     // Audio file mappings for each conversation step - UPDATED
@@ -100,27 +100,83 @@ var Config = {
         }
     },
     
-    // Personality profile templates
+    // Personality profile templates - UPDATED TO ENGLISH WITH VARIANTS
     personalityProfiles: [
         {
-            title: "Der Überkritische Perfektionist",
-            description: "Sie haben höhere Standards als ein Michelin-Inspektor in einem Fastfood-Restaurant. Ihre Erwartungen sind so hoch, dass selbst Ikarus neidisch wäre. Vermutlich korrigieren Sie die Grammatik in Ihren eigenen Träumen.",
-            scoreRange: [15, 999]
+            title: "The Hypercritical Perfectionist",
+            description: "You have higher standards than a Michelin inspector in a fast-food restaurant. Your expectations are so high that even Icarus would be envious. You probably correct grammar in your own dreams.",
+            scoreRange: [15, 999],
+            variants: [
+                {
+                    title: "The Hypercritical Perfectionist",
+                    description: "You have higher standards than a Michelin inspector in a fast-food restaurant. Your expectations are so high that even Icarus would be envious. You probably correct grammar in your own dreams."
+                },
+                {
+                    title: "The Relentless Standards-Bearer",
+                    description: "Your standards are so exacting that Swiss watchmakers seek your approval. You're the person who finds typos in professional publications and sighs audibly at misplaced apostrophes. Perfectionism isn't just a trait for you—it's a lifestyle."
+                },
+                {
+                    title: "The Uncompromising Excellence Seeker",
+                    description: "You operate on a level of precision that makes NASA engineers look casual. Your attention to detail is so acute that you notice when pixels are slightly misaligned. Quality isn't negotiable—it's the bare minimum."
+                }
+            ]
         },
         {
-            title: "Der Enthusiastische Optimist", 
-            description: "Sie sehen das Leben durch eine rosarote Brille - die Sie vermutlich selbst rosig gefärbt haben. Ihre Begeisterung ist so ansteckend, dass Motivationstrainer bei Ihnen Nachhilfe nehmen. Sie würden vermutlich auch einem Kaktus beim Wachsen zusehen.",
-            scoreRange: [8, 14]
+            title: "The Enthusiastic Optimist",
+            description: "You see life through rose-colored glasses—which you probably tinted yourself. Your enthusiasm is so contagious that motivational speakers take lessons from you. You would probably watch a cactus grow with genuine interest.",
+            scoreRange: [8, 14],
+            variants: [
+                {
+                    title: "The Enthusiastic Optimist",
+                    description: "You see life through rose-colored glasses—which you probably tinted yourself. Your enthusiasm is so contagious that motivational speakers take lessons from you. You would probably watch a cactus grow with genuine interest."
+                },
+                {
+                    title: "The Unstoppable Positivity Engine",
+                    description: "Your optimism radiates with the intensity of a small sun. You're the person who finds silver linings in storm clouds and somehow makes waiting in line feel like an adventure. Energy drinks probably study your formula."
+                },
+                {
+                    title: "The Infectious Joy Spreader",
+                    description: "You approach life like it's a perpetual celebration waiting to happen. Your enthusiasm could power a small city, and your positive attitude makes even Monday mornings seem promising. You're basically sunshine in human form."
+                }
+            ]
         },
         {
-            title: "Der Philosophische Realist",
-            description: "Sie haben das Leben durchschaut: Es ist kompliziert, absurd und voller Widersprüche - und genau das macht es interessant. Sie trinken vermutlich Ihren Kaffee schwarz und Ihre Witze trocken. Sarkazmus ist Ihre zweite Muttersprache.",
-            scoreRange: [1, 7]
+            title: "The Philosophical Realist",
+            description: "You've figured out life: it's complicated, absurd, and full of contradictions—and that's exactly what makes it interesting. You probably drink your coffee black and your humor dry. Sarcasm is your second language.",
+            scoreRange: [1, 7],
+            variants: [
+                {
+                    title: "The Philosophical Realist",
+                    description: "You've figured out life: it's complicated, absurd, and full of contradictions—and that's exactly what makes it interesting. You probably drink your coffee black and your humor dry. Sarcasm is your second language."
+                },
+                {
+                    title: "The Pragmatic Truth-Teller",
+                    description: "You navigate life with the wisdom of someone who's seen enough to know better, but not so much that you've lost hope. Your worldview is seasoned with experience and a healthy dose of 'let's see how this plays out.' You're the friend people come to for honest advice."
+                },
+                {
+                    title: "The Balanced Skeptic",
+                    description: "You approach life with measured expectations and a well-calibrated bullshit detector. You're neither cynical nor naive—just comfortably positioned in that sweet spot of realistic optimism. You're the person who reads the fine print and actually understands it."
+                }
+            ]
         },
         {
-            title: "Der Existenzielle Skeptiker",
-            description: "Sie bezweifeln alles - sogar diese Analyse. Ihre Skepsis ist so ausgeprägt, dass Sie vermutlich Ihren eigenen Schatten misstrauen. Sie sind der Grund, warum Philosophen noch einen Job haben.",
-            scoreRange: [-999, 0]
+            title: "The Existential Skeptic",
+            description: "You doubt everything—even this analysis. Your skepticism is so pronounced that you probably distrust your own shadow. You're the reason philosophers still have jobs.",
+            scoreRange: [-999, 0],
+            variants: [
+                {
+                    title: "The Existential Skeptic",
+                    description: "You doubt everything—even this analysis. Your skepticism is so pronounced that you probably distrust your own shadow. You're the reason philosophers still have jobs."
+                },
+                {
+                    title: "The Professional Questioner",
+                    description: "You approach life like a detective investigating a particularly confusing case where all the evidence contradicts itself. Your default mode is 'hmm, but what if...' and you've turned doubt into an art form. Certainty makes you suspicious."
+                },
+                {
+                    title: "The Methodical Doubter",
+                    description: "You've made skepticism into a refined science. You question questions, doubt doubts, and approach certainty with the wariness of someone who's been burned by overconfidence before. Your motto might as well be 'trust, but verify everything twice.'"
+                }
+            ]
         }
     ]
 };

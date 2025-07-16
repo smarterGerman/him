@@ -1,4 +1,4 @@
-// ===== APPLICATION STATE MANAGEMENT - UPDATED =====
+// ===== APPLICATION STATE MANAGEMENT - FIXED SKIP HANDLING =====
 
 var State = {
     // === CONVERSATION FLOW ===
@@ -9,6 +9,8 @@ var State = {
     // === AUDIO CONTROL ===
     audioUnlocked: false,              // iOS autoplay permission status
     mobileAudioStarted: false,         // Mobile-specific audio initialization
+    hasSkippedToStep0: false,          // ADDED: Tracks if we've skipped to step 0
+    skipModeActive: false,             // ADDED: Tracks if we're in skip mode
     
     // === TIMERS ===
     motherInterruptTimer: null,        // Auto-interrupt for mother question
@@ -60,6 +62,8 @@ var State = {
         this.inFinalSequence = false;
         this.audioUnlocked = false;
         this.mobileAudioStarted = false;
+        this.hasSkippedToStep0 = false;
+        this.skipModeActive = false;
         this.selectedAIType = null;
         this.responses = {};
         this.score = 0;
@@ -85,6 +89,48 @@ var State = {
         this.step++;
         this.updateProgress();
         return this.step;
+    },
+    
+    // ADDED: Set step directly (for skipping)
+    setStep: function(newStep) {
+        this.step = newStep;
+        this.updateProgress();
+        
+        // Mark that we've skipped if jumping to step 0
+        if (newStep === 0) {
+            this.hasSkippedToStep0 = true;
+        }
+        
+        return this.step;
+    },
+    
+    // ADDED: Enable skip mode
+    enableSkipMode: function() {
+        this.skipModeActive = true;
+        console.log('🔄 Skip mode enabled - audio will be bypassed');
+    },
+    
+    // ADDED: Disable skip mode
+    disableSkipMode: function() {
+        this.skipModeActive = false;
+        console.log('🔄 Skip mode disabled - normal audio flow resumed');
+    },
+    
+    // ADDED: Check if should skip audio
+    shouldSkipAudio: function(step) {
+        var targetStep = step !== undefined ? step : this.step;
+        
+        // Skip welcome audio if we've explicitly skipped to step 0
+        if (targetStep === 0 && this.hasSkippedToStep0) {
+            return true;
+        }
+        
+        // Skip audio if in active skip mode
+        if (this.skipModeActive) {
+            return true;
+        }
+        
+        return false;
     },
     
     // Update progress bar (CONSISTENT METHOD)
@@ -145,6 +191,8 @@ var State = {
             inFinalSequence: this.inFinalSequence,
             audioUnlocked: this.audioUnlocked,
             selectedAIType: this.selectedAIType,
+            skipModeActive: this.skipModeActive,
+            hasSkippedToStep0: this.hasSkippedToStep0,
             responses: Object.keys(this.responses),
             score: this.score,
             platform: typeof Config !== 'undefined' ? Config.platform : 'unknown'
@@ -266,7 +314,7 @@ var UI = {
     }
 };
 
-// === ENHANCED CONTROLS OBJECT ===
+// === ENHANCED CONTROLS OBJECT - FIXED SKIP FUNCTIONALITY ===
 var Controls = {
     // === COMPREHENSIVE AUDIO STOPPING ===
     stopAllAudio: function() {
@@ -430,12 +478,15 @@ var Controls = {
         }
     },
 
-    // === SMART SKIP FUNCTION ===
+    // === IMPROVED SKIP FUNCTION ===
     skip: function() {
-        console.log('Skip button clicked for step:', State.step);
+        console.log('⏭️ Skip button clicked for step:', State.step);
         
-        // Stop all audio
+        // Stop all audio immediately
         this.stopAllAudio();
+        
+        // Enable skip mode to prevent unwanted audio
+        State.enableSkipMode();
         
         // Reset state
         State.isSpeaking = false;
@@ -444,6 +495,11 @@ var Controls = {
         
         // Handle current step with appropriate defaults
         this.handleSkipForCurrentStep();
+        
+        // Disable skip mode after a brief delay
+        setTimeout(function() {
+            State.disableSkipMode();
+        }, 2000);
     },
     
     // === HANDLE SKIP FOR CURRENT STEP ===
@@ -454,6 +510,8 @@ var Controls = {
         }
         
         var mode = DNAButton.currentMode;
+        
+        console.log('🔄 Handling skip for mode:', mode, 'at step:', State.step);
         
         switch (mode) {
             case 'text':
@@ -469,16 +527,16 @@ var Controls = {
                 DNAButton.handleAIChoice('diverse');
                 break;
             case 'why-german-input':
-                this.skipTextInput('whyGermanInput', 'Skipped', DNAButton.handleWhyGermanSubmit);
+                this.skipTextInput('whyGermanInput', 'Skipped response', DNAButton.handleWhyGermanSubmit);
                 break;
             case 'goal-input':
-                this.skipTextInput('goalInput', 'Skipped', DNAButton.handleGoalSubmit);
+                this.skipTextInput('goalInput', 'Skipped response', DNAButton.handleGoalSubmit);
                 break;
             case 'time-input':
-                this.skipTextInput('timeInput', '5 hours', DNAButton.handleTimeSubmit);
+                this.skipTextInput('timeInput', '5 hours per week', DNAButton.handleTimeSubmit);
                 break;
             case 'mother-description':
-                this.skipTextInput('motherDescriptionInput', 'Skipped', DNAButton.handleMotherDescriptionSubmit);
+                this.skipTextInput('motherDescriptionInput', 'Skipped response', DNAButton.handleMotherDescriptionSubmit);
                 break;
             case 'profile':
                 if (typeof Conversation !== 'undefined') {
@@ -486,7 +544,8 @@ var Controls = {
                 }
                 break;
             default:
-                // Default action - advance to next step
+                // Default action - advance to next step without audio
+                console.log('🔄 Default skip action - advancing to next step');
                 setTimeout(function() {
                     if (typeof Conversation !== 'undefined') {
                         Conversation.moveToNextQuestion();
@@ -502,7 +561,9 @@ var Controls = {
             input.value = defaultValue;
         }
         if (typeof submitHandler === 'function') {
-            submitHandler.call(DNAButton);
+            setTimeout(function() {
+                submitHandler.call(DNAButton);
+            }, 100);
         }
     },
 

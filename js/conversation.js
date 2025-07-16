@@ -1,4 +1,4 @@
-// ===== CONVERSATION FLOW & UI LOGIC - COMPLETE FIX =====
+// ===== CONVERSATION FLOW & UI LOGIC - FIXED AUDIO ISSUES =====
 
 var DNAButton = {
     currentMode: 'dna',
@@ -283,7 +283,7 @@ var DNAButton = {
         this.playConfirmationSound();
         
         if (whyValue) {
-            State.saveResponse('whyGerman', whyValue); // CONSISTENT METHOD
+            State.saveResponse('whyGerman', whyValue);
             this.submitToGoogleForm(whyValue, 'why_german');
         }
         
@@ -322,14 +322,14 @@ var DNAButton = {
         
         if (timeValue) {
             var hours = this.parseTimeCommitment(timeValue);
-            State.saveResponse('timeCommitment', hours); // CONSISTENT METHOD
-            State.saveResponse('timeText', timeValue); // CONSISTENT METHOD
+            State.saveResponse('timeCommitment', hours);
+            State.saveResponse('timeText', timeValue);
             this.submitToGoogleForm(timeValue, 'time_commitment');
             
             // Add score based on time commitment
-            if (hours >= 15) State.addScore(5); // CONSISTENT METHOD
-            else if (hours >= 5) State.addScore(3); // CONSISTENT METHOD
-            else State.addScore(1); // CONSISTENT METHOD
+            if (hours >= 15) State.addScore(5);
+            else if (hours >= 5) State.addScore(3);
+            else State.addScore(1);
         }
         
         this.animateInputContainerOut('timeInputContainer');
@@ -343,11 +343,11 @@ var DNAButton = {
     handleProbabilityChoice: function(level) {
         if (this.currentMode !== 'probability') return;
         
-        State.saveResponse('goalLikelihood', level); // CONSISTENT METHOD
+        State.saveResponse('goalLikelihood', level);
         
         // Add score based on confidence level
         var scoreMap = { 'low': -1, 'medium': 2, 'high': 4 };
-        State.addScore(scoreMap[level] || 0); // CONSISTENT METHOD
+        State.addScore(scoreMap[level] || 0);
         
         this.playConfirmationSound();
         this.animateChoiceClick();
@@ -373,8 +373,8 @@ var DNAButton = {
         this.animateChoiceClick();
         
         if (State.step === 5) {
-            State.saveResponse('germanLove', rating); // CONSISTENT METHOD
-            State.addScore(Math.max(0, rating - 5)); // CONSISTENT METHOD
+            State.saveResponse('germanLove', rating);
+            State.addScore(Math.max(0, rating - 5));
             console.log('✅ German love rating saved:', rating);
         }
         
@@ -388,11 +388,11 @@ var DNAButton = {
         this.playConfirmationSound();
         this.animateChoiceClick();
         
-        State.saveResponse('aiChoice', aiType); // CONSISTENT METHOD
+        State.saveResponse('aiChoice', aiType);
         
         // Add score based on AI type choice
         var scoreMap = { 'diverse': 3, 'female': 2, 'male': 1 };
-        State.addScore(scoreMap[aiType] || 0); // CONSISTENT METHOD
+        State.addScore(scoreMap[aiType] || 0);
         
         State.selectedAIType = aiType;
         
@@ -452,7 +452,6 @@ var DNAButton = {
         setTimeout(function() {
             DNAButton.showDNA();
             setTimeout(function() {
-                // FIXED: Show personality profile after step 11
                 DNAButton.showPersonalityProfile();
             }, 1000);
         }, 800);
@@ -632,7 +631,7 @@ var DNAButton = {
         }
     },
 
-    // === PERSONALITY PROFILE GENERATION ===
+    // === PERSONALITY PROFILE GENERATION WITH VARIANTS ===
     getPersonalityProfile: function() {
         var score = State.score;
         var profiles = Config.personalityProfiles;
@@ -647,14 +646,26 @@ var DNAButton = {
         for (var i = 0; i < profiles.length; i++) {
             var profile = profiles[i];
             if (score >= profile.scoreRange[0] && score <= profile.scoreRange[1]) {
+                // Select random variant
+                var variants = profile.variants || [profile];
+                var selectedVariant = variants[Math.floor(Math.random() * variants.length)];
+                
                 return {
-                    title: profile.title,
-                    description: profile.description + '\n\nIhr Deutschziel erreichen Sie in etwa ' + timeString + ' (' + totalHours + ' Stunden).'
+                    title: selectedVariant.title,
+                    description: selectedVariant.description + '\n\nYou should reach your German goal in approximately ' + timeString + ' (' + totalHours + ' hours).'
                 };
             }
         }
         
-        return profiles[2]; // Default to realist
+        // Default to realist with variant selection
+        var defaultProfile = profiles[2];
+        var variants = defaultProfile.variants || [defaultProfile];
+        var selectedVariant = variants[Math.floor(Math.random() * variants.length)];
+        
+        return {
+            title: selectedVariant.title,
+            description: selectedVariant.description + '\n\nYou should reach your German goal in approximately ' + timeString + ' (' + totalHours + ' hours).'
+        };
     },
 
     formatTimeEstimate: function(weeks) {
@@ -662,11 +673,11 @@ var DNAButton = {
         var months = Math.floor((weeks % 52) / 4.33);
         
         if (years > 0) {
-            return years + (years === 1 ? ' Jahr' : ' Jahre');
+            return years + (years === 1 ? ' year' : ' years');
         } else if (months > 0) {
-            return months + (months === 1 ? ' Monat' : ' Monate');
+            return months + (months === 1 ? ' month' : ' months');
         } else {
-            return weeks + (weeks === 1 ? ' Woche' : ' Wochen');
+            return weeks + (weeks === 1 ? ' week' : ' weeks');
         }
     },
 
@@ -684,7 +695,7 @@ var DNAButton = {
             profileContainer.classList.add('visible');
             this.currentMode = 'profile';
             
-            // FIXED: Auto-dissolve after showing profile for 7 seconds
+            // Auto-dissolve after showing profile for 7 seconds
             setTimeout(function() {
                 Conversation.startFinalSequence();
             }, 7000);
@@ -695,7 +706,7 @@ var DNAButton = {
     }
 };
 
-// ===== CONVERSATION CONTROLLER - COMPLETE FIX =====
+// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCE ISSUES =====
 var Conversation = {
     playThankYou: function() {
         State.isSpeaking = true;
@@ -733,19 +744,21 @@ var Conversation = {
     },
 
     moveToNextQuestion: function() {
-        State.nextStep(); // This handles both step increment and progress update
+        State.nextStep();
         console.log('🔄 Moving to step:', State.step);
         
-        // FIXED: Handle AI sequence branching - ALL AI types play their audio
-        if (State.step === 8 && State.selectedAIType === 'male') {
-            this.startMaleAISequence();
-            return;
-        } else if (State.step === 8 && State.selectedAIType === 'female') {
-            this.startFemaleAISequence();
-            return;
-        } else if (State.step === 8 && State.selectedAIType === 'diverse') {
-            this.startDiverseAISequence(); // FIXED: Diverse now plays its own audio
-            return;
+        // FIXED: Handle AI sequence branching with proper step control
+        if (State.step === 8) {
+            if (State.selectedAIType === 'male') {
+                this.startMaleAISequence();
+                return;
+            } else if (State.selectedAIType === 'female') {
+                this.startFemaleAISequence();
+                return;
+            } else if (State.selectedAIType === 'diverse') {
+                this.startDiverseAISequence();
+                return;
+            }
         }
         
         if (State.isComplete()) {
@@ -753,43 +766,57 @@ var Conversation = {
             return;
         }
         
-        State.isSpeaking = true;
-        UI.setVisualizerState('speaking');
-        
-        var audioUrl = State.audioFiles[State.step];
-        console.log('🔊 Playing audio for step:', State.step, audioUrl);
-        
-        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-            WebAudioHelper.play(
-                audioUrl,
-                function() {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    Conversation.showNextButton();
-                },
-                function(e) {
-                    State.isSpeaking = false;
-                    UI.setVisualizerState('active');
-                    Conversation.showNextButton();
-                }
-            );
-        } else {
-            var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = function() {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                Conversation.showNextButton();
-            };
-            audio.onerror = function(e) {
-                State.isSpeaking = false;
-                UI.setVisualizerState('active');
-                Conversation.showNextButton();
-            };
-            audio.play().catch(function(e) {
+        // FIXED: Only play welcome audio on step 0, not when skipping
+        if (State.step === 0 && !State.hasSkippedToStep0) {
+            State.isSpeaking = true;
+            UI.setVisualizerState('speaking');
+            
+            var audioUrl = State.audioFiles[State.step];
+            console.log('🔊 Playing audio for step:', State.step, audioUrl);
+            
+            this.playStepAudio(audioUrl, function() {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
                 Conversation.showNextButton();
             });
+        } else if (State.step > 0) {
+            // For all other steps, play audio normally
+            State.isSpeaking = true;
+            UI.setVisualizerState('speaking');
+            
+            var audioUrl = State.audioFiles[State.step];
+            console.log('🔊 Playing audio for step:', State.step, audioUrl);
+            
+            this.playStepAudio(audioUrl, function() {
+                State.isSpeaking = false;
+                UI.setVisualizerState('active');
+                Conversation.showNextButton();
+            });
+        } else {
+            // Skip audio and go directly to UI
+            console.log('⏭️ Skipping audio for step 0, showing UI directly');
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            this.showNextButton();
+        }
+    },
+
+    // === CENTRALIZED AUDIO PLAYBACK ===
+    playStepAudio: function(audioUrl, onComplete) {
+        var onError = function(e) {
+            console.warn('Step audio error:', e);
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            if (onComplete) onComplete();
+        };
+
+        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+            WebAudioHelper.play(audioUrl, onComplete, onError);
+        } else {
+            var audio = AudioManager.createAudio(audioUrl);
+            audio.onended = onComplete;
+            audio.onerror = onError;
+            audio.play().catch(onError);
         }
     },
 
@@ -838,25 +865,42 @@ var Conversation = {
         }, Config.settings.timing.responseDelay);
     },
 
-    // === AI SEQUENCE HANDLERS - ALL FIXED ===
+    // === FIXED AI SEQUENCE HANDLERS ===
     startMaleAISequence: function() {
         console.log('🔊 Starting Male AI sequence');
-        this.playAISequenceAudio(State.aiTypeMaleAudio, 'male');
+        this.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
+            // FIXED: Jump to step 11 after male sequence, skipping other AI audios
+            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 1000);
+        });
     },
 
     startFemaleAISequence: function() {
         console.log('🔊 Starting Female AI sequence');
-        this.playAISequenceAudio(State.aiTypeFemaleAudio, 'female');
+        this.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
+            // FIXED: Jump to step 11 after female sequence, skipping other AI audios
+            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 1000);
+        });
     },
 
     startDiverseAISequence: function() {
         console.log('🔊 Starting Diverse AI sequence');
-        // FIXED: Use the diverse AI audio from config
-        this.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse');
+        this.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
+            // FIXED: Jump to step 11 after diverse sequence
+            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 1000);
+        });
     },
 
-    // === UNIFIED AI SEQUENCE AUDIO HANDLER ===
-    playAISequenceAudio: function(audioUrl, aiType) {
+    // === UNIFIED AI SEQUENCE AUDIO HANDLER - FIXED ===
+    playAISequenceAudio: function(audioUrl, aiType, onComplete) {
         var self = this;
         
         State.isSpeaking = true;
@@ -864,33 +908,21 @@ var Conversation = {
         
         console.log('🔊 Playing', aiType, 'AI sequence audio:', audioUrl);
         
-        var onComplete = function() {
+        var handleComplete = function() {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            setTimeout(function() {
-                // FIXED: Continue to step 9 after AI sequence
-                console.log('🔄', aiType, 'AI sequence complete - continuing to step 9');
-                self.moveToNextQuestion(); // This will go to step 9
-            }, 1000);
+            console.log('🔄', aiType, 'AI sequence complete');
+            if (onComplete) onComplete();
         };
 
-        var onError = function(e) {
+        var handleError = function(e) {
             console.warn('AI sequence audio error:', e);
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            setTimeout(function() {
-                self.moveToNextQuestion(); // Continue to step 9 even on error
-            }, 1000);
+            if (onComplete) onComplete();
         };
         
-        if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-            WebAudioHelper.play(audioUrl, onComplete, onError);
-        } else {
-            var audio = AudioManager.createAudio(audioUrl);
-            audio.onended = onComplete;
-            audio.onerror = onError;
-            audio.play().catch(onError);
-        }
+        this.playStepAudio(audioUrl, handleComplete);
     },
 
     startFinalSequence: function() {
@@ -933,35 +965,17 @@ var Conversation = {
         if (isMobile && State.mobileAudioStarted) return;
         
         UI.setVisualizerState('active');
-        State.updateProgress(); // Use consistent method
+        State.updateProgress();
         State.step = 0;
         
         var url = State.audioFiles[0];
         UI.setVisualizerState('speaking');
         
-        if (window.AudioContext && WebAudioHelper) {
-            WebAudioHelper.play(url, function() {
-                UI.setVisualizerState('active');
-                setTimeout(function() { 
-                    DNAButton.showText('Bereit', 'Ready'); 
-                }, 2000);
-            }, function(e) {
-                UI.setVisualizerState('active');
-                setTimeout(function() { 
-                    DNAButton.showText('Bereit', 'Ready'); 
-                }, 2000);
-            });
-        } else {
-            var audio = AudioManager.createAudio(url);
-            audio.onended = function() {
-                UI.setVisualizerState('active');
-                setTimeout(function() { DNAButton.showText('Bereit', 'Ready'); }, 2000);
-            };
-            audio.onerror = function(e) {
-                UI.setVisualizerState('active');
-                setTimeout(function() { DNAButton.showText('Bereit', 'Ready'); }, 2000);
-            };
-            audio.play();
-        }
+        this.playStepAudio(url, function() {
+            UI.setVisualizerState('active');
+            setTimeout(function() { 
+                DNAButton.showText('Bereit', 'Ready'); 
+            }, 2000);
+        });
     }
 };
