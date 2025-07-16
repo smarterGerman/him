@@ -447,7 +447,7 @@ var DNAButton = {
         }, 800);
     },
     
-    // === FIXED: 4-SECOND DELAY BEFORE FINAL SEQUENCE ===
+    // === FIXED: NO DELAY AFTER NA GUT - DELAY HAPPENS IN STEP 10 ===
     handleNaGut: function() {
         var self = this;
         self.playConfirmationSound();
@@ -462,11 +462,9 @@ var DNAButton = {
         setTimeout(function() {
             DNAButton.showDNA();
             setTimeout(function() {
-                // FIXED: 4 seconds delay before playing "Another gifted one" audio
-                setTimeout(function() {
-                    Conversation.startFinalSequence();
-                }, Config.settings.timing.finalSequenceDelay); // 4000ms
-            }, 200);
+                // Start final sequence immediately - the 7-second delay already happened in step 10
+                Conversation.startFinalSequence();
+            }, Config.settings.timing.finalSequenceDelay); // Now only 200ms
         }, 800);
     },
 
@@ -862,15 +860,27 @@ var Conversation = {
                     DNAButton.showAIChoices();
                     break;
                 case 8:
-                case 9:
-                case 10:
-                    // Auto-progression steps
+                    // Auto-progression step (AI confirmation audio already handled)
                     setTimeout(function() {
                         Conversation.moveToNextQuestion();
                     }, 2000);
                     break;
+                case 9:
+                    // Play analysis audio ("I'll calculate etc.")
+                    console.log('🔊 Step 9: Playing analysis audio');
+                    Conversation.playAnalysisAudio();
+                    break;
+                case 10:
+                    // 7 second delay before "Another gifted one"
+                    console.log('⏰ Step 10: 7 second delay before "Another gifted one"');
+                    setTimeout(function() {
+                        Conversation.moveToNextQuestion();
+                    }, 7000);
+                    break;
                 case 11:
-                    DNAButton.showText('Na gut', 'Oh well');
+                    // Play "Another gifted one" audio, then show "Na gut" button
+                    console.log('🔊 Step 11: Playing "Another gifted one" audio');
+                    Conversation.playAnotherGiftedOneAudio();
                     break;
                 default:
                     break;
@@ -878,13 +888,12 @@ var Conversation = {
         }, Config.settings.timing.responseDelay);
     },
 
-    // === FIXED AI SEQUENCE HANDLERS ===
+    // === FIXED AI SEQUENCE HANDLERS - ONLY PLAY CONFIRMATION ===
     startMaleAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Male AI sequence - playing audio file 8');
+        console.log('🔊 Starting Male AI confirmation - playing audio file 8');
         self.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
-            // Jump to step 11 after male sequence
-            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            // Continue to step 9 (analysis audio)
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
             }, 1000);
@@ -893,10 +902,9 @@ var Conversation = {
 
     startFemaleAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Female AI sequence - playing audio file 9');
+        console.log('🔊 Starting Female AI confirmation - playing audio file 9');
         self.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
-            // Jump to step 11 after female sequence
-            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            // Continue to step 9 (analysis audio)
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
             }, 1000);
@@ -906,10 +914,9 @@ var Conversation = {
     // === FIXED: DIVERSE AI SEQUENCE NOW USES CORRECT AUDIO ===
     startDiverseAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Diverse AI sequence - playing audio file 10:', State.aiTypeDiverseAudio);
+        console.log('🔊 Starting Diverse AI confirmation - playing audio file 10:', State.aiTypeDiverseAudio);
         self.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
-            // Jump to step 11 after diverse sequence
-            State.step = 10; // Will be incremented to 11 in moveToNextQuestion
+            // Continue to step 9 (analysis audio)
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
             }, 1000);
@@ -940,6 +947,66 @@ var Conversation = {
         };
         
         self.playStepAudio(audioUrl, handleComplete);
+    },
+
+    // === NEW: ANALYSIS AUDIO HANDLER ===
+    playAnalysisAudio: function() {
+        var self = this;
+        
+        State.isSpeaking = true;
+        UI.setVisualizerState('speaking');
+        
+        console.log('🔊 Playing analysis audio:', State.analysingInputAudio);
+        
+        var handleComplete = function() {
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            console.log('🔄 Analysis audio complete, moving to step 10');
+            setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 1000);
+        };
+
+        var handleError = function(e) {
+            console.warn('Analysis audio error:', e);
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 1000);
+        };
+        
+        self.playStepAudio(State.analysingInputAudio, handleComplete);
+    },
+
+    // === NEW: "ANOTHER GIFTED ONE" AUDIO HANDLER ===
+    playAnotherGiftedOneAudio: function() {
+        var self = this;
+        
+        State.isSpeaking = true;
+        UI.setVisualizerState('speaking');
+        
+        console.log('🔊 Playing "Another gifted one" audio:', State.audioFiles[11]);
+        
+        var handleComplete = function() {
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            console.log('🔄 "Another gifted one" audio complete, showing Na gut button');
+            setTimeout(function() {
+                DNAButton.showText('Na gut', 'Oh well');
+            }, 1000);
+        };
+
+        var handleError = function(e) {
+            console.warn('"Another gifted one" audio error:', e);
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            setTimeout(function() {
+                DNAButton.showText('Na gut', 'Oh well');
+            }, 1000);
+        };
+        
+        self.playStepAudio(State.audioFiles[11], handleComplete);
     },
 
     // === FIXED: COMPLETE FINAL SEQUENCE WITH PROPER PROFILE DISPLAY ===
