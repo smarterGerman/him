@@ -1,4 +1,4 @@
-// ===== CONVERSATION FLOW & UI LOGIC - FIXED ALL ISSUES =====
+// ===== CONVERSATION FLOW & UI LOGIC - FIXED SIMPLE TRANSITION =====
 
 var DNAButton = {
     currentMode: 'dna',
@@ -716,7 +716,7 @@ var DNAButton = {
     }
 };
 
-// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCES & AUDIO RACE CONDITIONS =====
+// ===== CONVERSATION CONTROLLER - SIMPLIFIED TRANSITION =====
 var Conversation = {
     playThankYou: function() {
         State.isSpeaking = true;
@@ -1080,104 +1080,41 @@ var Conversation = {
     },
 
     playSystemErrorAudio: function() {
-        var self = this;
-        // Prevent multiple plays
-        if (self._systemErrorPlaying) {
-            console.log('⚠️ System error audio already playing, skipping...');
-            return;
-        }
-        self._systemErrorPlaying = true;
-        
-        console.log('🔊 Attempting to play system error audio...');
-        
         var audio = AudioManager.createAudio(State.systemErrorAudio);
         audio.volume = Config.settings.audioVolume.effects;
-        audio.preload = 'auto';
         
-        // Start fading out background music when system error begins
+        // Start fading out background music
         var music = UI.element('backgroundMusic');
         if (music && SG1.musicEnabled && music.volume > 0) {
-            var originalVolume = music.volume;
             var fadeSteps = 15;
             var fadeInterval = 150;
-            var volumeStep = originalVolume / fadeSteps;
+            var volumeStep = music.volume / fadeSteps;
             
             var fadeOut = setInterval(function() {
                 if (music.volume > volumeStep) {
                     music.volume = Math.max(0, music.volume - volumeStep);
                 } else {
-                    music.volume = 0.1; // Keep very low volume, don't mute completely yet
+                    music.volume = 0.1;
                     clearInterval(fadeOut);
-                    console.log('🔇 Background music faded to low volume for system error');
                 }
             }, fadeInterval);
         }
         
-        audio.onloadeddata = function() {
-            console.log('✅ System error audio loaded successfully');
-        };
-        
-        audio.onended = function() {
-            console.log('✅ System error audio completed');
-            self._systemErrorPlaying = false;
-        };
-        
-        audio.onerror = function(e) {
-            console.log('❌ System error audio failed:', e);
-            self._systemErrorPlaying = false;
-        };
-        
-        var playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(function() {
-                console.log('✅ System error audio started playing');
-            }).catch(function(e) {
-                console.log('❌ System error audio play failed:', e.message);
-                self._systemErrorPlaying = false;
-                
-                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-                    console.log('🔄 Trying WebAudio fallback...');
-                    WebAudioHelper.play(
-                        State.systemErrorAudio,
-                        function() {
-                            console.log('✅ System error audio completed via WebAudio');
-                            self._systemErrorPlaying = false;
-                        },
-                        function(e) {
-                            console.log('❌ System error audio WebAudio failed:', e.message);
-                            self._systemErrorPlaying = false;
-                        }
-                    );
-                }
-            });
-        } else {
-            console.log('❌ Audio play promise not supported');
-            self._systemErrorPlaying = false;
-        }
+        audio.play().catch(function(e) {
+            console.log('System error audio failed:', e.message);
+        });
     },
 
     playHumanWakeupAudio: function() {
-        var self = this;
-        // Prevent multiple plays
-        if (self._humanWakeupPlaying) {
-            console.log('⚠️ Human wakeup audio already playing, skipping...');
-            return;
-        }
-        self._humanWakeupPlaying = true;
-        
-        console.log('🔊 Attempting to play human wakeup audio...');
-        
         var audio = AudioManager.createAudio(State.humanWakeupAudio);
         audio.volume = Config.settings.audioVolume.effects;
-        audio.preload = 'auto';
         
-        // Add enhanced fade out effect for background music
+        // Fade out background music completely
         var music = UI.element('backgroundMusic');
         if (music && SG1.musicEnabled && music.volume > 0) {
-            var originalVolume = music.volume;
             var fadeSteps = 20;
             var fadeInterval = 100;
-            var volumeStep = originalVolume / fadeSteps;
+            var volumeStep = music.volume / fadeSteps;
             
             var fadeOut = setInterval(function() {
                 if (music.volume > volumeStep) {
@@ -1185,21 +1122,11 @@ var Conversation = {
                 } else {
                     music.volume = 0;
                     clearInterval(fadeOut);
-                    console.log('🔇 Background music faded out completely');
                 }
             }, fadeInterval);
         }
         
-        window.audioElements = window.audioElements || [];
-        window.audioElements.push(audio);
-        
-        audio.onloadeddata = function() {
-            console.log('✅ Human wakeup audio loaded successfully');
-        };
-        
         audio.onended = function() {
-            console.log('✅ Human wakeup audio completed');
-            self._humanWakeupPlaying = false;
             // Restore music volume gradually
             if (music && SG1.musicEnabled) {
                 var targetVolume = Config.settings.audioVolume.background;
@@ -1213,44 +1140,14 @@ var Conversation = {
                     } else {
                         music.volume = targetVolume;
                         clearInterval(fadeIn);
-                        console.log('🔊 Background music restored');
                     }
                 }, restoreInterval);
             }
         };
         
-        audio.onerror = function(e) {
-            console.log('❌ Human wakeup audio failed:', e);
-            self._humanWakeupPlaying = false;
-        };
-        
-        var playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(function() {
-                console.log('✅ Human wakeup audio started playing');
-            }).catch(function(e) {
-                console.log('❌ Human wakeup audio play failed:', e.message);
-                self._humanWakeupPlaying = false;
-                
-                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
-                    console.log('🔄 Trying WebAudio fallback for human wakeup...');
-                    WebAudioHelper.play(
-                        State.humanWakeupAudio,
-                        function() {
-                            console.log('✅ Human wakeup audio completed via WebAudio');
-                            self._humanWakeupPlaying = false;
-                        },
-                        function(e) {
-                            console.log('❌ Human wakeup audio WebAudio failed:', e.message);
-                            self._humanWakeupPlaying = false;
-                        }
-                    );
-                }
-            });
-        } else {
-            console.log('❌ Audio play promise not supported for human wakeup');
-            self._humanWakeupPlaying = false;
-        }
+        audio.play().catch(function(e) {
+            console.log('Human wakeup audio failed:', e.message);
+        });
     },
 
     showComplexityCounter: function() {
@@ -1276,15 +1173,8 @@ var Conversation = {
         }
     },
 
+    // === SIMPLIFIED TRANSITION (LIKE ORIGINAL HTML) ===
     dissolveAndTransition: function() {
-        var self = this;
-        // Prevent multiple executions
-        if (self._transitionInProgress) {
-            console.log('⚠️ Transition already in progress, skipping...');
-            return;
-        }
-        self._transitionInProgress = true;
-        
         console.log('🌫️ Starting dissolve and transition...');
         
         var dissolveOverlay = UI.element('dissolveOverlay');
@@ -1293,24 +1183,10 @@ var Conversation = {
             dissolveOverlay.classList.add('active');
             console.log('🌫️ Dissolve overlay activated');
             
-            // Try Teachable completion during dissolve
+            // Wait 3 seconds then try to advance (like original)
             setTimeout(function() {
-                // Use same priority chain as completeCourse()
-                var primaryButton = document.querySelector('.lecture_complete_button.nav-btn.complete');
-                
-                if (primaryButton && primaryButton.offsetParent !== null) {
-                    console.log('✅ Found completion button during dissolve!');
-                    primaryButton.click();
-                    return;
-                }
-                
-                // Continue to completeCourse if no button found
-                setTimeout(function() {
-                    Conversation.completeCourse();
-                }, 2000);
-                
-            }, 1000);
-            
+                Conversation.completeCourse();
+            }, 3000);
         } else {
             console.log('⚠️ No dissolve overlay found, proceeding directly...');
             setTimeout(function() {
@@ -1319,106 +1195,25 @@ var Conversation = {
         }
     },
 
-    // === FIXED: Teachable Transition with correct priority chain ===
+    // === SIMPLE COURSE COMPLETION (LIKE ORIGINAL HTML) ===
     completeCourse: function() {
-        var self = this;
-        // Prevent multiple executions
-        if (self._completionInProgress) {
-            console.log('⚠️ Course completion already in progress, skipping...');
-            return;
-        }
-        self._completionInProgress = true;
-        
-        console.log('🎉 Course completed! Attempting Teachable transition...');
-        
-        // Set a hard timeout to ensure we always clean up
-        setTimeout(function() {
-            console.log('🚨 Hard timeout reached, forcing cleanup...');
-            self.forceCleanup();
-        }, 15000); // 15 second hard limit
+        console.log('🎉 Course completed! Attempting transition...');
         
         setTimeout(function() {
-            // === PRIORITY CHAIN FOR TEACHABLE COMPLETION ===
-            
-            // 1. PRIMARY: Exact Teachable completion button with all three classes
-            var primarySelector = '.lecture_complete_button.nav-btn.complete';
-            var primaryButton = document.querySelector(primarySelector);
-            
-            if (primaryButton && primaryButton.offsetParent !== null) {
-                console.log('✅ Found PRIMARY Teachable completion button!');
-                primaryButton.click();
-                setTimeout(function() { self.forceCleanup(); }, 2000);
-                return;
-            }
-            
-            // 2. FALLBACK: Individual class combinations
-            var fallbackSelectors = [
-                'button.lecture_complete_button',
-                '.nav-btn.complete',
-                'button.nav-btn',
-                '.lecture_complete_button'
-            ];
-            
-            for (var i = 0; i < fallbackSelectors.length; i++) {
-                var selector = fallbackSelectors[i];
-                var button = document.querySelector(selector);
-                
-                if (button && button.offsetParent !== null) {
-                    console.log('✅ Found FALLBACK completion button:', selector);
-                    button.click();
-                    setTimeout(function() { self.forceCleanup(); }, 2000);
+            // SIMPLE: Look for any button with completion text (like original)
+            var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+            for (var i = 0; i < buttons.length; i++) {
+                var btn = buttons[i];
+                var text = btn.textContent.toLowerCase();
+                if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                    console.log('✅ Found completion button:', text);
+                    btn.click();
                     return;
                 }
             }
             
-            // 3. GENERIC: Text-based search (old method as last resort)
-            console.log('🔄 Trying generic text-based button search...');
-            var buttons = document.querySelectorAll('button, .btn, [role="button"], a[href*="lectures"], .lecture-complete, .next-lecture, .continue-btn, span.nav-text, .nav-text');
-            
-            for (var j = 0; j < buttons.length; j++) {
-                var btn = buttons[j];
-                var text = btn.textContent.toLowerCase().trim();
-                var classes = btn.className.toLowerCase();
-                
-                if (text === 'complete and continue' || 
-                    classes.indexOf('nav-text') !== -1 ||
-                    text.indexOf('complete and continue') !== -1 ||
-                    text.includes('complete') || 
-                    text.includes('continue') || 
-                    text.includes('next') ||
-                    text.includes('mark complete') ||
-                    text.includes('mark as complete') ||
-                    classes.includes('complete') ||
-                    classes.includes('continue') ||
-                    classes.includes('next')) {
-                    
-                    console.log('✅ Found generic completion button:', text || classes);
-                    
-                    // Handle span elements specially
-                    var clickTarget = btn;
-                    if (btn.tagName === 'SPAN') {
-                        var parent = btn.parentElement;
-                        while (parent && parent !== document.body) {
-                            if (parent.onclick || 
-                                parent.tagName === 'BUTTON' || 
-                                parent.tagName === 'A' ||
-                                parent.getAttribute('role') === 'button' ||
-                                parent.style.cursor === 'pointer') {
-                                clickTarget = parent;
-                                break;
-                            }
-                            parent = parent.parentElement;
-                        }
-                    }
-                    
-                    clickTarget.click();
-                    setTimeout(function() { self.forceCleanup(); }, 2000);
-                    return;
-                }
-            }
-            
-            // 4. LAST RESORT: URL increment
-            console.log('🔄 All methods failed, trying URL navigation...');
+            // FALLBACK: Simple URL increment (updated for your domain)
+            console.log('🔄 No button found, trying URL increment...');
             try {
                 var currentUrl = window.location.href;
                 if (currentUrl.includes('/lectures/')) {
@@ -1437,51 +1232,10 @@ var Conversation = {
                 console.log('❌ Navigation failed:', e.message);
             }
             
-            // Final cleanup if all methods fail
-            console.log('🧹 All methods failed, cleaning up...');
-            self.forceCleanup();
+            // If all else fails, just log and let user continue manually
+            console.log('🤷‍♂️ Could not auto-advance, user can continue manually');
             
-        }, 1000);
-    },
-
-    forceCleanup: function() {
-        var self = this;
-        console.log('🧹 Force cleanup initiated...');
-        
-        try {
-            // Remove dissolve overlay
-            var dissolveOverlay = UI.element('dissolveOverlay');
-            if (dissolveOverlay) {
-                dissolveOverlay.classList.remove('active');
-                dissolveOverlay.style.opacity = '0';
-                console.log('✅ Dissolve overlay removed');
-            }
-            
-            // Hide SG1 container
-            var sg1Container = document.querySelector('.sg1-container');
-            if (sg1Container) {
-                sg1Container.style.transition = 'opacity 1s ease-out';
-                sg1Container.style.opacity = '0';
-                
-                setTimeout(function() {
-                    sg1Container.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    document.documentElement.style.overflow = 'auto';
-                    console.log('✅ SG1 container hidden, user can continue manually');
-                }, 1000);
-            }
-            
-            // Reset flags
-            self._transitionInProgress = false;
-            self._completionInProgress = false;
-            self._systemErrorPlaying = false;
-            self._humanWakeupPlaying = false;
-            
-            console.log('✅ Force cleanup completed');
-            
-        } catch (e) {
-            console.log('❌ Cleanup failed:', e.message);
-        }
+        }, 2000); // Just 2 seconds like original
     },
 
     startQ1: function() {
