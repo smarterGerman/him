@@ -9,12 +9,12 @@ var Config = {
         3: 'https://uploads.teachablecdn.com/attachments/3ac16fa084c24c36aa0dfd5373cdb9e8.mp3',  // Time
         4: 'https://uploads.teachablecdn.com/attachments/95e986d1bd1f427db03b976b4f60f0a7.mp3',  // Probability
         5: 'https://uploads.teachablecdn.com/attachments/64ab0d397cb140dd86458e0b42ea494e.mp3',  // German Love
-        6: 'https://uploads.teachablecdn.com/attachments/3241a2f7d8e447469e9d3e038afdbf07.mp3',  // Mother
-        7: 'https://uploads.teachablecdn.com/attachments/1c56f997a626423dabf739a56f01b3ee.mp3',  // AI Type (UPDATED)
-        8: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',  // Processing
-        9: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3',  // Continuation
-        10: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3', // Analysis
-        11: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3'  // Final
+        6: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',  // Mother
+        7: 'https://uploads.teachablecdn.com/attachments/1c56f997a626423dabf739a56f01b3ee.mp3',  // AI Type
+        8: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',  // AI Type Male
+        9: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',  // AI Type Female  
+        10: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3', // AI Type Diverse
+        11: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3'  // Final
     },
     
     // Special audio files
@@ -24,10 +24,8 @@ var Config = {
         systemError: 'https://uploads.teachablecdn.com/attachments/595285714e734e99bc63b49e3e70a1e4.mp3',
         humanWakeup: 'https://uploads.teachablecdn.com/attachments/cec6086e76134866a3e151ba70ab4651.mp3',
         backgroundMusic: 'https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3',
-        // AI Type specific audio (NEW)
-        aiTypeMale: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',
-        aiTypeFemale: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',
-        aiTypeDiverse: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3'
+        // background audio
+        analysingInput: 'https://uploads.teachablecdn.com/attachments/45396480d7f748f29608c56ac2e11ad7.mp3' // Analysing input
     },
     
     // Application settings
@@ -95,7 +93,7 @@ var Config = {
             7: {
                 'male': 'male_sequence',     // Triggers male AI installation
                 'female': 'female_sequence', // Triggers female AI installation
-                'diverse': 'diverse_sequence' // Triggers diverse AI audio (CORRECTED)
+                'diverse': 'diverse_sequence' // Triggers diverse AI audio
             }
         }
     },
