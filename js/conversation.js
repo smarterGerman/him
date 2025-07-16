@@ -1167,8 +1167,8 @@ var Conversation = {
         console.log('🎉 Course completed! Attempting Teachable transition...');
         
         setTimeout(function() {
-            // Method 1: Look for Teachable completion buttons (most common)
-            var buttons = document.querySelectorAll('button, .btn, [role="button"], a[href*="lectures"], .lecture-complete, .next-lecture, .continue-btn');
+            // Method 1: Look for Teachable completion buttons (UPDATED for specific structure)
+            var buttons = document.querySelectorAll('button, .btn, [role="button"], a[href*="lectures"], .lecture-complete, .next-lecture, .continue-btn, span.nav-text, .nav-text');
             
             console.log('🔍 Found', buttons.length, 'potential buttons');
             
@@ -1178,9 +1178,39 @@ var Conversation = {
                 var classes = btn.className.toLowerCase();
                 var href = btn.href || '';
                 
-                console.log('🔍 Checking button:', text, '| Classes:', classes, '| Href:', href);
+                console.log('🔍 Checking element:', btn.tagName, '| Text:', text, '| Classes:', classes);
                 
-                // Check for common Teachable completion patterns
+                // SPECIFIC CHECK for Teachable "Complete and Continue" button
+                if (text === 'complete and continue' || 
+                    classes.indexOf('nav-text') !== -1 ||
+                    text.indexOf('complete and continue') !== -1) {
+                    
+                    console.log('✅ Found Teachable Complete and Continue button!');
+                    
+                    // Click the span or its parent clickable element
+                    var clickTarget = btn;
+                    if (btn.tagName === 'SPAN') {
+                        // Look for clickable parent (button, a, div with onclick, etc.)
+                        var parent = btn.parentElement;
+                        while (parent && parent !== document.body) {
+                            if (parent.onclick || 
+                                parent.tagName === 'BUTTON' || 
+                                parent.tagName === 'A' ||
+                                parent.getAttribute('role') === 'button' ||
+                                parent.style.cursor === 'pointer') {
+                                clickTarget = parent;
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                    
+                    console.log('🎯 Clicking target:', clickTarget.tagName, clickTarget.className);
+                    clickTarget.click();
+                    return;
+                }
+                
+                // Check for other common Teachable completion patterns
                 if (text.indexOf('complete') !== -1 || 
                     text.indexOf('continue') !== -1 || 
                     text.indexOf('next') !== -1 ||
@@ -1201,6 +1231,8 @@ var Conversation = {
             console.log('🔄 Method 1 failed, trying Teachable-specific selectors...');
             
             var teachableSelectors = [
+                'span.nav-text',
+                '.nav-text',
                 '.lecture-attachment-complete-button',
                 '.lecture-complete-button', 
                 '.complete-button',
@@ -1208,7 +1240,9 @@ var Conversation = {
                 '.lecture-sidebar .btn',
                 '[data-lecture-id] .btn',
                 '.lecture-content .btn',
-                '.course-player .btn'
+                '.course-player .btn',
+                '[onclick*="complete"]',
+                '[onclick*="continue"]'
             ];
             
             for (var j = 0; j < teachableSelectors.length; j++) {
@@ -1218,9 +1252,27 @@ var Conversation = {
                 for (var k = 0; k < elements.length; k++) {
                     var element = elements[k];
                     if (element.offsetParent !== null) { // Check if visible
-                        console.log('✅ Found Teachable element:', selector);
-                        element.click();
-                        return;
+                        var elementText = element.textContent.toLowerCase().trim();
+                        console.log('🔍 Found element with selector', selector + ':', elementText);
+                        
+                        if (elementText.includes('complete') || elementText.includes('continue')) {
+                            console.log('✅ Found Teachable element:', selector, elementText);
+                            
+                            // Handle span elements specially
+                            if (element.tagName === 'SPAN') {
+                                var clickableParent = element.parentElement;
+                                while (clickableParent && clickableParent !== document.body) {
+                                    if (clickableParent.onclick || clickableParent.tagName === 'BUTTON' || clickableParent.tagName === 'A') {
+                                        clickableParent.click();
+                                        return;
+                                    }
+                                    clickableParent = clickableParent.parentElement;
+                                }
+                            } else {
+                                element.click();
+                                return;
+                            }
+                        }
                     }
                 }
             }
