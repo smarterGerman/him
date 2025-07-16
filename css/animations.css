@@ -150,3 +150,51 @@
 .audio-fade-out {
     transition: volume 2s ease-out;
 }
+
+/* ===== MALE VOICE DNA STATE - PLASMA WAVE ===== */
+.voice-visualizer.male-voice .dna-strand {
+    stroke: #ff1493;
+    stroke-width: 7;
+    filter: drop-shadow(0 0 5px rgba(255, 20, 147, 1)) 
+            drop-shadow(0 0 10px rgba(255, 105, 180, 0.8));
+    animation: sg1DNAFlowReverseFast 3s linear infinite, 
+               plasmaWave 1.5s ease-in-out infinite;
+    transition: all 1.5s ease;
+}
+
+@keyframes sg1DNAFlowReverseFast {
+    0% { transform: rotateX(360deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+@keyframes plasmaWave {
+    0%, 100% { 
+        stroke: #ff1493;
+        stroke-width: 7;
+    }
+    25% { 
+        stroke: #ff69b4;
+        stroke-width: 9;
+    }
+    50% { 
+        stroke: #ffb6c1;
+        stroke-width: 7;
+    }
+    75% { 
+        stroke: #ff1493;
+        stroke-width: 8;
+    }
+}
+
+.voice-visualizer.male-voice .dna-strand:nth-child(2) {
+    animation-delay: 0.5s, 0.5s;
+}
+
+.voice-visualizer.male-voice .dna-strand:nth-child(3) {
+    animation-delay: 1s, 1s;
+}
+
+.voice-visualizer.voice-transition .dna-strand {
+    opacity: 0.7;
+    filter: blur(2px);
+}

@@ -277,71 +277,70 @@ var DNAButton = {
 
     // === CONSISTENT INPUT HANDLERS (USING STATE METHODS) ===
     handleWhyGermanSubmit: function() {
-        var self = this;
-        var whyInput = UI.element('whyGermanInput');
-        var whyValue = whyInput ? whyInput.value.trim() : '';
-        
-        self.playConfirmationSound();
-        
-        if (whyValue) {
-            State.saveResponse('whyGerman', whyValue);
-            self.submitToGoogleForm(whyValue, 'why_german');
-        }
-        
-        self.animateInputContainerOut('whyGermanInputContainer');
-        
-        setTimeout(function() {
-            DNAButton.showDNA();
-            Conversation.playThankYou();
-        }, 800);
-    },
+    var self = this;
+    var whyInput = UI.element('whyGermanInput');
+    var whyValue = whyInput ? whyInput.value.trim() : '';
+    
+    self.playConfirmationSound();
+    
+    if (whyValue) {
+        State.saveResponse('whyGerman', whyValue);
+        // REMOVED: self.submitToGoogleForm(whyValue, 'why_german');
+    }
+    
+    self.animateInputContainerOut('whyGermanInputContainer');
+    
+    setTimeout(function() {
+        DNAButton.showDNA();
+        Conversation.playThankYou();
+    }, 800);
+},
 
-    handleGoalSubmit: function() {
-        var self = this;
-        var goalInput = UI.element('goalInput');
-        var goalValue = goalInput ? goalInput.value.trim() : '';
-        
-        self.playConfirmationSound();
-        
-        if (goalValue) {
-            self.scoreGoal(goalValue);
-            self.submitToGoogleForm(goalValue, 'goal');
-        }
-        
-        self.animateInputContainerOut('goalInputContainer');
-        
-        setTimeout(function() {
-            DNAButton.showDNA();
-            Conversation.playThankYou();
-        }, 800);
-    },
+handleGoalSubmit: function() {
+    var self = this;
+    var goalInput = UI.element('goalInput');
+    var goalValue = goalInput ? goalInput.value.trim() : '';
+    
+    self.playConfirmationSound();
+    
+    if (goalValue) {
+        self.scoreGoal(goalValue);
+        // REMOVED: self.submitToGoogleForm(goalValue, 'goal');
+    }
+    
+    self.animateInputContainerOut('goalInputContainer');
+    
+    setTimeout(function() {
+        DNAButton.showDNA();
+        Conversation.playThankYou();
+    }, 800);
+},
 
-    handleTimeSubmit: function() {
-        var self = this;
-        var timeInput = UI.element('timeInput');
-        var timeValue = timeInput ? timeInput.value.trim() : '';
+handleTimeSubmit: function() {
+    var self = this;
+    var timeInput = UI.element('timeInput');
+    var timeValue = timeInput ? timeInput.value.trim() : '';
+    
+    self.playConfirmationSound();
+    
+    if (timeValue) {
+        var hours = self.parseTimeCommitment(timeValue);
+        State.saveResponse('timeCommitment', hours);
+        State.saveResponse('timeText', timeValue);
+        // REMOVED: self.submitToGoogleForm(timeValue, 'time_commitment');
         
-        self.playConfirmationSound();
-        
-        if (timeValue) {
-            var hours = self.parseTimeCommitment(timeValue);
-            State.saveResponse('timeCommitment', hours);
-            State.saveResponse('timeText', timeValue);
-            self.submitToGoogleForm(timeValue, 'time_commitment');
-            
-            // Add score based on time commitment
-            if (hours >= 15) State.addScore(5);
-            else if (hours >= 5) State.addScore(3);
-            else State.addScore(1);
-        }
-        
-        self.animateInputContainerOut('timeInputContainer');
-        
-        setTimeout(function() {
-            DNAButton.showDNA();
-            Conversation.playThankYou();
-        }, 800);
-    },
+        if (hours >= 15) State.addScore(5);
+        else if (hours >= 5) State.addScore(3);
+        else State.addScore(1);
+    }
+    
+    self.animateInputContainerOut('timeInputContainer');
+    
+    setTimeout(function() {
+        DNAButton.showDNA();
+        Conversation.playThankYou();
+    }, 800);
+},
 
     handleProbabilityChoice: function(level) {
         var self = this;
@@ -409,24 +408,24 @@ var DNAButton = {
     },
 
     handleMotherDescriptionSubmit: function() {
-        var self = this;
-        var motherInput = UI.element('motherDescriptionInput');
-        var motherValue = motherInput ? motherInput.value.trim() : '';
-        
-        self.playConfirmationSound();
-        
-        if (motherValue) {
-            self.scoreMotherDescription(motherValue);
-            self.submitToGoogleForm(motherValue, 'mother_description');
-        }
-        
-        self.animateInputContainerOut('motherDescriptionContainer');
-        
-        setTimeout(function() {
-            DNAButton.showDNA();
-            Conversation.playThankYou();
-        }, 800);
-    },
+    var self = this;
+    var motherInput = UI.element('motherDescriptionInput');
+    var motherValue = motherInput ? motherInput.value.trim() : '';
+    
+    self.playConfirmationSound();
+    
+    if (motherValue) {
+        self.scoreMotherDescription(motherValue);
+        // REMOVED: self.submitToGoogleForm(motherValue, 'mother_description');
+    }
+    
+    self.animateInputContainerOut('motherDescriptionContainer');
+    
+    setTimeout(function() {
+        DNAButton.showDNA();
+        Conversation.playThankYou();
+    }, 800);
+},
     
     handleBereit: function() {
         var self = this;
@@ -608,40 +607,51 @@ var DNAButton = {
     },
 
     // === GOOGLE FORM SUBMISSION ===
-    submitToGoogleForm: function(value, type) {
-        try {
-            var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
-            
-            var fieldMap = {
-                'why_german': 'entry.836554877',
-                'goal': 'entry.1685277614',
-                'time_commitment': 'entry.1810441905',
-                'mother_description': 'entry.745882257'
-            };
-            
-            var fieldName = fieldMap[type] || 'entry.1685277614';
-            
-            var params = new URLSearchParams();
-            params.append(fieldName, value);
-            params.append('submit', 'Submit');
-            
-            fetch(baseUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params.toString()
-            }).then(function() {
-                console.log('✅ SUBMITTED TO GOOGLE SHEET:', type, '=', value);
-            }).catch(function(e) {
-                console.log('❌ SUBMISSION ERROR:', e.message);
-            });
-            
-        } catch (e) {
-            console.log('❌ GOOGLE SHEET SUBMISSION ERROR:', e.message);
+collectFormData: function() {
+    // Instead of submitting immediately, just store the data
+    console.log('📝 Form data collected, will submit at completion');
+},
+
+submitAllFormData: function() {
+    try {
+        var baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc-hRZpWi9wo0j9xMtrAStg1ivm_i420KNFFEY5qoeP1zUFVQ/formResponse';
+        
+        var params = new URLSearchParams();
+        
+        // Add all responses at once
+        if (State.responses.whyGerman) {
+            params.append('entry.836554877', State.responses.whyGerman);
         }
-    },
+        if (State.responses.goalText) {
+            params.append('entry.1685277614', State.responses.goalText);
+        }
+        if (State.responses.timeText) {
+            params.append('entry.1810441905', State.responses.timeText);
+        }
+        if (State.responses.motherDescription) {
+            params.append('entry.745882257', State.responses.motherDescription);
+        }
+        
+        params.append('submit', 'Submit');
+        
+        // Single submission with all data
+        fetch(baseUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params.toString()
+        }).then(function() {
+            console.log('✅ ALL DATA SUBMITTED TO GOOGLE SHEET IN ONE ROW');
+        }).catch(function(e) {
+            console.log('❌ SUBMISSION ERROR:', e.message);
+        });
+        
+    } catch (e) {
+        console.log('❌ GOOGLE SHEET SUBMISSION ERROR:', e.message);
+    }
+},
 
     // === PERSONALITY PROFILE GENERATION WITH VARIANTS ===
     getPersonalityProfile: function() {
@@ -1231,6 +1241,7 @@ var Conversation = {
     // === COURSE COMPLETION WITH PARENT URL DETECTION ===
     completeCourse: function() {
         console.log('🎉 Course completed! Attempting transition...');
+        DNAButton.submitAllFormData(); // Submit all collected data in one row
         console.log('📍 Current URL:', window.location.href);
         console.log('📍 In iframe?', window.parent !== window);
         
