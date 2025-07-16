@@ -1224,29 +1224,16 @@ var Conversation = {
             var urlLower = parentUrl.toLowerCase();
             
             // Check for level indicators in the URL
-            // Look for patterns like: a1-beginners, a2-elementary, etc.
-            if (urlLower.includes('a1-beginner') || urlLower.includes('a1_beginner')) {
+            // Look for patterns like: a1-beginners-german-free, a2-elementary-german-free, etc.
+            if (urlLower.includes('a1-beginners-german-free')) {
                 return 'A1';
-            } else if (urlLower.includes('a2-elementary') || urlLower.includes('a2_elementary')) {
+            } else if (urlLower.includes('a2-elementary-german-free')) {
                 return 'A2';
-            } else if (urlLower.includes('b1-intermediate') || urlLower.includes('b1_intermediate')) {
+            } else if (urlLower.includes('b1-intermediate-german-free')) {
                 return 'B1';
-            } else if (urlLower.includes('b2-upper') || urlLower.includes('b2_upper')) {
+            } else if (urlLower.includes('b2-upper-intermediate-german-free')) {
                 return 'B2';
-            } else if (urlLower.includes('c1-advanced') || urlLower.includes('c1_advanced')) {
-                return 'C1';
-            }
-            
-            // Alternative: Look for just the level codes
-            if (urlLower.includes('/a1/') || urlLower.includes('-a1-')) {
-                return 'A1';
-            } else if (urlLower.includes('/a2/') || urlLower.includes('-a2-')) {
-                return 'A2';
-            } else if (urlLower.includes('/b1/') || urlLower.includes('-b1-')) {
-                return 'B1';
-            } else if (urlLower.includes('/b2/') || urlLower.includes('-b2-')) {
-                return 'B2';
-            } else if (urlLower.includes('/c1/') || urlLower.includes('-c1-')) {
+            } else if (urlLower.includes('c1-advanced-german')) {
                 return 'C1';
             }
             
@@ -1265,13 +1252,13 @@ var Conversation = {
         console.log('📍 Current URL:', window.location.href);
         console.log('📍 In iframe?', window.parent !== window);
         
-        // Define next lecture URLs for each level
+        // Define next lecture URLs for each level - FULL TEACHABLE URLs
         var nextLectureUrls = {
-            'A1': '/lectures/49317891',
-            'A2': '/lectures/60771293',
-            'B1': '/lectures/60771639',
-            'B2': '/lectures/60771936',
-            'C1': '/lectures/36642764'
+            'A1': 'https://courses.smartergerman.com/courses/a1-beginners-german-free/lectures/49317891',
+            'A2': 'https://courses.smartergerman.com/courses/a2-elementary-german-free/lectures/60771293',
+            'B1': 'https://courses.smartergerman.com/courses/b1-intermediate-german-free/lectures/60771639',
+            'B2': 'https://courses.smartergerman.com/courses/b2-upper-intermediate-german-free/lectures/60771936',
+            'C1': 'https://courses.smartergerman.com/courses/c1-advanced-german/lectures/36642764'
         };
         
         setTimeout(function() {
@@ -1368,17 +1355,77 @@ var Conversation = {
                 console.log('   Could not access parent window (cross-origin)');
             }
             
-            // FINAL: Just force navigation to A1 as emergency fallback
+            // FINAL: Show manual instructions to user
             console.log('❌ ALL METHODS FAILED!');
-            console.log('🚨 EMERGENCY: Forcing navigation to A1 next lecture...');
+            console.log('📋 Showing manual instructions to user...');
             console.log('Debug info:');
             console.log('  - Current URL:', window.location.href);
             console.log('  - Parent URL detection:', Conversation.detectLevelFromParentURL());
             console.log('  - Available levels:', Object.keys(nextLectureUrls).join(', '));
             
-            // Force navigate to A1 as last resort
-            console.log('🚀 FORCING NAVIGATION TO A1...');
-            window.top.location.href = nextLectureUrls['A1'];
+            // Show instructions to user
+            var instructionDiv = document.createElement('div');
+            instructionDiv.id = 'manual-instructions';
+            instructionDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                z-index: 999999;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                font-size: 18px;
+                line-height: 1.6;
+                max-width: 500px;
+                box-shadow: 0 0 50px rgba(78, 205, 196, 0.5);
+            `;
+            
+            instructionDiv.innerHTML = `
+                <h2 style="margin-bottom: 20px; font-weight: 300; font-size: 24px; color: #4ecdc4;">
+                    Please Complete Manually
+                </h2>
+                <p style="margin-bottom: 25px;">
+                    Auto-navigation could not be completed.<br>
+                    Please follow these steps:
+                </p>
+                <ol style="text-align: left; display: inline-block; margin: 0 auto 25px; font-size: 16px;">
+                    <li style="margin-bottom: 15px;">
+                        Press <strong style="background: #4ecdc4; padding: 3px 10px; border-radius: 5px; color: black;">ESC</strong> to exit fullscreen
+                    </li>
+                    <li>
+                        Click <strong style="background: #4ecdc4; padding: 3px 10px; border-radius: 5px; color: black;">Complete and Continue</strong> button
+                    </li>
+                </ol>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #4ecdc4;
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 25px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    margin-top: 10px;
+                    transition: all 0.3s ease;
+                ">
+                    OK, Got it!
+                </button>
+            `;
+            
+            document.body.appendChild(instructionDiv);
+            
+            // Also make sure we're not in fullscreen anymore
+            try {
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                }
+            } catch (e) {
+                console.log('Could not exit fullscreen:', e);
+            }
             
         }, 2000); // 2 seconds delay
     },
