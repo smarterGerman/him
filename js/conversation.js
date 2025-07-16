@@ -1153,27 +1153,7 @@ var Conversation = {
             dissolveOverlay.classList.add('active');
             
             setTimeout(function() {
-                // Try to find and click completion buttons
-                var buttons = document.querySelectorAll('button, .btn, [role="button"]');
-                for (var i = 0; i < buttons.length; i++) {
-                    var btn = buttons[i];
-                    var text = btn.textContent.toLowerCase();
-                    if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
-                        btn.click();
-                        return;
-                    }
-                }
-                
-                // Fallback: try to navigate to next lecture
-                try {
-                    window.location.href = window.location.href.replace(/\/lectures\/\d+/, function(match) {
-                        var num = parseInt(match.split('/').pop()) + 1;
-                        return '/lectures/' + num;
-                    });
-                } catch (e) {
-                    // Final fallback: go back in history
-                    window.history.back();
-                }
+                Conversation.completeCourse();
             }, 3000);
         } else {
             // Fallback if no dissolve overlay
@@ -1184,59 +1164,140 @@ var Conversation = {
     },
 
     completeCourse: function() {
-        console.log('🎉 Course completed!');
+        console.log('🎉 Course completed! Attempting Teachable transition...');
         
-        // Try multiple methods to complete the course smoothly
         setTimeout(function() {
-            // Method 1: Look for completion buttons
-            var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+            // Method 1: Look for Teachable completion buttons (most common)
+            var buttons = document.querySelectorAll('button, .btn, [role="button"], a[href*="lectures"], .lecture-complete, .next-lecture, .continue-btn');
+            
+            console.log('🔍 Found', buttons.length, 'potential buttons');
+            
             for (var i = 0; i < buttons.length; i++) {
                 var btn = buttons[i];
-                var text = btn.textContent.toLowerCase();
-                if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
-                    console.log('🔄 Found completion button:', text);
+                var text = btn.textContent.toLowerCase().trim();
+                var classes = btn.className.toLowerCase();
+                var href = btn.href || '';
+                
+                console.log('🔍 Checking button:', text, '| Classes:', classes, '| Href:', href);
+                
+                // Check for common Teachable completion patterns
+                if (text.indexOf('complete') !== -1 || 
+                    text.indexOf('continue') !== -1 || 
+                    text.indexOf('next') !== -1 ||
+                    text.indexOf('mark complete') !== -1 ||
+                    text.indexOf('mark as complete') !== -1 ||
+                    classes.indexOf('complete') !== -1 ||
+                    classes.indexOf('continue') !== -1 ||
+                    classes.indexOf('next') !== -1 ||
+                    href.includes('lectures/')) {
+                    
+                    console.log('✅ Found completion button:', text || classes);
                     btn.click();
                     return;
                 }
             }
             
-            // Method 2: Try to navigate to next lecture
-            try {
-                var currentUrl = window.location.href;
-                if (currentUrl.includes('/lectures/')) {
-                    var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
-                        var nextNum = parseInt(lectureNum) + 1;
-                        console.log('🔄 Navigating to next lecture:', nextNum);
-                        return '/lectures/' + nextNum;
-                    });
-                    
-                    if (newUrl !== currentUrl) {
-                        window.location.href = newUrl;
+            // Method 2: Look for Teachable-specific completion mechanisms
+            console.log('🔄 Method 1 failed, trying Teachable-specific selectors...');
+            
+            var teachableSelectors = [
+                '.lecture-attachment-complete-button',
+                '.lecture-complete-button', 
+                '.complete-button',
+                '.next-lecture-button',
+                '.lecture-sidebar .btn',
+                '[data-lecture-id] .btn',
+                '.lecture-content .btn',
+                '.course-player .btn'
+            ];
+            
+            for (var j = 0; j < teachableSelectors.length; j++) {
+                var selector = teachableSelectors[j];
+                var elements = document.querySelectorAll(selector);
+                
+                for (var k = 0; k < elements.length; k++) {
+                    var element = elements[k];
+                    if (element.offsetParent !== null) { // Check if visible
+                        console.log('✅ Found Teachable element:', selector);
+                        element.click();
                         return;
                     }
                 }
-            } catch (e) {
-                console.log('❌ Navigation attempt failed:', e.message);
             }
             
-            // Method 3: Trigger custom completion event
+            // Method 3: Try to trigger Teachable completion programmatically
+            console.log('🔄 Method 2 failed, trying programmatic completion...');
+            
             try {
-                var completionEvent = new CustomEvent('courseComplete', {
-                    detail: { source: 'SG1', step: State.step, score: State.score }
+                // Trigger common Teachable events
+                var completionEvents = ['lecture:complete', 'course:progress', 'teachable:complete'];
+                
+                completionEvents.forEach(function(eventName) {
+                    var event = new CustomEvent(eventName, {
+                        detail: { 
+                            source: 'SG1', 
+                            completed: true,
+                            progress: 100 
+                        },
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    document.dispatchEvent(event);
+                    window.dispatchEvent(event);
                 });
-                window.dispatchEvent(completionEvent);
-                console.log('🔄 Triggered completion event');
+                
+                console.log('✅ Triggered Teachable completion events');
             } catch (e) {
                 console.log('❌ Event dispatch failed:', e.message);
             }
             
-            // Method 4: Final fallback
-            try {
-                window.history.back();
-            } catch (e) {
-                console.log('Could not navigate back:', e);
-            }
-        }, 2000);
+            // Method 4: Direct URL navigation to next lecture
+            console.log('🔄 Method 3 completed, trying URL navigation...');
+            
+            setTimeout(function() {
+                try {
+                    var currentUrl = window.location.href;
+                    console.log('🔄 Current URL:', currentUrl);
+                    
+                    if (currentUrl.includes('/lectures/')) {
+                        var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
+                            var nextNum = parseInt(lectureNum) + 1;
+                            console.log('🔄 Navigating to next lecture:', nextNum);
+                            return '/lectures/' + nextNum;
+                        });
+                        
+                        if (newUrl !== currentUrl) {
+                            console.log('✅ Redirecting to:', newUrl);
+                            window.location.href = newUrl;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log('❌ Navigation attempt failed:', e.message);
+                }
+                
+                // Method 5: Final fallback - close SG1 overlay
+                console.log('🔄 All methods failed, cleaning up SG1...');
+                
+                try {
+                    var sg1Container = document.querySelector('.sg1-container');
+                    if (sg1Container) {
+                        sg1Container.style.transition = 'opacity 1s ease-out';
+                        sg1Container.style.opacity = '0';
+                        
+                        setTimeout(function() {
+                            sg1Container.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                            document.documentElement.style.overflow = 'auto';
+                            console.log('✅ SG1 container hidden, user can continue manually');
+                        }, 1000);
+                    }
+                } catch (e) {
+                    console.log('❌ Cleanup failed:', e.message);
+                }
+            }, 2000);
+            
+        }, 1000); // Give dissolve animation time to complete
     },
 
     startQ1: function() {
