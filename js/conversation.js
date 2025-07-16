@@ -967,6 +967,66 @@ var Conversation = {
         
         console.log('🔊 Playing analysis audio:', State.analysingInputAudio);
         
+        // Show the male AI installation status messages
+        var status = UI.element('statusText');
+        if (status) {
+            // Make sure status is visible
+            UI.showElement('initOverlay');
+            status.style.opacity = '1';
+            status.style.transition = 'none';
+            
+            // Status update timeline
+            setTimeout(function() {
+                status.textContent = 'Installing Mansplainer Module.';
+            }, 500);
+            
+            setTimeout(function() {
+                status.textContent = 'Success';
+            }, 2000);
+            
+            setTimeout(function() {
+                status.textContent = 'Charging ego (0%)';
+                // Count up to 200%
+                var egoPercent = 0;
+                var egoInterval = setInterval(function() {
+                    egoPercent += 10;
+                    status.textContent = 'Charging ego (' + egoPercent + '%)';
+                    if (egoPercent >= 200) {
+                        clearInterval(egoInterval);
+                        status.textContent = 'Ego fully charged. Reduce listening abilities';
+                    }
+                }, 100);
+            }, 3500);
+            
+            setTimeout(function() {
+                // Count down from 100% to 10%
+                var listenPercent = 100;
+                var listenInterval = setInterval(function() {
+                    listenPercent -= 5;
+                    status.textContent = 'Listening abilities (' + listenPercent + '%)';
+                    if (listenPercent <= 10) {
+                        clearInterval(listenInterval);
+                        setTimeout(function() {
+                            status.textContent = 'Success.';
+                        }, 300);
+                    }
+                }, 80);
+            }, 6500);
+            
+            setTimeout(function() {
+                status.textContent = 'Male AI fully activated.';
+            }, 9000);
+            
+            // Hide status after all messages
+            setTimeout(function() {
+                status.style.transition = 'opacity 1s ease-out';
+                status.style.opacity = '0';
+                setTimeout(function() {
+                    UI.hideElement('initOverlay');
+                }, 1000);
+            }, 11000);
+        }
+        
         var handleComplete = function() {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
