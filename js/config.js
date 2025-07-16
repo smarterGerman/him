@@ -1,7 +1,7 @@
-// ===== SG1 CONFIGURATION - UPDATED AUDIO MAPPINGS & ENGLISH PROFILES =====
+// ===== SG1 CONFIGURATION - FIXED DIVERSE AI AUDIO MAPPING =====
 
 var Config = {
-    // Audio file mappings for each conversation step - UPDATED
+    // Audio file mappings for each conversation step - FIXED
     audioFiles: {
         0: 'https://uploads.teachablecdn.com/attachments/3623b7eb37e640b2946b7f07b730dff7.mp3',  // Welcome
         1: 'https://uploads.teachablecdn.com/attachments/9cc7908384fd49c58242394eadc70273.mp3',  // Why German
@@ -13,8 +13,8 @@ var Config = {
         7: 'https://uploads.teachablecdn.com/attachments/1c56f997a626423dabf739a56f01b3ee.mp3',  // AI Type
         8: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',  // AI Type Male
         9: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',  // AI Type Female  
-        10: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3', // AI Type Diverse / Analysis
-        11: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'  // Final - UPDATED
+        10: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3', // Analysis/Diverse - FIXED
+        11: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'  // Final
     },
     
     // Special audio files
@@ -24,9 +24,7 @@ var Config = {
         systemError: 'https://uploads.teachablecdn.com/attachments/595285714e734e99bc63b49e3e70a1e4.mp3',
         humanWakeup: 'https://uploads.teachablecdn.com/attachments/cec6086e76134866a3e151ba70ab4651.mp3',
         backgroundMusic: 'https://uploads.teachablecdn.com/attachments/bf581168d687477abe77c3052ae7782f.mp3',
-        // Diverse AI audio - ADDED
-        diverseAI: 'https://uploads.teachablecdn.com/attachments/16e62c9df320432f92574d0f945c7fe8.mp3',
-        // background audio
+        // REMOVED diverseAI - now uses audioFiles[10]
         analysingInput: 'https://uploads.teachablecdn.com/attachments/45396480d7f748f29608c56ac2e11ad7.mp3' // Analysing input
     },
     
@@ -44,7 +42,8 @@ var Config = {
             buttonDelay: 1500,             // ms to wait before showing UI after audio starts
             responseDelay: 200,            // ms delay for UI responsiveness
             thankYouDelay: 800,            // ms to wait before playing thank you
-            nextQuestionDelay: 1000        // ms to wait before moving to next question
+            nextQuestionDelay: 1000,       // ms to wait before moving to next question
+            finalSequenceDelay: 4000       // ADDED: 4 seconds before final sequence
         },
         external: {
             unblockCourseUrl: 'https://smartergerman.com/courses/unblock-your-german/'
@@ -95,7 +94,7 @@ var Config = {
             7: {
                 'male': 'male_sequence',     // Triggers male AI installation (file 8)
                 'female': 'female_sequence', // Triggers female AI installation (file 9)
-                'diverse': 'diverse_sequence' // Triggers diverse AI audio (special URL)
+                'diverse': 'diverse_sequence' // Triggers diverse AI audio (file 10)
             }
         }
     },

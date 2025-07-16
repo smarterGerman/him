@@ -1,4 +1,4 @@
-// ===== APPLICATION STATE MANAGEMENT - FIXED SKIP HANDLING =====
+// ===== APPLICATION STATE MANAGEMENT - FIXED DIVERSE AI AUDIO =====
 
 var State = {
     // === CONVERSATION FLOW ===
@@ -46,8 +46,8 @@ var State = {
         return typeof Config !== 'undefined' ? Config.audioFiles[9] : '';
     },
     get aiTypeDiverseAudio() {
-        // UPDATED: Now references the special diverse AI audio
-        return typeof Config !== 'undefined' ? Config.specialAudio.diverseAI : '';
+        // FIXED: Now uses audioFiles[10] for diverse AI
+        return typeof Config !== 'undefined' ? Config.audioFiles[10] : '';
     },
     get analysingInputAudio() {
         return typeof Config !== 'undefined' ? Config.specialAudio.analysingInput : '';

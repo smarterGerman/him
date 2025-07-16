@@ -1,4 +1,4 @@
-// ===== CONVERSATION FLOW & UI LOGIC - FIXED AUDIO ISSUES =====
+// ===== CONVERSATION FLOW & UI LOGIC - FIXED ALL ISSUES =====
 
 var DNAButton = {
     currentMode: 'dna',
@@ -447,6 +447,7 @@ var DNAButton = {
         }, 800);
     },
     
+    // === FIXED: 4-SECOND DELAY BEFORE FINAL SEQUENCE ===
     handleNaGut: function() {
         var self = this;
         self.playConfirmationSound();
@@ -461,10 +462,10 @@ var DNAButton = {
         setTimeout(function() {
             DNAButton.showDNA();
             setTimeout(function() {
-                // ADDED: 3 seconds delay before playing "Another gifted one" audio
+                // FIXED: 4 seconds delay before playing "Another gifted one" audio
                 setTimeout(function() {
                     Conversation.startFinalSequence();
-                }, 3000);
+                }, Config.settings.timing.finalSequenceDelay); // 4000ms
             }, 200);
         }, 800);
     },
@@ -710,18 +711,15 @@ var DNAButton = {
             profileContainer.classList.add('visible');
             self.currentMode = 'profile';
             
-            // Auto-dissolve after showing profile for 7 seconds
-            setTimeout(function() {
-                Conversation.startFinalSequence();
-            }, 7000);
-            
+            console.log('✅ Personality profile displayed:', profile.title);
             return true;
         }
+        console.error('❌ Failed to show personality profile - missing elements');
         return false;
     }
 };
 
-// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCE ISSUES =====
+// ===== CONVERSATION CONTROLLER - FIXED AI SEQUENCES =====
 var Conversation = {
     playThankYou: function() {
         State.isSpeaking = true;
@@ -883,9 +881,9 @@ var Conversation = {
     // === FIXED AI SEQUENCE HANDLERS ===
     startMaleAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Male AI sequence');
+        console.log('🔊 Starting Male AI sequence - playing audio file 8');
         self.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
-            // FIXED: Jump to step 11 after male sequence, skipping other AI audios
+            // Jump to step 11 after male sequence
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
@@ -895,9 +893,9 @@ var Conversation = {
 
     startFemaleAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Female AI sequence');
+        console.log('🔊 Starting Female AI sequence - playing audio file 9');
         self.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
-            // FIXED: Jump to step 11 after female sequence, skipping other AI audios
+            // Jump to step 11 after female sequence
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
@@ -905,11 +903,12 @@ var Conversation = {
         });
     },
 
+    // === FIXED: DIVERSE AI SEQUENCE NOW USES CORRECT AUDIO ===
     startDiverseAISequence: function() {
         var self = this;
-        console.log('🔊 Starting Diverse AI sequence');
+        console.log('🔊 Starting Diverse AI sequence - playing audio file 10:', State.aiTypeDiverseAudio);
         self.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
-            // FIXED: Jump to step 11 after diverse sequence
+            // Jump to step 11 after diverse sequence
             State.step = 10; // Will be incremented to 11 in moveToNextQuestion
             setTimeout(function() {
                 Conversation.moveToNextQuestion();
@@ -917,7 +916,7 @@ var Conversation = {
         });
     },
 
-    // === UNIFIED AI SEQUENCE AUDIO HANDLER - FIXED ===
+    // === UNIFIED AI SEQUENCE AUDIO HANDLER ===
     playAISequenceAudio: function(audioUrl, aiType, onComplete) {
         var self = this;
         
@@ -943,6 +942,7 @@ var Conversation = {
         self.playStepAudio(audioUrl, handleComplete);
     },
 
+    // === FIXED: COMPLETE FINAL SEQUENCE WITH PROPER PROFILE DISPLAY ===
     startFinalSequence: function() {
         var self = this;
         
@@ -952,6 +952,8 @@ var Conversation = {
             return;
         }
         State.inFinalSequence = true;
+        
+        console.log('🎬 Starting final sequence...');
         
         setTimeout(function() {
             DNAButton.showStatus('Analysing German language...');
@@ -990,13 +992,21 @@ var Conversation = {
         setTimeout(function() {
             DNAButton.hideStatus();
             setTimeout(function() {
-                DNAButton.showPersonalityProfile();
+                console.log('🎭 Showing personality profile...');
+                if (DNAButton.showPersonalityProfile()) {
+                    // Profile was shown successfully, wait 7 seconds then dissolve
+                    setTimeout(function() {
+                        self.dissolveAndTransition();
+                    }, 7000);
+                } else {
+                    // Profile failed to show, proceed directly to dissolve
+                    console.warn('⚠️ Profile display failed, proceeding to dissolve');
+                    setTimeout(function() {
+                        self.dissolveAndTransition();
+                    }, 1000);
+                }
             }, 1000);
         }, 13000);
-        
-        setTimeout(function() {
-            self.dissolveAndTransition();
-        }, 20000);
     },
 
     playSystemErrorAudio: function() {
@@ -1204,6 +1214,8 @@ var Conversation = {
             return;
         }
         self._transitionInProgress = true;
+        
+        console.log('🌫️ Starting dissolve and transition...');
         
         var dissolveOverlay = UI.element('dissolveOverlay');
         
