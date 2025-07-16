@@ -452,8 +452,11 @@ var DNAButton = {
         setTimeout(function() {
             DNAButton.showDNA();
             setTimeout(function() {
-                DNAButton.showPersonalityProfile();
-            }, 1000);
+                // ADDED: 3 seconds delay before playing "Another gifted one" audio
+                setTimeout(function() {
+                    Conversation.startFinalSequence();
+                }, 3000);
+            }, 200);
         }, 800);
     },
 
@@ -926,11 +929,221 @@ var Conversation = {
     },
 
     startFinalSequence: function() {
-        console.log('🎬 Starting final dissolve sequence');
+        var self = this;
         
         setTimeout(function() {
-            Conversation.dissolveAndTransition();
-        }, 1000);
+            DNAButton.showStatus('Analysing German language...');
+        }, 500);
+        
+        setTimeout(function() {
+            self.showComplexityCounter();
+        }, 2500);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            
+            setTimeout(function() {
+                console.log('🎵 Playing system error audio now...');
+                self.playSystemErrorAudio();
+            }, 100);
+            
+            setTimeout(function() {
+                DNAButton.showStatus('Subject surpassing AI capabilities', true);
+            }, 500);
+        }, 8000);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            
+            setTimeout(function() {
+                console.log('🎵 Playing human wakeup audio...');
+                self.playHumanWakeupAudio();
+            }, 100);
+            
+            setTimeout(function() {
+                DNAButton.showStatus('Falling back to Human Intelligence');
+            }, 500);
+        }, 10500);
+        
+        setTimeout(function() {
+            DNAButton.hideStatus();
+            setTimeout(function() {
+                DNAButton.showPersonalityProfile();
+            }, 1000);
+        }, 13000);
+        
+        setTimeout(function() {
+            self.dissolveAndTransition();
+        }, 20000);
+    },
+
+    playSystemErrorAudio: function() {
+        console.log('🔊 Attempting to play system error audio...');
+        
+        var audio = AudioManager.createAudio(State.systemErrorAudio);
+        audio.volume = Config.settings.audioVolume.effects;
+        audio.preload = 'auto';
+        
+        // Start fading out background music when system error begins
+        var music = UI.element('backgroundMusic');
+        if (music && SG1.musicEnabled && music.volume > 0) {
+            var originalVolume = music.volume;
+            var fadeSteps = 15;
+            var fadeInterval = 150;
+            var volumeStep = originalVolume / fadeSteps;
+            
+            var fadeOut = setInterval(function() {
+                if (music.volume > volumeStep) {
+                    music.volume = Math.max(0, music.volume - volumeStep);
+                } else {
+                    music.volume = 0.1; // Keep very low volume, don't mute completely yet
+                    clearInterval(fadeOut);
+                    console.log('🔇 Background music faded to low volume for system error');
+                }
+            }, fadeInterval);
+        }
+        
+        audio.onloadeddata = function() {
+            console.log('✅ System error audio loaded successfully');
+        };
+        
+        audio.onended = function() {
+            console.log('✅ System error audio completed');
+        };
+        
+        audio.onerror = function(e) {
+            console.log('❌ System error audio failed:', e);
+        };
+        
+        var playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                console.log('✅ System error audio started playing');
+            }).catch(function(e) {
+                console.log('❌ System error audio play failed:', e.message);
+                
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    console.log('🔄 Trying WebAudio fallback...');
+                    WebAudioHelper.play(
+                        State.systemErrorAudio,
+                        function() {
+                            console.log('✅ System error audio completed via WebAudio');
+                        },
+                        function(e) {
+                            console.log('❌ System error audio WebAudio failed:', e.message);
+                        }
+                    );
+                }
+            });
+        } else {
+            console.log('❌ Audio play promise not supported');
+        }
+    },
+
+    playHumanWakeupAudio: function() {
+        console.log('🔊 Attempting to play human wakeup audio...');
+        
+        var audio = AudioManager.createAudio(State.humanWakeupAudio);
+        audio.volume = Config.settings.audioVolume.effects;
+        audio.preload = 'auto';
+        
+        // Add enhanced fade out effect for background music
+        var music = UI.element('backgroundMusic');
+        if (music && SG1.musicEnabled && music.volume > 0) {
+            var originalVolume = music.volume;
+            var fadeSteps = 20;
+            var fadeInterval = 100;
+            var volumeStep = originalVolume / fadeSteps;
+            
+            var fadeOut = setInterval(function() {
+                if (music.volume > volumeStep) {
+                    music.volume = Math.max(0, music.volume - volumeStep);
+                } else {
+                    music.volume = 0;
+                    clearInterval(fadeOut);
+                    console.log('🔇 Background music faded out completely');
+                }
+            }, fadeInterval);
+        }
+        
+        window.audioElements = window.audioElements || [];
+        window.audioElements.push(audio);
+        
+        audio.onloadeddata = function() {
+            console.log('✅ Human wakeup audio loaded successfully');
+        };
+        
+        audio.onended = function() {
+            console.log('✅ Human wakeup audio completed');
+            // Restore music volume gradually
+            if (music && SG1.musicEnabled) {
+                var targetVolume = Config.settings.audioVolume.background;
+                var restoreSteps = 10;
+                var restoreInterval = 150;
+                var restoreVolumeStep = targetVolume / restoreSteps;
+                
+                var fadeIn = setInterval(function() {
+                    if (music.volume < targetVolume - restoreVolumeStep) {
+                        music.volume = Math.min(targetVolume, music.volume + restoreVolumeStep);
+                    } else {
+                        music.volume = targetVolume;
+                        clearInterval(fadeIn);
+                        console.log('🔊 Background music restored');
+                    }
+                }, restoreInterval);
+            }
+        };
+        
+        audio.onerror = function(e) {
+            console.log('❌ Human wakeup audio failed:', e);
+        };
+        
+        var playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                console.log('✅ Human wakeup audio started playing');
+            }).catch(function(e) {
+                console.log('❌ Human wakeup audio play failed:', e.message);
+                
+                if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
+                    console.log('🔄 Trying WebAudio fallback for human wakeup...');
+                    WebAudioHelper.play(
+                        State.humanWakeupAudio,
+                        function() {
+                            console.log('✅ Human wakeup audio completed via WebAudio');
+                        },
+                        function(e) {
+                            console.log('❌ Human wakeup audio WebAudio failed:', e.message);
+                        }
+                    );
+                }
+            });
+        } else {
+            console.log('❌ Audio play promise not supported for human wakeup');
+        }
+    },
+
+    showComplexityCounter: function() {
+        var statusDisplay = UI.element('statusDisplay');
+        var visualizer = UI.element('visualizer');
+        
+        if (statusDisplay && visualizer) {
+            visualizer.classList.add('text-mode');
+            statusDisplay.classList.remove('error');
+            statusDisplay.classList.add('visible');
+            
+            var count = 0;
+            var interval = setInterval(function() {
+                count += Math.floor(Math.random() * 50) + 25;
+                if (count >= 1000) {
+                    clearInterval(interval);
+                    statusDisplay.textContent = 'Complexity: ERROR';
+                    statusDisplay.classList.add('error');
+                } else {
+                    statusDisplay.textContent = 'Complexity: ' + count + '%';
+                }
+            }, 200);
+        }
     },
 
     dissolveAndTransition: function() {
@@ -940,7 +1153,27 @@ var Conversation = {
             dissolveOverlay.classList.add('active');
             
             setTimeout(function() {
-                Conversation.completeCourse();
+                // Try to find and click completion buttons
+                var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+                for (var i = 0; i < buttons.length; i++) {
+                    var btn = buttons[i];
+                    var text = btn.textContent.toLowerCase();
+                    if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                        btn.click();
+                        return;
+                    }
+                }
+                
+                // Fallback: try to navigate to next lecture
+                try {
+                    window.location.href = window.location.href.replace(/\/lectures\/\d+/, function(match) {
+                        var num = parseInt(match.split('/').pop()) + 1;
+                        return '/lectures/' + num;
+                    });
+                } catch (e) {
+                    // Final fallback: go back in history
+                    window.history.back();
+                }
             }, 3000);
         } else {
             // Fallback if no dissolve overlay
@@ -952,12 +1185,58 @@ var Conversation = {
 
     completeCourse: function() {
         console.log('🎉 Course completed!');
-        // Handle course completion - could redirect or trigger external completion
-        try {
-            window.history.back();
-        } catch (e) {
-            console.log('Could not navigate back:', e);
-        }
+        
+        // Try multiple methods to complete the course smoothly
+        setTimeout(function() {
+            // Method 1: Look for completion buttons
+            var buttons = document.querySelectorAll('button, .btn, [role="button"]');
+            for (var i = 0; i < buttons.length; i++) {
+                var btn = buttons[i];
+                var text = btn.textContent.toLowerCase();
+                if (text.indexOf('complete') !== -1 || text.indexOf('continue') !== -1 || text.indexOf('next') !== -1) {
+                    console.log('🔄 Found completion button:', text);
+                    btn.click();
+                    return;
+                }
+            }
+            
+            // Method 2: Try to navigate to next lecture
+            try {
+                var currentUrl = window.location.href;
+                if (currentUrl.includes('/lectures/')) {
+                    var newUrl = currentUrl.replace(/\/lectures\/(\d+)/, function(match, lectureNum) {
+                        var nextNum = parseInt(lectureNum) + 1;
+                        console.log('🔄 Navigating to next lecture:', nextNum);
+                        return '/lectures/' + nextNum;
+                    });
+                    
+                    if (newUrl !== currentUrl) {
+                        window.location.href = newUrl;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log('❌ Navigation attempt failed:', e.message);
+            }
+            
+            // Method 3: Trigger custom completion event
+            try {
+                var completionEvent = new CustomEvent('courseComplete', {
+                    detail: { source: 'SG1', step: State.step, score: State.score }
+                });
+                window.dispatchEvent(completionEvent);
+                console.log('🔄 Triggered completion event');
+            } catch (e) {
+                console.log('❌ Event dispatch failed:', e.message);
+            }
+            
+            // Method 4: Final fallback
+            try {
+                window.history.back();
+            } catch (e) {
+                console.log('Could not navigate back:', e);
+            }
+        }, 2000);
     },
 
     startQ1: function() {
