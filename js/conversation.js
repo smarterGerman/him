@@ -1055,32 +1055,49 @@ var Conversation = {
     },
 
     // === FIXED: "Another gifted one" audio handler ===
-    playAnotherGiftedOneAudio: function() {
-        var self = this;
+playAnotherGiftedOneAudio: function() {
+    var self = this;
+    
+    console.log('🔊 Playing "Another gifted one" audio:', State.audioFiles[11]);
+    
+    // Add male voice class BEFORE setting speaking state
+    var visualizer = UI.element('visualizer');
+    if (visualizer) {
+        visualizer.classList.add('voice-transition');
         
+        setTimeout(function() {
+            visualizer.classList.remove('voice-transition');
+            visualizer.classList.add('male-voice');
+            
+            // NOW set speaking state after male-voice class is applied
+            State.isSpeaking = true;
+            UI.setVisualizerState('speaking');
+        }, 300);
+    } else {
+        // Fallback if visualizer not found
         State.isSpeaking = true;
         UI.setVisualizerState('speaking');
-        
-        console.log('🔊 Playing "Another gifted one" audio:', State.audioFiles[11]);
-        
-        var handleComplete = function() {
-            State.isSpeaking = false;
-            UI.setVisualizerState('active');
-            console.log('🔄 "Another gifted one" audio complete, showing Na gut button');
-            setTimeout(function() {
-                DNAButton.showText('Na gut', 'Oh well');
-            }, 1000);
-        };
+    }
+    
+    var handleComplete = function() {
+        State.isSpeaking = false;
+        UI.setVisualizerState('active');
+        // Keep male-voice class active even after speaking stops
+        console.log('🔄 "Another gifted one" audio complete, showing Na gut button');
+        setTimeout(function() {
+            DNAButton.showText('Na gut', 'Oh well');
+        }, 1000);
+    };
 
-        var handleError = function(e) {
-            console.warn('"Another gifted one" audio error:', e);
-            State.isSpeaking = false;
-            UI.setVisualizerState('active');
-            handleComplete(); // Continue flow even on error
-        };
-        
-        self.playStepAudio(State.audioFiles[11], handleComplete);
-    },
+    var handleError = function(e) {
+        console.warn('"Another gifted one" audio error:', e);
+        State.isSpeaking = false;
+        UI.setVisualizerState('active');
+        handleComplete();
+    };
+    
+    self.playStepAudio(State.audioFiles[11], handleComplete);
+},
 
     // === FINAL SEQUENCE WITH PROPER PROFILE DISPLAY ===
     startFinalSequence: function() {
@@ -1112,17 +1129,23 @@ var Conversation = {
         }, 8000);
         
         setTimeout(function() {
-            DNAButton.hideStatus();
-            
-            setTimeout(function() {
-                console.log('🎵 Playing human wakeup audio...');
-                self.playHumanWakeupAudio();
-            }, 100);
-            
-            setTimeout(function() {
-                DNAButton.showStatus('Falling back to Human Intelligence');
-            }, 500);
-        }, 10500);
+    DNAButton.hideStatus();
+    
+    setTimeout(function() {
+        console.log('🎵 Playing human wakeup audio...');
+        self.playHumanWakeupAudio();
+    }, 100);
+    
+    setTimeout(function() {
+        DNAButton.showStatus('Falling back to Human Intelligence');
+        
+        // Remove male voice effect when transitioning to human
+        var visualizer = UI.element('visualizer');
+        if (visualizer) {
+            visualizer.classList.remove('male-voice');
+        }
+    }, 500);
+}, 10500);
         
         setTimeout(function() {
             DNAButton.hideStatus();
