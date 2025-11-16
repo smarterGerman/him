@@ -68,6 +68,31 @@
     transition: opacity 0.8s ease;
 }
 
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Pause animations when not active to save mobile battery */
+.voice-visualizer:not(.speaking):not(.active) .dna-strand {
+    animation-play-state: paused;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .dna-strand {
+        animation: none;
+    }
+    
+    .speaking .dna-strand {
+        animation: none;
+        /* Use opacity pulsing instead of rotation for reduced motion */
+        animation: reducedMotionPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes reducedMotionPulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 1; }
+    }
+}
+
 .dna-strand:nth-child(2) { 
     animation-delay: 0.5s;
     filter: drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.35));

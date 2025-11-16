@@ -31,7 +31,7 @@ window.SG1Debug = {
             return;
         }
         
-        var audio = new Audio(url);
+    var audio = AudioManager.createAudio(url);
         audio.volume = 0.5;
         audio.play().then(function() {
             console.log('✅ Audio test successful for step', step);

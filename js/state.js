@@ -97,10 +97,32 @@ var State = {
         this.clearInitTimers();
     },
     
-    // Add a timer to tracking
+    // Add a timer to tracking (with automatic cleanup)
     addTimer: function(timerId) {
         this.allTimers.push(timerId);
+        console.log('⏱️ Timer added. Total active:', this.allTimers.length);
         return timerId;
+    },
+    
+    // Add a timer with auto-cleanup after execution
+    addTimerWithCleanup: function(callback, delay) {
+        var self = this;
+        var timerId = setTimeout(function() {
+            callback();
+            self.removeTimer(timerId);
+        }, delay);
+        this.allTimers.push(timerId);
+        console.log('⏱️ Auto-cleanup timer added. Total active:', this.allTimers.length);
+        return timerId;
+    },
+    
+    // Remove a specific timer from tracking
+    removeTimer: function(timerId) {
+        var index = this.allTimers.indexOf(timerId);
+        if (index > -1) {
+            this.allTimers.splice(index, 1);
+            console.log('🧹 Timer removed. Remaining:', this.allTimers.length);
+        }
     },
     
     // Add initialization timer
@@ -181,6 +203,10 @@ var State = {
     saveResponse: function(key, value) {
         this.responses[key] = value;
         console.log('✅ Response saved:', key, '=', value);
+        
+        // Auto-save to localStorage for data persistence
+        this.saveToStorage();
+        
         return this.responses[key];
     },
     
@@ -215,6 +241,56 @@ var State = {
     isComplete: function() {
         if (typeof Config === 'undefined') return false;
         return this.step >= Config.settings.totalSteps;
+    },
+    
+    // Save state to storage (for page reload recovery)
+    saveToStorage: function() {
+        try {
+            var stateData = {
+                step: this.step,
+                responses: this.responses,
+                score: this.score,
+                selectedAIType: this.selectedAIType,
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('sg1_state', JSON.stringify(stateData));
+            console.log('💾 State saved to sessionStorage');
+        } catch(e) {
+            console.warn('Could not save state to storage:', e);
+        }
+    },
+    
+    // Restore state from storage (after page reload)
+    restoreFromStorage: function() {
+        try {
+            var saved = sessionStorage.getItem('sg1_state');
+            if (saved) {
+                var data = JSON.parse(saved);
+                
+                // Only restore if less than 30 minutes old
+                if (Date.now() - data.timestamp < 1800000) {
+                    this.step = data.step;
+                    this.responses = data.responses;
+                    this.score = data.score;
+                    this.selectedAIType = data.selectedAIType;
+                    console.log('✅ State restored from sessionStorage. Step:', this.step);
+                    return true;
+                }
+            }
+        } catch(e) {
+            console.warn('Could not restore state from storage:', e);
+        }
+        return false;
+    },
+    
+    // Clear saved state from storage
+    clearStorage: function() {
+        try {
+            sessionStorage.removeItem('sg1_state');
+            console.log('🧹 Cleared saved state from sessionStorage');
+        } catch(e) {
+            console.warn('Could not clear storage:', e);
+        }
     },
     
     // Export state for debugging
@@ -321,17 +397,12 @@ var UI = {
             element.style.pointerEvents = 'none';
             element.style.transform = 'translate(-50%, -50%)';
             
-            // Clear any event listeners for text inputs
+            // Clear input values and remove focus
             var input = element.querySelector('input, textarea');
             if (input) {
                 input.value = '';
-                // Clone the input to remove all event listeners
-                try {
-                    var newInput = input.cloneNode(true);
-                    input.parentNode.replaceChild(newInput, input);
-                } catch (e) {
-                    console.warn('Could not clean input for:', id);
-                }
+                input.blur();
+                // Let garbage collection handle old listeners
             }
             hiddenCount++;
         }
@@ -384,29 +455,21 @@ var UI = {
 var Controls = {
     // === COMPREHENSIVE AUDIO STOPPING ===
     stopAllAudio: function(stopBackground) {
-        console.log('🛑 STOPPING ALL AUDIO - Comprehensive approach');
-        
-        var stoppedCount = 0;
+        console.log('🛑 STOPPING ALL AUDIO - Using centralized AudioManager');
         
         try {
-            // Method 1: Stop all HTML5 audio elements
-            var selector = stopBackground === false ? 'audio:not(#backgroundMusic)' : 'audio';
-            var allAudio = document.querySelectorAll(selector);
-            console.log('Found ' + allAudio.length + ' audio elements');
-            
-            for (var i = 0; i < allAudio.length; i++) {
-                try {
-                    allAudio[i].pause();
-                    allAudio[i].currentTime = 0;
-                    allAudio[i].volume = 0;
-                    allAudio[i].muted = true;
-                    stoppedCount++;
-                } catch (e) {
-                    console.warn('Error stopping audio element ' + i + ':', e);
+            // Method 1: Use centralized AudioManager
+            if (typeof AudioManager !== 'undefined') {
+                if (stopBackground === false) {
+                    AudioManager.stopNonBackground();
+                    console.log('✅ Called AudioManager.stopNonBackground()');
+                } else {
+                    AudioManager.stopAllAudio();
+                    console.log('✅ Called AudioManager.stopAllAudio()');
                 }
             }
         } catch (e) {
-            console.error('Error stopping HTML5 audio:', e);
+            console.warn('Error calling AudioManager:', e);
         }
 
         try {
@@ -414,36 +477,17 @@ var Controls = {
             if (typeof WebAudioHelper !== 'undefined' && WebAudioHelper.currentSource) {
                 WebAudioHelper.currentSource.stop();
                 WebAudioHelper.currentSource = null;
-                console.log('Stopped WebAudio source');
+                console.log('✅ Stopped WebAudio source');
             }
         } catch (e) {
             console.warn('Error stopping WebAudio:', e);
         }
 
         try {
-            // Method 3: Stop tracked audio elements
-            if (window.audioElements && Array.isArray(window.audioElements)) {
-                window.audioElements.forEach(function(audio, index) {
-                    try {
-                        audio.pause();
-                        audio.currentTime = 0;
-                        audio.volume = 0;
-                        audio.muted = true;
-                    } catch (e) {
-                        console.warn('Error stopping tracked audio ' + index + ':', e);
-                    }
-                });
-                window.audioElements = [];
-            }
-        } catch (e) {
-            console.warn('Error stopping tracked audio:', e);
-        }
-
-        try {
-            // Method 4: Suspend Audio Context (only if stopping everything)
+            // Method 3: Suspend Audio Context (only if stopping everything)
             if (stopBackground !== false && window.globalAudioContext) {
                 window.globalAudioContext.suspend().then(function() {
-                    console.log('Audio context suspended');
+                    console.log('✅ Audio context suspended');
                 }).catch(function(e) {
                     console.warn('Error suspending audio context:', e);
                 });
@@ -452,22 +496,7 @@ var Controls = {
             console.warn('Error with audio context:', e);
         }
 
-        try {
-            // Method 5: Stop AudioManager if available
-            if (typeof AudioManager !== 'undefined') {
-                if (stopBackground === false && AudioManager.stopNonBackground) {
-                    AudioManager.stopNonBackground();
-                    console.log('Called AudioManager.stopNonBackground()');
-                } else if (AudioManager.stopAllAudio) {
-                    AudioManager.stopAllAudio();
-                    console.log('Called AudioManager.stopAllAudio()');
-                }
-            }
-        } catch (e) {
-            console.warn('Error calling AudioManager:', e);
-        }
-
-        // Method 6: Clear timers and update state
+        // Method 4: Clear timers and update state
         try {
             if (typeof State !== 'undefined') {
                 State.isSpeaking = false;
@@ -477,8 +506,7 @@ var Controls = {
             console.warn('Error clearing state/timers:', e);
         }
 
-        console.log('✅ Audio stopping completed. Stopped:', stoppedCount, 'elements');
-        return stoppedCount;
+        console.log('✅ Audio stopping completed');
     },
 
     // === CLEAN EXIT HANDLING ===
@@ -689,11 +717,20 @@ skip: function() {
                     console.log('📍 Advanced to step:', State.step);
                     
                     // Show the UI for the new step immediately (skip audio)
-                        State.addTimer(setTimeout(function() {
-                            Conversation.showNextButton();
-                        }, 200));
+                    State.addTimer(setTimeout(function() {
+                        Conversation.showNextButton();
+                    }, 200));
                 }
+                break;
         }
+
+        // Advance to next screen in all skip cases, with a short delay to allow immediate UI updates.
+        if (typeof Conversation !== 'undefined') {
+            State.addTimer(setTimeout(function() {
+                Conversation.moveToNextQuestion();
+            }, 300));
+        }
+        
     },
     
     // === HELPER FOR SKIPPING TEXT INPUTS ===

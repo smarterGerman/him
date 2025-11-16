@@ -1,15 +1,94 @@
 // ===== AUDIO MANAGEMENT SYSTEM =====
 
 var AudioManager = {
-    // === AUDIO CREATION ===
-    createAudio: function(url) {
+    // === CENTRALIZED AUDIO TRACKING ===
+    activeAudio: new Map(),  // Track all active audio by ID
+    nextAutoId: 1,           // Auto-increment ID for unnamed audio
+    
+    // === AUDIO CREATION WITH TRACKING ===
+    createAudio: function(url, id) {
+        var audioId = id || ('audio_' + this.nextAutoId++);
+        
+        // Stop existing audio with same ID if present
+        if (this.activeAudio.has(audioId)) {
+            this.stop(audioId);
+        }
+        
         var audio = new Audio(url);
+        this.activeAudio.set(audioId, audio);
         
-        // Register for cleanup
-        window.audioElements = window.audioElements || [];
-        window.audioElements.push(audio);
-        
+        console.log('🔊 Audio created with ID:', audioId);
         return audio;
+    },
+    
+    // === PLAY AUDIO WITH ID ===
+    play: function(url, onComplete, onError, id) {
+        var audioId = id || ('audio_' + this.nextAutoId++);
+        
+        // Bail out if skip mode is active
+        if (typeof State !== 'undefined' && State.skipModeActive) {
+            console.log('⏭️ AudioManager.play skipped due to skip mode:', audioId);
+            if (onComplete) {
+                State.addTimer && State.addTimer(setTimeout(onComplete, 50));
+            }
+            return null;
+        }
+        
+        var audio = this.createAudio(url, audioId);
+        audio.volume = Config.settings.audioVolume.speech || 1.0;
+        
+        var self = this;
+        
+        audio.onended = function() {
+            self.activeAudio.delete(audioId);
+            console.log('✅ Audio completed:', audioId);
+            if (onComplete) onComplete();
+        };
+        
+        audio.onerror = function(e) {
+            console.warn('❌ Audio error for', audioId, ':', e.message || e);
+            self.activeAudio.delete(audioId);
+            
+            // Show visual feedback
+            if (typeof DNAButton !== 'undefined') {
+                DNAButton.showStatus('Audio unavailable - continuing...', false);
+            }
+            
+            // Continue flow after delay
+            if (onComplete) {
+                setTimeout(onComplete, 1500);
+            }
+        };
+        
+        var playPromise = audio.play();
+        if (playPromise) {
+            playPromise.catch(function(e) {
+                console.warn('❌ Play promise rejected for', audioId, ':', e.message);
+                if (onError) onError(e);
+                else if (audio.onerror) audio.onerror(e);
+            });
+        }
+        
+        return audioId;
+    },
+    
+    // === STOP SPECIFIC AUDIO BY ID ===
+    stop: function(id) {
+        if (!this.activeAudio.has(id)) return false;
+        
+        var audio = this.activeAudio.get(id);
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.onended = null;
+            audio.onerror = null;
+        } catch (e) {
+            console.warn('Error stopping audio', id, ':', e);
+        }
+        
+        this.activeAudio.delete(id);
+        console.log('🛑 Stopped audio:', id);
+        return true;
     },
     
     // === BACKGROUND MUSIC ===
@@ -21,6 +100,9 @@ var AudioManager = {
         
         music.volume = Config.settings.audioVolume.background;
         music.muted = false;
+        
+        // Track background music
+        this.activeAudio.set('background', music);
         
         var playPromise = music.play();
         if (playPromise) {
@@ -34,6 +116,8 @@ var AudioManager = {
     
     // === STOP ALL AUDIO ===
     stopAllAudio: function() {
+        console.log('🛑 Stopping all audio. Active count:', this.activeAudio.size);
+        
         // Stop Web Audio sources
         try {
             if (WebAudioHelper.currentSource) {
@@ -44,31 +128,33 @@ var AudioManager = {
             console.log('WebAudio stop error:', e);
         }
         
-        // Stop all HTML5 audio elements (except background music)
-        var allAudio = document.querySelectorAll('audio:not(#backgroundMusic)');
-        for (var i = 0; i < allAudio.length; i++) {
+        // Stop all tracked audio
+        var self = this;
+        this.activeAudio.forEach(function(audio, id) {
             try {
-                allAudio[i].pause();
-                allAudio[i].currentTime = 0;
+                audio.pause();
+                audio.currentTime = 0;
+                audio.onended = null;
+                audio.onerror = null;
             } catch (e) {
-                console.log('Audio stop error:', e);
+                console.log('Error stopping', id, ':', e);
             }
-        }
+        });
         
-        // Stop tracked audio elements
+        this.activeAudio.clear();
+        
+        // Cleanup legacy window.audioElements if present
         if (window.audioElements) {
-            window.audioElements.forEach(function(audio) {
-                try {
-                    audio.pause();
-                    audio.currentTime = 0;
-                } catch (e) {}
-            });
             window.audioElements = [];
         }
+        
+        console.log('✅ All audio stopped');
     },
 
     // === STOP NON-BACKGROUND AUDIO (KEEP BACKGROUND MUSIC PLAYING) ===
     stopNonBackground: function() {
+        console.log('🛑 Stopping non-background audio. Active count:', this.activeAudio.size);
+        
         // Stop Web Audio sources
         try {
             if (WebAudioHelper.currentSource) {
@@ -79,31 +165,55 @@ var AudioManager = {
             console.log('WebAudio stop error:', e);
         }
 
-        // Stop all HTML5 audio elements except background music
-        var allAudio = document.querySelectorAll('audio:not(#backgroundMusic)');
-        for (var i = 0; i < allAudio.length; i++) {
+        // Stop all tracked audio except background
+        var self = this;
+        var toDelete = [];
+        
+        this.activeAudio.forEach(function(audio, id) {
+            if (id === 'background') return; // Keep background music
+            
             try {
-                allAudio[i].pause();
-                allAudio[i].currentTime = 0;
+                audio.pause();
+                audio.currentTime = 0;
+                audio.onended = null;
+                audio.onerror = null;
+                toDelete.push(id);
             } catch (e) {
-                console.log('Audio stop error:', e);
+                console.log('Error stopping', id, ':', e);
             }
-        }
+        });
+        
+        toDelete.forEach(function(id) {
+            self.activeAudio.delete(id);
+        });
+        
+        console.log('✅ Stopped', toDelete.length, 'non-background audio');
+    },
 
-        // Stop tracked audio elements (these are created via AudioManager.createAudio)
-        if (window.audioElements) {
-            window.audioElements.forEach(function(audio) {
-                try {
-                    // Skip the backgroundMusic element if accidentally tracked
-                    if (audio && audio.id === 'backgroundMusic') return;
-                    audio.pause();
-                    audio.currentTime = 0;
-                } catch (e) {}
-            });
-            // Do not clear window.audioElements entirely - keep background if added there
-            window.audioElements = window.audioElements.filter(function(a) { return a && a.id === 'backgroundMusic'; });
-        }
-    }
+    // === CLEAR AUDIO QUEUE ===
+    clearQueue: function() {
+        var count = 0;
+        var self = this;
+        var toDelete = [];
+        
+        this.activeAudio.forEach(function(audio, id) {
+            if (id === 'background') return; // Keep background
+            
+            try {
+                audio.pause();
+                audio.currentTime = 0;
+                toDelete.push(id);
+                count++;
+            } catch (e) {}
+        });
+        
+        toDelete.forEach(function(id) {
+            self.activeAudio.delete(id);
+        });
+        
+        console.log('🔁 AudioManager.clearQueue cleared', count, 'audio elements');
+        return count;
+    },
 };
 
 // === WEB AUDIO HELPER (iOS COMPATIBILITY) ===
@@ -143,6 +253,12 @@ var WebAudioHelper = {
     },
     
     play: function(url, onended, onerror) {
+        // Bail out early when skip mode is set — prevents playing queued audio during skip
+        if (typeof State !== 'undefined' && State.skipModeActive) {
+            console.log('⏭️ WebAudioHelper.play skipped because skip mode is active for', url);
+            if (onended) State.addTimer && State.addTimer(setTimeout(onended, 30));
+            return;
+        }
         var self = this;
         self.load(url).then(function(buffer) {
             var ctx = self.ensureContext();
@@ -182,7 +298,8 @@ var WebAudioHelper = {
             if (onerror) onerror(e);
         }
         
-        this.currentSource = source;
+    this.currentSource = source;
+    console.log('🔊 WebAudioHelper._playBuffer playing', url);
     }
 };
 

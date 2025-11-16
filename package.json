@@ -1,0 +1,27 @@
+{
+  "name": "him",
+  "version": "1.0.0",
+  "description": "An immersive, AI-driven German learning experience with sci-fi aesthetics and conversation-based interaction.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smarterGerman/him.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smarterGerman/him/issues"
+  },
+  "homepage": "https://github.com/smarterGerman/him#readme",
+  "dependencies": {
+    "puppeteer": "^24.30.0"
+  }
+}

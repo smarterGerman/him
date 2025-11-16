@@ -788,12 +788,31 @@ var Conversation = {
                 State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
             };
             audio.onerror = function(e) {
+                console.warn('❌ Audio error:', e.message || e);
                 State.isSpeaking = false;
-                State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
+                
+                // Show visual feedback
+                if (typeof DNAButton !== 'undefined') {
+                    DNAButton.showStatus('Audio unavailable - continuing...', false);
+                }
+                
+                // Continue flow after delay
+                State.addTimer(setTimeout(function() { 
+                    Conversation.moveToNextQuestion(); 
+                }, 1500));
             };
             audio.play().catch(function(e) {
+                console.warn('❌ Play promise rejected:', e.message);
                 State.isSpeaking = false;
-                State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
+                
+                // Show visual feedback
+                if (typeof DNAButton !== 'undefined') {
+                    DNAButton.showStatus('Audio unavailable - continuing...', false);
+                }
+                
+                State.addTimer(setTimeout(function() { 
+                    Conversation.moveToNextQuestion(); 
+                }, 1500));
             });
         }
     },
@@ -870,10 +889,19 @@ var Conversation = {
         }
         
         var onError = function(e) {
-            console.warn('Step audio error:', e);
+            console.warn('❌ Step audio error:', e.message || e);
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            if (onComplete) onComplete();
+            
+            // Show visual feedback
+            if (typeof DNAButton !== 'undefined') {
+                DNAButton.showStatus('Audio unavailable - continuing...', false);
+            }
+            
+            // Continue flow after delay
+            if (onComplete) {
+                setTimeout(onComplete, 1500);
+            }
         };
 
         if (WebAudioHelper.isMobile && State.audioUnlocked && window.AudioContext) {
@@ -1246,6 +1274,11 @@ playAnotherGiftedOneAudio: function() {
 
     // ===== NEW FUNCTION: PLAY ERROR AUDIO WITH BACKGROUND MUSIC FADE =====
     playSystemErrorAudioWithFade: function() {
+        // Respect skip mode
+        if (State.skipModeActive) {
+            console.log('⏭️ Skipping system error audio due to skip mode');
+            return;
+        }
         console.log('🎵 Playing system error audio with background music fade...');
         
         var music = UI.element('backgroundMusic');
@@ -1278,6 +1311,10 @@ playAnotherGiftedOneAudio: function() {
     },
 
     playSystemErrorAudio: function() {
+        if (State.skipModeActive) {
+            console.log('⏭️ Skipping system error audio (short) due to skip mode');
+            return;
+        }
         // This function is now just a fallback - the main logic is in playSystemErrorAudioWithFade
         var audio = AudioManager.createAudio(State.systemErrorAudio);
         audio.volume = Config.settings.audioVolume.effects;
@@ -1288,6 +1325,10 @@ playAnotherGiftedOneAudio: function() {
 
     // ===== UPDATED HUMAN WAKEUP AUDIO (no music restore since it's stopped) =====
     playHumanWakeupAudio: function() {
+        if (State.skipModeActive) {
+            console.log('⏭️ Skipping human wakeup audio due to skip mode');
+            return;
+        }
         var audio = AudioManager.createAudio(State.humanWakeupAudio);
         audio.volume = Config.settings.audioVolume.effects;
         
