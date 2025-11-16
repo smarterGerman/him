@@ -583,7 +583,10 @@ skip: function() {
     console.log('⏭️ Skip button clicked for step:', State.step);
     console.log('   Is initializing:', State.isInitializing);
     console.log('   Current mode:', DNAButton ? DNAButton.currentMode : 'N/A');
-    
+
+    // Capture initialization state before timers mutate it
+    var wasInitializing = State.isInitializing;
+
     // Enable skip mode early so any playing/queued audio will bail out
     State.enableSkipMode();
 
@@ -591,68 +594,56 @@ skip: function() {
     var stopped = this.stopAllAudio(false);
     console.log('⏭️ Skip requested - stopped non-background audio:', stopped);
 
-    // Clear all pending timers immediately
+    // Clear all pending timers immediately (also clears init timers)
     State.clearTimers();
-    // Also clear any initialization timers just in case
-    State.clearInitTimers();
-    
-    // NEW: Handle skip during initialization
-    if (State.isInitializing) {
+
+    if (wasInitializing) {
         console.log('🚀 Skipping initialization sequence');
-        
-        // Hide initialization UI immediately
+
         UI.hideElement('initOverlay');
-        
-        // Force stop logo animation
+
         var logo = document.querySelector('.init-logo');
         if (logo) {
             logo.style.animation = 'none';
             logo.style.opacity = '0';
             logo.style.display = 'none';
         }
-        
-        // Hide status text
+
         var statusText = UI.element('statusText');
         if (statusText) {
             statusText.style.display = 'none';
         }
-        
-        // Show visualizer immediately
+
         UI.showElement('visualizer');
         var visualizer = UI.element('visualizer');
         if (visualizer) {
             visualizer.style.opacity = '1';
             visualizer.style.transition = 'none';
         }
-        
-        // Mark that initialization is complete
+
         State.isInitializing = false;
         State.hasSkippedToStep0 = true;
         State.step = 0;
         State.isSpeaking = false;
         UI.setVisualizerState('active');
-        
-        // Show button immediately - no audio, no delays
+
         console.log('🎯 Showing Bereit button immediately after init skip');
         State.addTimer(setTimeout(function() {
             DNAButton.showText('Bereit', 'Ready');
         }, 500));
-        
+
+        State.addTimer(setTimeout(function() {
+            State.disableSkipMode();
+        }, 500));
         return;
     }
-    
-    // Enable skip mode to prevent unwanted audio
-    State.enableSkipMode();
-    
-    // Stop speaking state and hide all UI elements immediately
+
     State.isSpeaking = false;
     UI.setVisualizerState('active');
     UI.hideAllInteractiveElements();
-    
-    // Handle current step with appropriate defaults
+
     this.handleSkipForCurrentStep();
-    
-    // Disable skip mode after animations complete so next step plays audio
+
     State.addTimer(setTimeout(function() {
         State.disableSkipMode();
     }, 500));
@@ -727,8 +718,7 @@ skip: function() {
             input.value = defaultValue;
         }
         if (typeof submitHandler === 'function') {
-            if (this.skipModeActive) {
-                // If skip mode is active, call the submit handler immediately
+            if (State.skipModeActive) {
                 submitHandler.call(DNAButton);
             } else {
                 State.addTimer(setTimeout(function() {
