@@ -1162,7 +1162,7 @@ playAnotherGiftedOneAudio: function() {
     if (visualizer) {
         // Remove text-mode to make DNA visible again
         visualizer.classList.remove('text-mode');
-        visualizer.classList.remove('male-voice', 'female-voice', 'diverse-voice');
+        visualizer.classList.remove('male-voice', 'female-voice', 'diverse-voice', 'final-hidden');
         visualizer.classList.add('voice-transition');
     }
     
@@ -1182,6 +1182,10 @@ playAnotherGiftedOneAudio: function() {
         State.isSpeaking = false;
         UI.setVisualizerState('active');
         console.log('🔄 "Another gifted one" audio complete, starting final sequence');
+        if (visualizer) {
+            visualizer.classList.remove('male-voice');
+            visualizer.classList.add('final-hidden', 'text-mode');
+        }
         setTimeout(function() {
             self.startFinalSequence();
         }, 800);
