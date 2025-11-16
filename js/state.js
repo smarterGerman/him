@@ -628,17 +628,24 @@ skip: function() {
             visualizer.style.transition = 'none';
         }
         
-        // Jump directly to step 1 (skip welcome)
-        State.step = 0;
+        // Mark that initialization is complete
+        State.isInitializing = false;
         State.hasSkippedToStep0 = true;
-        State.enableSkipMode();
-        State.isInitializing = false; // ADDED: Mark initialization as complete
         
-        // Show first button immediately
+        // Enable skip mode temporarily to bypass welcome audio
+        State.enableSkipMode();
+        
+        // Start the first question (skip mode will prevent audio)
         State.addTimer(setTimeout(function() {
-            DNAButton.showText('Bereit', 'Ready');
-            State.disableSkipMode();
-        }, 500));
+            if (typeof Conversation !== 'undefined') {
+                Conversation.startQ1();
+            }
+            
+            // Disable skip mode after audio would have played
+            State.addTimer(setTimeout(function() {
+                State.disableSkipMode();
+            }, 1000));
+        }, 300));
         
         return;
     }
