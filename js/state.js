@@ -383,14 +383,15 @@ var UI = {
 // === ENHANCED CONTROLS OBJECT - FIXED SKIP FUNCTIONALITY ===
 var Controls = {
     // === COMPREHENSIVE AUDIO STOPPING ===
-    stopAllAudio: function() {
+    stopAllAudio: function(stopBackground) {
         console.log('🛑 STOPPING ALL AUDIO - Comprehensive approach');
         
         var stoppedCount = 0;
         
         try {
             // Method 1: Stop all HTML5 audio elements
-            var allAudio = document.querySelectorAll('audio');
+            var selector = stopBackground === false ? 'audio:not(#backgroundMusic)' : 'audio';
+            var allAudio = document.querySelectorAll(selector);
             console.log('Found ' + allAudio.length + ' audio elements');
             
             for (var i = 0; i < allAudio.length; i++) {
@@ -439,8 +440,8 @@ var Controls = {
         }
 
         try {
-            // Method 4: Suspend Audio Context
-            if (window.globalAudioContext) {
+            // Method 4: Suspend Audio Context (only if stopping everything)
+            if (stopBackground !== false && window.globalAudioContext) {
                 window.globalAudioContext.suspend().then(function() {
                     console.log('Audio context suspended');
                 }).catch(function(e) {
@@ -453,9 +454,14 @@ var Controls = {
 
         try {
             // Method 5: Stop AudioManager if available
-            if (typeof AudioManager !== 'undefined' && AudioManager.stopAllAudio) {
-                AudioManager.stopAllAudio();
-                console.log('Called AudioManager.stopAllAudio()');
+            if (typeof AudioManager !== 'undefined') {
+                if (stopBackground === false && AudioManager.stopNonBackground) {
+                    AudioManager.stopNonBackground();
+                    console.log('Called AudioManager.stopNonBackground()');
+                } else if (AudioManager.stopAllAudio) {
+                    AudioManager.stopAllAudio();
+                    console.log('Called AudioManager.stopAllAudio()');
+                }
             }
         } catch (e) {
             console.warn('Error calling AudioManager:', e);
@@ -550,11 +556,17 @@ skip: function() {
     console.log('   Is initializing:', State.isInitializing);
     console.log('   Current mode:', DNAButton ? DNAButton.currentMode : 'N/A');
     
-    // Stop all audio immediately
-    this.stopAllAudio();
-    
+    // Enable skip mode early so any playing/queued audio will bail out
+    State.enableSkipMode();
+
+    // Stop all non-background audio immediately, keep background music playing
+    var stopped = this.stopAllAudio(false);
+    console.log('⏭️ Skip requested - stopped non-background audio:', stopped);
+
     // Clear all pending timers immediately
     State.clearTimers();
+    // Also clear any initialization timers just in case
+    State.clearInitTimers();
     
     // NEW: Handle skip during initialization
     if (State.isInitializing) {
@@ -595,10 +607,10 @@ skip: function() {
         State.isInitializing = false; // ADDED: Mark initialization as complete
         
         // Show first button immediately
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             DNAButton.showText('Bereit', 'Ready');
             State.disableSkipMode();
-        }, 500);
+        }, 500));
         
         return;
     }
@@ -615,9 +627,9 @@ skip: function() {
     this.handleSkipForCurrentStep();
     
     // Disable skip mode after a delay long enough to cover submit animations + thank you audio
-    setTimeout(function() {
+    State.addTimer(setTimeout(function() {
         State.disableSkipMode();
-    }, 2000);
+    }, 2000));
 },
     
     // === HANDLE SKIP FOR CURRENT STEP ===
@@ -634,9 +646,9 @@ skip: function() {
         switch (mode) {
             case 'text':
                 // Skip current text and move to next immediately
-                setTimeout(function() { 
+                State.addTimer(setTimeout(function() { 
                     DNAButton.handleClick(); 
-                }, 100);
+                }, 100));
                 break;
             case 'probability':
                 // Auto-select medium and move on
@@ -677,9 +689,9 @@ skip: function() {
                     console.log('📍 Advanced to step:', State.step);
                     
                     // Show the UI for the new step immediately (skip audio)
-                    setTimeout(function() {
-                        Conversation.showNextButton();
-                    }, 200);
+                        State.addTimer(setTimeout(function() {
+                            Conversation.showNextButton();
+                        }, 200));
                 }
         }
     },
@@ -691,9 +703,14 @@ skip: function() {
             input.value = defaultValue;
         }
         if (typeof submitHandler === 'function') {
-            setTimeout(function() {
+            if (this.skipModeActive) {
+                // If skip mode is active, call the submit handler immediately
                 submitHandler.call(DNAButton);
-            }, 100);
+            } else {
+                State.addTimer(setTimeout(function() {
+                    submitHandler.call(DNAButton);
+                }, 100));
+            }
         }
     },
 

@@ -65,6 +65,44 @@ var AudioManager = {
             });
             window.audioElements = [];
         }
+    },
+
+    // === STOP NON-BACKGROUND AUDIO (KEEP BACKGROUND MUSIC PLAYING) ===
+    stopNonBackground: function() {
+        // Stop Web Audio sources
+        try {
+            if (WebAudioHelper.currentSource) {
+                WebAudioHelper.currentSource.stop();
+                WebAudioHelper.currentSource = null;
+            }
+        } catch (e) {
+            console.log('WebAudio stop error:', e);
+        }
+
+        // Stop all HTML5 audio elements except background music
+        var allAudio = document.querySelectorAll('audio:not(#backgroundMusic)');
+        for (var i = 0; i < allAudio.length; i++) {
+            try {
+                allAudio[i].pause();
+                allAudio[i].currentTime = 0;
+            } catch (e) {
+                console.log('Audio stop error:', e);
+            }
+        }
+
+        // Stop tracked audio elements (these are created via AudioManager.createAudio)
+        if (window.audioElements) {
+            window.audioElements.forEach(function(audio) {
+                try {
+                    // Skip the backgroundMusic element if accidentally tracked
+                    if (audio && audio.id === 'backgroundMusic') return;
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (e) {}
+            });
+            // Do not clear window.audioElements entirely - keep background if added there
+            window.audioElements = window.audioElements.filter(function(a) { return a && a.id === 'backgroundMusic'; });
+        }
     }
 };
 
@@ -327,7 +365,7 @@ var SG1 = {
                 if (isMobile && !State.mobileAudioStarted) {
                     var timer8 = setTimeout(function() {
                         if (!State.isInitializing) return;
-                        var mobileVoiceAudio = new Audio(State.audioFiles[0]);
+                        var mobileVoiceAudio = AudioManager.createAudio(State.audioFiles[0]);
                         mobileVoiceAudio.volume = Config.settings.audioVolume.speech;
                         
                         var playPromise = mobileVoiceAudio.play();

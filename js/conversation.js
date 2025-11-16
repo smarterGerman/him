@@ -69,10 +69,10 @@ var DNAButton = {
         
         // Initialize counter and focus
         updateCounter();
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             input.focus();
             input.setSelectionRange(input.value.length, input.value.length);
-        }, 300);
+        }, 300));
         
         return true;
     },
@@ -94,7 +94,7 @@ var DNAButton = {
         textButton.style.transform = 'translate(-50%, -50%)';
         textButton.innerHTML = '';
         
-        setTimeout(function() {
+    State.addTimer(setTimeout(function() {
             var contentSpan = document.createElement('span');
             contentSpan.className = 'dna-text-content';
             contentSpan.textContent = text;
@@ -110,15 +110,15 @@ var DNAButton = {
             visualizer.classList.add('text-mode');
             textButton.style.transition = 'all 0.8s ease';
             
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 textButton.classList.add('visible');
                 textButton.style.opacity = '1';
                 textButton.style.pointerEvents = 'all';
                 console.log('✅ Text button now visible:', text);
-            }, 100);
+            }, 100));
             
             DNAButton.currentMode = 'text';
-        }, 300);
+    }, 300));
         
         return true;
     },
@@ -309,10 +309,10 @@ var DNAButton = {
     
     self.animateInputContainerOut('whyGermanInputContainer');
     
-    setTimeout(function() {
+    State.addTimer(setTimeout(function() {
         DNAButton.showDNA();
         Conversation.playThankYou();
-    }, 800);
+    }, 800));
 },
 
 handleGoalSubmit: function() {
@@ -329,10 +329,10 @@ handleGoalSubmit: function() {
     
     self.animateInputContainerOut('goalInputContainer');
     
-    setTimeout(function() {
+    State.addTimer(setTimeout(function() {
         DNAButton.showDNA();
         Conversation.playThankYou();
-    }, 800);
+    }, 800));
 },
 
 handleTimeSubmit: function() {
@@ -355,10 +355,10 @@ handleTimeSubmit: function() {
     
     self.animateInputContainerOut('timeInputContainer');
     
-    setTimeout(function() {
+    State.addTimer(setTimeout(function() {
         DNAButton.showDNA();
         Conversation.playThankYou();
-    }, 800);
+    }, 800));
 },
 
     handleProbabilityChoice: function(level) {
@@ -375,16 +375,16 @@ handleTimeSubmit: function() {
         self.animateChoiceClick();
         
         if (level === 'low') {
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 window.open(Config.settings.external.unblockCourseUrl, '_blank');
                 DNAButton.showDNA();
                 Conversation.playThankYou();
-            }, 800);
+            }, 800));
         } else {
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 DNAButton.showDNA();
                 Conversation.playThankYou();
-            }, 800);
+            }, 800));
         }
     },
 
@@ -401,10 +401,10 @@ handleTimeSubmit: function() {
             console.log('✅ German love rating saved:', rating);
         }
         
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             DNAButton.showDNA();
             Conversation.playThankYou();
-        }, 800);
+        }, 800));
     },
 
     handleAIChoice: function(aiType) {
@@ -420,10 +420,10 @@ handleTimeSubmit: function() {
         
         State.selectedAIType = aiType;
         
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             DNAButton.showDNA();
             Conversation.playThankYou();
-        }, 800);
+        }, 800));
     },
 
     handleMotherDescriptionSubmit: function() {
@@ -440,10 +440,10 @@ handleTimeSubmit: function() {
     
     self.animateInputContainerOut('motherDescriptionContainer');
     
-    setTimeout(function() {
+    State.addTimer(setTimeout(function() {
         DNAButton.showDNA();
         Conversation.playThankYou();
-    }, 800);
+    }, 800));
 },
     
     handleBereit: function() {
@@ -457,12 +457,12 @@ handleTimeSubmit: function() {
             textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
         }
         
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             DNAButton.showDNA();
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 Conversation.moveToNextQuestion();
-            }, 200);
-        }, 800);
+            }, 200));
+        }, 800));
     },
     
     handleNaGut: function() {
@@ -476,13 +476,13 @@ handleTimeSubmit: function() {
             textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
         }
         
-        setTimeout(function() {
+        State.addTimer(setTimeout(function() {
             DNAButton.showDNA();
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 // Start final sequence immediately - the 7-second delay already happened in step 10
                 Conversation.startFinalSequence();
-            }, 200);
-        }, 800);
+            }, 200));
+        }, 800));
     },
 
     // === ANIMATION HELPERS ===
@@ -760,7 +760,7 @@ var Conversation = {
             console.log('⏭️ Skipping thank you audio (skip mode active)');
             State.isSpeaking = false;
             UI.setVisualizerState('active');
-            setTimeout(function() { Conversation.moveToNextQuestion(); }, 100);
+            State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 100));
             return;
         }
         
@@ -773,11 +773,11 @@ var Conversation = {
                 function() {
                     State.isSpeaking = false;
                     UI.setVisualizerState('active');
-                    setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                    State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
                 },
                 function(e) {
                     State.isSpeaking = false;
-                    setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                    State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
                 }
             );
         } else {
@@ -785,15 +785,15 @@ var Conversation = {
             audio.onended = function() {
                 State.isSpeaking = false;
                 UI.setVisualizerState('active');
-                setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
             };
             audio.onerror = function(e) {
                 State.isSpeaking = false;
-                setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
             };
             audio.play().catch(function(e) {
                 State.isSpeaking = false;
-                setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000);
+                State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 1000));
             });
         }
     },
@@ -864,7 +864,7 @@ var Conversation = {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
             if (onComplete) {
-                setTimeout(onComplete, 100);
+                State.addTimer(setTimeout(onComplete, 100));
             }
             return;
         }
@@ -888,7 +888,7 @@ var Conversation = {
 
     // FIXED: Remove race conditions - steps 8, 9, 11 no longer auto-schedule moveToNextQuestion()
     showNextButton: function() {
-        setTimeout(function() {
+    State.addTimer(setTimeout(function() {
             console.log('📋 Showing UI for step:', State.step);
             switch(State.step) {
                 case 0:
@@ -926,9 +926,9 @@ var Conversation = {
                 case 10:
                     // FIXED: 7 second delay before "Another gifted one"
                     console.log('⏰ Step 10: 7 second delay before "Another gifted one"');
-                    setTimeout(function() {
+                    State.addTimer(setTimeout(function() {
                         Conversation.moveToNextQuestion();
-                    }, 7000);
+                    }, 7000));
                     break;
                 case 11:
                     // FIXED: Only play "Another gifted one" audio, don't schedule moveToNextQuestion()
@@ -938,7 +938,7 @@ var Conversation = {
                 default:
                     break;
             }
-        }, Config.settings.timing.responseDelay);
+    }, Config.settings.timing.responseDelay));
     },
 
     // === FIXED AI SEQUENCE HANDLERS - Direct control with proper progression ===
@@ -948,9 +948,9 @@ var Conversation = {
         self.playAISequenceAudio(State.aiTypeMaleAudio, 'male', function() {
             // FIXED: Direct control - no race conditions
             State.nextStep(); // Move to step 9
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 Conversation.playAnalysisAudio(); // Step 9 audio
-            }, 1000);
+            }, 1000));
         });
     },
 
@@ -960,9 +960,9 @@ var Conversation = {
         self.playAISequenceAudio(State.aiTypeFemaleAudio, 'female', function() {
             // FIXED: Direct control - no race conditions
             State.nextStep(); // Move to step 9
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 Conversation.playAnalysisAudio(); // Step 9 audio
-            }, 1000);
+            }, 1000));
         });
     },
 
@@ -972,9 +972,9 @@ var Conversation = {
         self.playAISequenceAudio(State.aiTypeDiverseAudio, 'diverse', function() {
             // FIXED: Direct control - no race conditions
             State.nextStep(); // Move to step 9
-            setTimeout(function() {
+            State.addTimer(setTimeout(function() {
                 Conversation.playAnalysisAudio(); // Step 9 audio
-            }, 1000);
+            }, 1000));
         });
     },
 
