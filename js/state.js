@@ -600,13 +600,10 @@ skip: function() {
     if (State.isInitializing) {
         console.log('🚀 Skipping initialization sequence');
         
-        // Clear all initialization timers
-        State.clearInitTimers();
-        
         // Hide initialization UI immediately
         UI.hideElement('initOverlay');
         
-        // ADDED: Force stop logo animation
+        // Force stop logo animation
         var logo = document.querySelector('.init-logo');
         if (logo) {
             logo.style.animation = 'none';
@@ -614,7 +611,7 @@ skip: function() {
             logo.style.display = 'none';
         }
         
-        // ADDED: Hide status text
+        // Hide status text
         var statusText = UI.element('statusText');
         if (statusText) {
             statusText.style.display = 'none';
@@ -631,21 +628,15 @@ skip: function() {
         // Mark that initialization is complete
         State.isInitializing = false;
         State.hasSkippedToStep0 = true;
+        State.step = 0;
+        State.isSpeaking = false;
+        UI.setVisualizerState('active');
         
-        // Enable skip mode temporarily to bypass welcome audio
-        State.enableSkipMode();
-        
-        // Start the first question (skip mode will prevent audio)
+        // Show button immediately - no audio, no delays
+        console.log('🎯 Showing Bereit button immediately after init skip');
         State.addTimer(setTimeout(function() {
-            if (typeof Conversation !== 'undefined') {
-                Conversation.startQ1();
-            }
-            
-            // Disable skip mode after audio would have played
-            State.addTimer(setTimeout(function() {
-                State.disableSkipMode();
-            }, 1000));
-        }, 300));
+            DNAButton.showText('Bereit', 'Ready');
+        }, 500));
         
         return;
     }
