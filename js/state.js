@@ -716,26 +716,15 @@ skip: function() {
                 break;
             case 'dna':
             default:
-                // DNA mode or default - advance to next step
-                console.log('🔄 DNA mode skip - advancing and showing next screen');
+                // DNA mode or default - just show the button for current step
+                console.log('🔄 DNA mode skip - showing button for current step:', State.step);
                 if (typeof Conversation !== 'undefined') {
-                    // Move to next step
-                    State.nextStep();
-                    console.log('📍 Advanced to step:', State.step);
-                    
-                    // Show the UI for the new step immediately (skip audio)
+                    // Don't advance step - just show the button immediately
                     State.addTimer(setTimeout(function() {
                         Conversation.showNextButton();
-                    }, 200));
+                    }, 100));
                 }
                 break;
-        }
-
-        // Advance to next screen in all skip cases, with a short delay to allow immediate UI updates.
-        if (typeof Conversation !== 'undefined') {
-            State.addTimer(setTimeout(function() {
-                Conversation.moveToNextQuestion();
-            }, 300));
         }
         
     },
