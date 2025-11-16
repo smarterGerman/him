@@ -88,6 +88,8 @@ var DNAButton = {
             return false;
         }
         
+        textButton.classList.remove('fade-out');
+
         // Clear any existing content first
         textButton.style.transition = 'all 0.3s ease';
         textButton.style.opacity = '0';
@@ -446,8 +448,8 @@ handleTimeSubmit: function() {
         var textButton = UI.element('dnaTextButton');
         if (textButton) {
             textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            textButton.style.opacity = '0';
-            textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+            textButton.classList.add('fade-out');
+            textButton.classList.remove('visible');
         }
         
         State.addTimer(setTimeout(function() {
@@ -465,8 +467,8 @@ handleTimeSubmit: function() {
         var textButton = UI.element('dnaTextButton');
         if (textButton) {
             textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            textButton.style.opacity = '0';
-            textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
+            textButton.classList.add('fade-out');
+            textButton.classList.remove('visible');
         }
 
         State.addTimer(setTimeout(function() {
@@ -479,7 +481,7 @@ handleTimeSubmit: function() {
             State.addTimer(setTimeout(function() {
                 // Start final sequence immediately - the 7-second delay already happened in step 10
                 Conversation.startFinalSequence();
-            }, 200));
+            }, 600));
         }, 800));
     },
 

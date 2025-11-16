@@ -12,9 +12,9 @@ var Config = {
         6: 'https://uploads.teachablecdn.com/attachments/ac0aa8c556c74c13ba1a451c83baa18d.mp3',  // Mother
         7: 'https://uploads.teachablecdn.com/attachments/1c56f997a626423dabf739a56f01b3ee.mp3',  // AI Type
         8: 'https://uploads.teachablecdn.com/attachments/e380c0630dbd43ec83b27aad05227c4d.mp3',  // AI Type Male
-        9: 'https://uploads.teachablecdn.com/attachments/d61b86f90652471181352a77c5dbe7ec.mp3',  // AI Type Female  
-        10: 'https://uploads.teachablecdn.com/attachments/20c0c1906b8345a48d319c7c08abe0aa.mp3', // Analysis/Diverse
-        11: 'https://uploads.teachablecdn.com/attachments/4dd1dee1debe48349289dc68edb76a00.mp3'  // Final
+    9: 'https://uploads.teachablecdn.com/attachments/a8e2d86a6ceb463fb3cf3b03bedb1655.mp3',  // AI Type Female  
+    10: 'https://uploads.teachablecdn.com/attachments/b93a557ec98d4047ae9d3dcc528274ce.mp3', // Analysis/Diverse
+    11: 'https://uploads.teachablecdn.com/attachments/55327ee5fd3642c68ea3a007ce515bae.mp3'  // Final
     },
     
     // Special audio files

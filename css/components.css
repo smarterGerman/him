@@ -53,6 +53,12 @@
     pointer-events: all;
 }
 
+.dna-text-button.fade-out {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) translateY(10px);
+}
+
 .dna-text-button:hover {
     color: rgba(255, 255, 255, 1);
     transform: translate(-50%, -50%) translateY(-3px);
