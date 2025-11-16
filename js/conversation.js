@@ -1057,9 +1057,14 @@ var Conversation = {
         
         // Show the male AI installation status messages
         var status = UI.element('statusText');
+        var initLogo = document.querySelector('.init-logo');
         if (status) {
             // Make sure status is visible
             UI.showElement('initOverlay');
+            if (initLogo) {
+                initLogo.dataset.prevDisplay = initLogo.style.display || '';
+                initLogo.style.display = 'none';
+            }
             status.style.opacity = '1';
             status.style.transition = 'none';
             
@@ -1111,6 +1116,10 @@ var Conversation = {
                 status.style.opacity = '0';
                 setTimeout(function() {
                     UI.hideElement('initOverlay');
+                    if (initLogo) {
+                        initLogo.style.display = initLogo.dataset.prevDisplay || '';
+                        delete initLogo.dataset.prevDisplay;
+                    }
                 }, 1000);
             }, 11000);
         }
