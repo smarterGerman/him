@@ -261,11 +261,18 @@ var DNAButton = {
 
     hideStatus: function() {
         var statusDisplay = UI.element('statusDisplay');
+        var visualizer = UI.element('visualizer');
+        
         if (statusDisplay) {
             statusDisplay.classList.remove('visible', 'error');
-            return true;
         }
-        return false;
+        
+        // Remove text-mode when hiding status to show DNA again
+        if (visualizer) {
+            visualizer.classList.remove('text-mode');
+        }
+        
+        return true;
     },
     
     // === EVENT HANDLERS ===
@@ -487,9 +494,16 @@ handleTimeSubmit: function() {
 
     animateInputContainerOut: function(containerId) {
         var container = UI.element(containerId);
+        var visualizer = UI.element('visualizer');
+        
         if (container) {
             container.style.opacity = '0';
             container.style.transform = 'translate(-50%, -50%) translateY(10px)';
+        }
+        
+        // Remove text-mode to bring DNA back
+        if (visualizer) {
+            visualizer.classList.remove('text-mode');
         }
     },
 

@@ -337,7 +337,34 @@ var UI = {
     
     console.log('✅ Hidden', hiddenCount, 'interactive elements');
     return hiddenCount;
-}
+},
+
+    // === SHOW INTERACTIVE ELEMENT WITH DNA FADE ===
+    showInteractiveElement: function(id) {
+        console.log('👁️ Showing interactive element:', id);
+        
+        var element = this.element(id);
+        if (!element) {
+            console.warn('Element not found:', id);
+            return false;
+        }
+        
+        // Add text-mode to visualizer to fade DNA
+        var visualizer = this.element('visualizer');
+        if (visualizer) {
+            visualizer.classList.add('text-mode');
+            console.log('✅ DNA faded for text input');
+        }
+        
+        // Show the element
+        element.classList.add('visible');
+        element.style.opacity = '1';
+        element.style.pointerEvents = 'auto';
+        element.style.transform = 'translate(-50%, -50%)';
+        
+        console.log('✅ Interactive element shown:', id);
+        return true;
+    }
 };
 
 // === ENHANCED CONTROLS OBJECT - FIXED SKIP FUNCTIONALITY ===

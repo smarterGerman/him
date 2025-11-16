@@ -411,7 +411,14 @@ function handleImmediateExit() {
         setTimeout(function() {
             console.log('💡 Showing click-again instruction');
             var statusDisplay = document.getElementById('statusDisplay');
+            var visualizer = document.getElementById('visualizer');
+            
             if (statusDisplay) {
+                // Add text-mode to fade DNA
+                if (visualizer) {
+                    visualizer.classList.add('text-mode');
+                }
+                
                 statusDisplay.textContent = 'Click × again to exit';
                 statusDisplay.classList.add('visible');
                 statusDisplay.style.opacity = '0.8';
@@ -420,6 +427,10 @@ function handleImmediateExit() {
                 // Hide instruction after 3 seconds
                 setTimeout(function() {
                     statusDisplay.classList.remove('visible');
+                    // Remove text-mode to bring DNA back
+                    if (visualizer) {
+                        visualizer.classList.remove('text-mode');
+                    }
                 }, 3000);
             }
         }, 500);
