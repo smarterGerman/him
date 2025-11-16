@@ -374,18 +374,11 @@ handleTimeSubmit: function() {
         self.playConfirmationSound();
         self.animateChoiceClick();
         
-        if (level === 'low') {
-            State.addTimer(setTimeout(function() {
-                window.open(Config.settings.external.unblockCourseUrl, '_blank');
-                DNAButton.showDNA();
-                Conversation.playThankYou();
-            }, 800));
-        } else {
-            State.addTimer(setTimeout(function() {
-                DNAButton.showDNA();
-                Conversation.playThankYou();
-            }, 800));
-        }
+        // Removed: Link to Unblock Your German course for low confidence
+        State.addTimer(setTimeout(function() {
+            DNAButton.showDNA();
+            Conversation.playThankYou();
+        }, 800));
     },
 
     handleScaleChoice: function(rating) {
