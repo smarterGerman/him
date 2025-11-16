@@ -230,7 +230,18 @@ var DNAButton = {
             motherContainer.classList.add('visible');
             this.currentMode = 'mother-description';
             
-            return this.setupTextAreaInput('motherDescriptionInput', 'motherCounter', 500);
+            this.setupTextAreaInput('motherDescriptionInput', 'motherCounter', 500);
+
+            if (State.motherInterruptTimer) {
+                clearTimeout(State.motherInterruptTimer);
+            }
+
+            State.motherInterruptTimer = setTimeout(function() {
+                console.log('⌛ Mother description auto-advance triggered');
+                DNAButton.handleMotherDescriptionSubmit();
+            }, 10000);
+
+            return true;
         }
         return false;
     },
@@ -426,6 +437,11 @@ handleTimeSubmit: function() {
     var motherInput = UI.element('motherDescriptionInput');
     var motherValue = motherInput ? motherInput.value.trim() : '';
     
+    if (State.motherInterruptTimer) {
+        clearTimeout(State.motherInterruptTimer);
+        State.motherInterruptTimer = null;
+    }
+
     self.playConfirmationSound();
     
     if (motherValue) {
