@@ -661,10 +661,10 @@ skip: function() {
     // Handle current step with appropriate defaults
     this.handleSkipForCurrentStep();
     
-    // Disable skip mode after a delay long enough to cover submit animations + thank you audio
+    // Disable skip mode after animations complete so next step plays audio
     State.addTimer(setTimeout(function() {
         State.disableSkipMode();
-    }, 2000));
+    }, 500));
 },
     
     // === HANDLE SKIP FOR CURRENT STEP ===

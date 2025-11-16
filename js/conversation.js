@@ -760,6 +760,10 @@ var Conversation = {
             console.log('⏭️ Skipping thank you audio (skip mode active)');
             State.isSpeaking = false;
             UI.setVisualizerState('active');
+            
+            // Disable skip mode BEFORE moving to next question so audio can play
+            State.disableSkipMode();
+            
             State.addTimer(setTimeout(function() { Conversation.moveToNextQuestion(); }, 100));
             return;
         }
