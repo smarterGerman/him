@@ -461,16 +461,21 @@ handleTimeSubmit: function() {
     handleNaGut: function() {
         var self = this;
         self.playConfirmationSound();
-        
+
         var textButton = UI.element('dnaTextButton');
         if (textButton) {
             textButton.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
             textButton.style.opacity = '0';
             textButton.style.transform = 'translate(-50%, -50%) translateY(10px)';
         }
-        
+
         State.addTimer(setTimeout(function() {
-            DNAButton.showDNA();
+            var visualizer = UI.element('visualizer');
+            if (visualizer) {
+                visualizer.classList.add('text-mode');
+                visualizer.classList.remove('male-voice', 'female-voice', 'diverse-voice');
+            }
+
             State.addTimer(setTimeout(function() {
                 // Start final sequence immediately - the 7-second delay already happened in step 10
                 Conversation.startFinalSequence();
@@ -1006,26 +1011,36 @@ var Conversation = {
     // === UNIFIED AI SEQUENCE AUDIO HANDLER ===
     playAISequenceAudio: function(audioUrl, aiType, onComplete) {
         var self = this;
-        
+        var visualizer = UI.element('visualizer');
+
         State.isSpeaking = true;
+
+        if (visualizer) {
+            visualizer.classList.remove('male-voice', 'female-voice', 'diverse-voice');
+            if (aiType === 'male') {
+                visualizer.classList.add('male-voice');
+            } else if (aiType === 'female') {
+                visualizer.classList.add('female-voice');
+            } else if (aiType === 'diverse') {
+                visualizer.classList.add('diverse-voice');
+            }
+            visualizer.classList.remove('text-mode');
+        }
+
         UI.setVisualizerState('speaking');
-        
+
         console.log('🔊 Playing', aiType, 'AI sequence audio:', audioUrl);
-        
+
         var handleComplete = function() {
             State.isSpeaking = false;
             UI.setVisualizerState('active');
+            if (visualizer) {
+                visualizer.classList.remove('male-voice', 'female-voice', 'diverse-voice');
+            }
             console.log('🔄', aiType, 'AI sequence complete');
             if (onComplete) onComplete();
         };
 
-        var handleError = function(e) {
-            console.warn('AI sequence audio error:', e);
-            State.isSpeaking = false;
-            UI.setVisualizerState('active');
-            if (onComplete) onComplete();
-        };
-        
         self.playStepAudio(audioUrl, handleComplete);
     },
 
