@@ -132,8 +132,16 @@
 }
 
 .voice-visualizer.text-mode .dna-strand {
-    opacity: 0;
+    opacity: 0 !important;
     transition: opacity 0.6s ease-out;
+}
+
+/* Ensure text-mode overrides all speaking states */
+.voice-visualizer.text-mode.speaking .dna-strand,
+.voice-visualizer.text-mode.male-voice.speaking .dna-strand,
+.voice-visualizer.text-mode.female-voice.speaking .dna-strand,
+.voice-visualizer.text-mode.diverse-voice.speaking .dna-strand {
+    opacity: 0 !important;
 }
 
 /* ===== STATUS DISPLAY ANIMATIONS ===== */
