@@ -339,6 +339,9 @@ var SG1 = {
             preInitButton.textContent = 'Starting...';
         }
         
+        // Mark initialization as soon as the sequence begins so skip can cancel even during the handoff delay
+        State.isInitializing = true;
+
         // Show control buttons immediately after clicking
         var skipButton = UI.element('skipButton');
         var quitButton = UI.element('quitButton');
@@ -391,7 +394,7 @@ var SG1 = {
             } catch (e) {}
         }
         
-        setTimeout(function() {
+        var initStartTimer = setTimeout(function() {
             // Request fullscreen
             try {
                 if (document.documentElement.requestFullscreen) {
@@ -408,6 +411,7 @@ var SG1 = {
             
             SG1.startInitialization();
         }, 300);
+        State.addInitTimer(initStartTimer);
     },
 
     startInitialization: function() {
