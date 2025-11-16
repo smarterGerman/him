@@ -5,6 +5,11 @@ var DNAButton = {
     
     // === AUDIO FEEDBACK ===
     playConfirmationSound: function() {
+        // Skip sound if in skip mode
+        if (State.skipModeActive) {
+            return;
+        }
+        
         try {
             var confirmAudio = AudioManager.createAudio(State.confirmationSound);
             confirmAudio.volume = Config.settings.audioVolume.effects;
@@ -750,6 +755,15 @@ submitAllFormData: function() {
 // ===== CONVERSATION CONTROLLER - SIMPLIFIED TRANSITION =====
 var Conversation = {
     playThankYou: function() {
+        // Skip audio if in skip mode
+        if (State.skipModeActive) {
+            console.log('⏭️ Skipping thank you audio (skip mode active)');
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            setTimeout(function() { Conversation.moveToNextQuestion(); }, 100);
+            return;
+        }
+        
         State.isSpeaking = true;
         UI.setVisualizerState('speaking');
         
@@ -844,6 +858,17 @@ var Conversation = {
 
     // === CENTRALIZED AUDIO PLAYBACK ===
     playStepAudio: function(audioUrl, onComplete) {
+        // Skip audio if in skip mode
+        if (State.skipModeActive) {
+            console.log('⏭️ Skipping step audio (skip mode active)');
+            State.isSpeaking = false;
+            UI.setVisualizerState('active');
+            if (onComplete) {
+                setTimeout(onComplete, 100);
+            }
+            return;
+        }
+        
         var onError = function(e) {
             console.warn('Step audio error:', e);
             State.isSpeaking = false;

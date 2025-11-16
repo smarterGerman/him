@@ -15,6 +15,7 @@ var State = {
     // === TIMERS ===
     motherInterruptTimer: null,        // Auto-interrupt for mother question
     holdingTimer: null,                // Hold-to-speak button timer
+    allTimers: [],                     // Track ALL conversation timers
     
     // === INITIALIZATION TIMERS ===
     initTimers: [],                    // Track all initialization timers
@@ -86,8 +87,20 @@ var State = {
             clearTimeout(this.holdingTimer);
             this.holdingTimer = null;
         }
+        // Clear all conversation timers
+        console.log('🧹 Clearing', this.allTimers.length, 'conversation timers');
+        this.allTimers.forEach(function(timerId) {
+            clearTimeout(timerId);
+        });
+        this.allTimers = [];
         // Clear initialization timers too
         this.clearInitTimers();
+    },
+    
+    // Add a timer to tracking
+    addTimer: function(timerId) {
+        this.allTimers.push(timerId);
+        return timerId;
     },
     
     // Add initialization timer
@@ -540,6 +553,9 @@ skip: function() {
     // Stop all audio immediately
     this.stopAllAudio();
     
+    // Clear all pending timers immediately
+    State.clearTimers();
+    
     // NEW: Handle skip during initialization
     if (State.isInitializing) {
         console.log('🚀 Skipping initialization sequence');
@@ -595,16 +611,13 @@ skip: function() {
     UI.setVisualizerState('active');
     UI.hideAllInteractiveElements();
     
-    // Clear any pending timers
-    State.clearTimers();
-    
     // Handle current step with appropriate defaults
     this.handleSkipForCurrentStep();
     
-    // Disable skip mode after a brief delay
+    // Disable skip mode after a delay long enough to cover submit animations + thank you audio
     setTimeout(function() {
         State.disableSkipMode();
-    }, 1000);
+    }, 2000);
 },
     
     // === HANDLE SKIP FOR CURRENT STEP ===
