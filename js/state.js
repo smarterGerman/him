@@ -535,6 +535,7 @@ var Controls = {
 skip: function() {
     console.log('⏭️ Skip button clicked for step:', State.step);
     console.log('   Is initializing:', State.isInitializing);
+    console.log('   Current mode:', DNAButton ? DNAButton.currentMode : 'N/A');
     
     // Stop all audio immediately
     this.stopAllAudio();
@@ -585,23 +586,26 @@ skip: function() {
         
         return;
     }
-        
-        // Enable skip mode to prevent unwanted audio
-        State.enableSkipMode();
-        
-        // Reset state
-        State.isSpeaking = false;
-        UI.setVisualizerState('active');
-        UI.hideAllInteractiveElements();
-        
-        // Handle current step with appropriate defaults
-        this.handleSkipForCurrentStep();
-        
-        // Disable skip mode after a brief delay
-        setTimeout(function() {
-            State.disableSkipMode();
-        }, 2000);
-    },
+    
+    // Enable skip mode to prevent unwanted audio
+    State.enableSkipMode();
+    
+    // Stop speaking state and hide all UI elements immediately
+    State.isSpeaking = false;
+    UI.setVisualizerState('active');
+    UI.hideAllInteractiveElements();
+    
+    // Clear any pending timers
+    State.clearTimers();
+    
+    // Handle current step with appropriate defaults
+    this.handleSkipForCurrentStep();
+    
+    // Disable skip mode after a brief delay
+    setTimeout(function() {
+        State.disableSkipMode();
+    }, 1000);
+},
     
     // === HANDLE SKIP FOR CURRENT STEP ===
     handleSkipForCurrentStep: function() {
@@ -616,15 +620,21 @@ skip: function() {
         
         switch (mode) {
             case 'text':
-                setTimeout(function() { DNAButton.handleClick(); }, 100);
+                // Skip current text and move to next immediately
+                setTimeout(function() { 
+                    DNAButton.handleClick(); 
+                }, 100);
                 break;
             case 'probability':
+                // Auto-select medium and move on
                 DNAButton.handleProbabilityChoice('medium');
                 break;
             case 'scale':
+                // Auto-select 5 and move on
                 DNAButton.handleScaleChoice(5);
                 break;
             case 'ai':
+                // Auto-select diverse and move on
                 DNAButton.handleAIChoice('diverse');
                 break;
             case 'why-german-input':
@@ -644,14 +654,20 @@ skip: function() {
                     Conversation.dissolveAndTransition();
                 }
                 break;
+            case 'dna':
             default:
-                // Default action - advance to next step without audio
-                console.log('🔄 Default skip action - advancing to next step');
-                setTimeout(function() {
-                    if (typeof Conversation !== 'undefined') {
-                        Conversation.moveToNextQuestion();
-                    }
-                }, 300);
+                // DNA mode or default - advance to next step
+                console.log('🔄 DNA mode skip - advancing and showing next screen');
+                if (typeof Conversation !== 'undefined') {
+                    // Move to next step
+                    State.nextStep();
+                    console.log('📍 Advanced to step:', State.step);
+                    
+                    // Show the UI for the new step immediately (skip audio)
+                    setTimeout(function() {
+                        Conversation.showNextButton();
+                    }, 200);
+                }
         }
     },
     
