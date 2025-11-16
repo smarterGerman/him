@@ -274,6 +274,82 @@ var Analytics = {
 
 Analytics.init();
 
+var FullscreenToggle = {
+    element: null,
+
+    init: function() {
+        this.element = document.getElementById('quitButton');
+        if (!this.element) {
+            return;
+        }
+
+        this.boundUpdateState = this.updateState.bind(this);
+        this.element.addEventListener('click', this.handleClick.bind(this));
+
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange']
+            .forEach(function(eventName) {
+                document.addEventListener(eventName, FullscreenToggle.boundUpdateState);
+            });
+
+        this.updateState();
+    },
+
+    isFullscreen: function() {
+        return !!(document.fullscreenElement ||
+                  document.webkitFullscreenElement ||
+                  document.mozFullScreenElement ||
+                  document.msFullscreenElement);
+    },
+
+    updateState: function() {
+        if (!this.element) {
+            return;
+        }
+
+        if (this.isFullscreen()) {
+            this.element.textContent = '×';
+            this.element.title = 'Exit fullscreen';
+        } else {
+            this.element.textContent = '⛶';
+            this.element.title = 'Enter fullscreen';
+        }
+    },
+
+    handleClick: function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.isFullscreen()) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } else {
+            var el = document.documentElement;
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(function() {});
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.mozRequestFullScreen) {
+                el.mozRequestFullScreen();
+            } else if (el.msRequestFullscreen) {
+                el.msRequestFullscreen();
+            }
+        }
+
+        this.updateState();
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    FullscreenToggle.init();
+});
+
 // ===== SG1 VERIFICATION SCRIPT =====
 var SG1Verification = {
     runQuickCheck: function() {
